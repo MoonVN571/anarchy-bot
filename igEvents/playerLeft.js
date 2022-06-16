@@ -1,18 +1,16 @@
-const {readdir}  =require('fs');
 const { sendCustomMessage } = require('../functions/minecraft');
+const seen = require('../db/seen');
 module.exports = {
     name: 'playerLeft',
     execute (bot, player) {
-        if (bot.countPlayers <= Object.values(bot.players).map(p => p.username).length) return;
+
+        let seenData = await seen.findOne({username:player.username});
+        if(!seenData) await seen.create({username:player.username,time:Date.now()});
+        else {
+            seenData.time = Date.now();
+            seenData.save();
+        }
 
         sendCustomMessage('connect', player.username + ' đã thoát khỏi server.');
-
-        return;
-        readdir('./oldfags', (err,data) => {
-            if (err) throw err;
-            if (data.toString().split("\r\n").indexOf(username) > -1) {
-                sendCustomMessage('oldfag', player.username + ' đã thoát khỏi server.');
-            }
-        });
     }
 }

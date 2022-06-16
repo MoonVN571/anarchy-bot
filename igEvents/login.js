@@ -5,7 +5,7 @@ module.exports = {
     name: 'login',
     once: true,
     execute (bot) {
-        console.log("Đã tham gia server");
+        console.log("Đã kết nối vào server!");
     
         bot.logged = true;
         bot.exited = false;
