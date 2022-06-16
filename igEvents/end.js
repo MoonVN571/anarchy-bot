@@ -10,7 +10,7 @@ module.exports = {
 
         setTimeout(() => {
             require('../bot.js').createBot();
-        },  60 * 1000);
+        },  3 * 60 * 1000);
 
         if(!bot.logged) return;
 

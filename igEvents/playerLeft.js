@@ -2,7 +2,8 @@ const { sendCustomMessage } = require('../functions/minecraft');
 const seen = require('../db/seen');
 module.exports = {
     name: 'playerLeft',
-    execute (bot, player) {
+    async execute (bot, player) {
+        if (bot.countPlayers <= Object.values(bot.players).map(p => p.username).length) return;
 
         let seenData = await seen.findOne({username:player.username});
         if(!seenData) await seen.create({username:player.username,time:Date.now()});

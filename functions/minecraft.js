@@ -175,9 +175,9 @@ function getUptime(bot, type) {
     // console.log(bot.uptime);
     if(!bot.uptime) return '';
 
-    if(type == 'vi') return getDorHMS(Date.now()-bot.uptime, true);
+    if(type == 'vi') return getDorHMS((Date.now()-bot.uptime)/1000, true);
 
-    return getDorHMS(Date.now()-bot.uptime);
+    return getDorHMS((Date.now()-bot.uptime)/1000);
 }
 
 module.exports = {
