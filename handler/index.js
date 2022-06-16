@@ -4,7 +4,7 @@ const { readdirSync } = require('fs');
 readdirSync('./events/').forEach(eventName =>
     require('../events/'+eventName)
 );
-
+return;
 readdirSync('./commands').forEach(dir => {
     const cmd = readdirSync('./commands/'+dir);
 
