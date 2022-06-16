@@ -14,5 +14,8 @@
     "dotenv": "10.0.0",
     "mineflayer": "3.11",
     "mongoose": "6.3.8"
+  },
+  "engines" : { 
+    "node" : ">=8.0.0" 
   }
 }
