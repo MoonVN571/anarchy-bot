@@ -1,0 +1,18 @@
+{
+  "name": "2y2c-bot",
+  "version": "4.0",
+  "description": "Một project hoàn toàn mới với bot được viết lại hoàn toàn",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Moon",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^13.8.0",
+    "dotenv": "^10.0.0",
+    "mineflayer": "3.11",
+    "mongoose": "^6.3.8"
+  }
+}
