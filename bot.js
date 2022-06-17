@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const settings = {
     botName: 'mo0nbot2',
-
+    dev: false
 }
 
 function createBot() {
@@ -27,6 +27,7 @@ function createBot() {
     bot.chatChannel = '986599157068361734';
     bot.client = client;
     bot.adminName = ['MoonX', 'MoonVN'];
+    bot.settings = settings;
 
     bot.notFoundPlayers = 'Không tìm thấy người chơi này.';
 

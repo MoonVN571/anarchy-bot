@@ -44,15 +44,40 @@ async function sendGlobalChat(bot, content, username, message) {
 
     if(content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
 
-    if(color == livechat_color.dead) {
+    if(!bot.settings.dev && color == livechat_color.dead) {
         let deathsRegex = require('../set').stats.deaths;
         let killBeforeRegex = require('../set').stats.killBef;
         let killAfterRegex = require('../set').stats.killAft;
 
 		if(content.match(deathsRegex)) {
-			let playerList = Object.values(bot.players).map(d => d.username);
 			let username = content.split(" ")[0];
-            // console.log(content.match(deathsRegex));
+            saveDeaths(username);
+        }
+
+        if(logger.match(killBeforeRegex)) {
+			let usernameList = content.match(killAfterRegex);
+            let uname = usernameList[1];
+
+            if(uname.includes('\'')) uname = uname.split('\'')[0];
+
+			saveKills(usernameList[1]);
+			saveDeaths(usernameList[2]);
+		}
+
+		if(content.match(killAfterRegex)) {
+			let usernameList = content.match(killAfterRegex);
+            let uname = usernameList[2];
+
+            if(uname.includes('\'')) uname = uname.split('\'')[0];
+
+			saveDeaths(usernameList[1]);
+            saveKills(uname);
+		}
+
+        async function saveDeaths(username) {
+            let playerList = Object.values(bot.players).map(d => d.username);
+
+            if(playerList.indexOf(username) < 0) return;
 
             let kdData = await kd.findOne({username:username});
             if(!kdData) return kd.create({username:username,deaths:1,kills:0});
@@ -62,37 +87,18 @@ async function sendGlobalChat(bot, content, username, message) {
                 kdData.save();
             }
         }
-        /*
-		if(logger.match(killBeforeRegex)) {
-			let playerList = Object.values(bot.players).map(d => d.username);
-			let usernameList = logger.replace(killAfterRegex, ' | ').split(" | ");
 
-			if(playerList.indexOf(usernameList[1]) > -1) saveDead(usernameList[1], logger);
-			if(playerList.indexOf(usernameList[0]) > -1) saveKills(usernameList[0], logger);
-		}*/
+        async function saveKills(username) {
+            let playerList = Object.values(bot.players).map(d => d.username);
 
-		if(content.match(killAfterRegex)) {
-			let playerList = Object.values(bot.players).map(d => d.username);
-			let usernameList = content.match(killAfterRegex);
-            
-            // console.log(usernameList);
+            if(playerList.indexOf(username) < 0) return;
 
-			if(playerList.indexOf(usernameList[0]) > -1) {
-                let kdData1 = await kd.findOne({username:usernameList[1]});
-                if(!kdData1) return kd.create({username:usernameList[1],deaths:1,kills:0});
-                
-                kdData1.deaths += 1;
-                kdData1.save();
-            }
+            let kdData = await kd.findOne({username:username});
+            if(!kdData) return kd.create({username:username,deaths:0,kills:1});
 
-            if(playerList.indexOf(usernameList[1]) > -1) {
-                let kdData2 = await kd.findOne({username:usernameList[2]});
-                if(!kdData2) return kd.create({username:usernameList[2],deaths:0,kills:1});
-
-                kdData2.kills += 1; 
-                kdData2.save();
-            }
-		}
+            kdData.kills += 1; 
+            kdData.save();
+        }
     }
 
     if(color == livechat_color.system) serverMessageList.push({

@@ -16,7 +16,7 @@ module.exports = {
         }, 60 * 1000);
 
         setInterval(async() => {
-            if(bot.logged) {
+            if(!bot.settings.dev && bot.logged) {
                 let players = Object.values(bot.players).map(p => p.username);
                 players.forEach(async username => {
                     let ptData = await pt.findOne({username:username});
