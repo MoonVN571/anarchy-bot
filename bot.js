@@ -4,16 +4,31 @@ const { Collection } = require('discord.js');
 const { readdirSync } = require('fs');
 require('dotenv').config();
 
-const settings = {
-    botName: 'mo0nbot2',
+let config = {
+    botName: 'mo0nbot3',
     dev: false
+}
+
+let logChannel = '986601542981410816';
+if(config.dev) logChannel = '987204075164692551';
+
+let serverChnanel = '986807303565086781';
+if(config.dev) serverChnanel = '987204092113879040';
+
+let joinChannel = '986601627588894720';
+if(config.dev) joinChannel = '987204116839284756';
+
+let channel = {
+    log: logChannel,
+    server: serverChnanel,
+    join: joinChannel
 }
 
 function createBot() {
     const bot = m.createBot({
         host: '2y2c.oopsmc.net',
         port: 25565,
-        username: settings.botName,
+        username: config.botName,
         version: '1.16.5'
     });
 
@@ -23,11 +38,14 @@ function createBot() {
         bot.commands.set(cmdName.split(".")[0], require('./igCommands/'+cmdName));
     });
 
+    let chatChannel = '986599157068361734';
+    if(config.dev) chatChannel = '987204059838709780';
+
     bot.prefix = '!';
-    bot.chatChannel = '986599157068361734';
+    bot.chatChannel = chatChannel;
     bot.client = client;
     bot.adminName = ['MoonX', 'MoonVN'];
-    bot.settings = settings;
+    bot.config = config;
 
     bot.notFoundPlayers = 'Không tìm thấy người chơi này.';
 
@@ -37,6 +55,7 @@ function createBot() {
 
     // Join Leave
     bot.countPlayers = 0;
+
 
     readdirSync('./igEvents').forEach(eventName => {
         let event = require('./igEvents/'+eventName);
@@ -70,4 +89,4 @@ function createBot() {
     });
 }
 
-module.exports = { createBot, settings };
+module.exports = { createBot, config, channel };

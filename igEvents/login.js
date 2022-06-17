@@ -6,7 +6,7 @@ module.exports = {
     once: true,
     execute (bot) {
         console.log("Đã kết nối vào server!");
-    
+        
         bot.logged = true;
         bot.exited = false;
         bot.uptime = Date.now();
@@ -16,7 +16,7 @@ module.exports = {
         }, 60 * 1000);
 
         setInterval(async() => {
-            if(!bot.settings.dev && bot.logged) {
+            if(!bot.config.dev && bot.logged) {
                 let players = Object.values(bot.players).map(p => p.username);
                 players.forEach(async username => {
                     let ptData = await pt.findOne({username:username});
@@ -27,9 +27,9 @@ module.exports = {
             }
         }, 2 * 60 * 1000);
 
-        sendBotLog('join', `Bot đang vào server..`);
+        sendBotLog('join', `Bot đã kết nối đến server!`);
 
-        sendGlobalChat('☘️ Đang vào server.. ☘️','','');
+        sendGlobalChat(bot, '☘️ Bot đang vào server ☘️');
     }
 }
 

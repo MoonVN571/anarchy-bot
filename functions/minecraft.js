@@ -1,6 +1,7 @@
 const client = require('../index').discord;
 const { getDorHMS } = require('./utils');
 const kd = require('../db/stats');
+const globalChnanel = require('../bot').channel;
 
 let livechat_color = {
     default: 0x979797,
@@ -37,14 +38,14 @@ async function sendGlobalChat(bot, content, username, message) {
 
     if(fetchData(content)) color = livechat_color.dead;
 
-    if(username == require('../bot').settings.botName) color = livechat_color.chatbot;
+    if(username == bot.config.botName) color = livechat_color.chatbot;
 
     if(content.startsWith("☘️")) color = botlog_color.join_log;
     if(content.startsWith("🏮")) color = botlog_color.disconnect_log;
 
     if(content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
 
-    if(!bot.settings.dev && color == livechat_color.dead) {
+    if(!bot.config.dev && color == livechat_color.dead) {
         let deathsRegex = require('../set').stats.deaths;
         let killBeforeRegex = require('../set').stats.killBef;
         let killAfterRegex = require('../set').stats.killAft;
@@ -131,7 +132,7 @@ function sendCustomMessage(type, content) {
     let color = livechat_color.system;
     let channel;
 
-    if(type == 'connect') channel = '986601627588894720';
+    if(type == 'connect') channel = globalChnanel.join;
     // if(type == 'donator') channel = '838711105278705695'; 
     // if(type == 'tps') channel = '852158457624657941';
     // if(type == 'oldfag')channel = '807506107840856064';
@@ -160,7 +161,7 @@ function sendBotLog(type, content) {
     if(type=='disconnect') color = botlog_color.disconnect_log;
 
 
-    client.channels.cache.get('986601542981410816').send({
+    client.channels.cache.get(globalChnanel.log).send({
         embeds:[{
             description: chat,
             color: color
