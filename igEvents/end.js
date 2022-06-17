@@ -6,6 +6,7 @@ module.exports = {
         console.log("Bot đã mất kết nối");
 
         bot.exited = true;
+        bot.uptime = 0;
 
         setTimeout(() => {
             require('../bot.js').createBot();
