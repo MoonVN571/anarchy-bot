@@ -35,6 +35,8 @@ async function sendGlobalChat(bot, content, username, message) {
     }
 
     if(!content) return;
+    content = content.replace('[DM] ' , '');
+
 
     if(fetchData(content)) color = livechat_color.dead;
 
@@ -49,7 +51,6 @@ async function sendGlobalChat(bot, content, username, message) {
         let deathsRegex = require('../set').stats.deaths;
         let killBeforeRegex = require('../set').stats.killBef;
         let killAfterRegex = require('../set').stats.killAft;
-        content = content.replace('[DM] ' , '');
 
 		if(content.match(deathsRegex)) {
 			let username = content.split(" ")[0];
