@@ -5,8 +5,8 @@ const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: 'mo0nbot2',
-    dev: false
+    botName: 'mo0nbot3',
+    dev: true
 }
 
 let logChannel = '986601542981410816';
@@ -26,10 +26,10 @@ let channel = {
 
 function createBot() {
     const bot = m.createBot({
-        host: '2y2c.oopsmc.net',
+        host: process.env.IP, // 2y2c.asia
         port: 25565,
         username: config.botName,
-        version: '1.16.5'
+        version: '1.12.2'
     });
 
     bot.commands = new Collection();
@@ -51,7 +51,7 @@ function createBot() {
 
     bot.exited = false;
     bot.logged = false;
-    bot.uptime = null;
+    bot.uptime = 0;
 
     // Join Leave
     bot.countPlayers = 0;

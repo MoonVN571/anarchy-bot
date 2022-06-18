@@ -35,8 +35,6 @@ async function sendGlobalChat(bot, content, username, message) {
     }
 
     if(!content) return;
-    content = content.replace('[DM] ' , '');
-
 
     if(fetchData(content)) color = livechat_color.dead;
 
@@ -117,13 +115,13 @@ async function sendGlobalChat(bot, content, username, message) {
     });
 
     if(serverMessageList.length == 5) {
-        client.channels.cache.get('986807303565086781').send({
+        client.channels.cache.get(globalChnanel.server).send({
             embeds: serverMessageList
         }).catch(()=>{});
         serverMessageList = [];
     }
     if(messageList.length == 5) {
-        client.channels.cache.get('986599157068361734').send({
+        client.channels.cache.get(bot.chatChannel).send({
             embeds: messageList
         }).catch(()=>{});
         messageList = [];
