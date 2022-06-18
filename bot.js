@@ -5,8 +5,8 @@ const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: 'mo0nbot3',
-    dev: true
+    botName: 'mo0nbot2',
+    dev: false
 }
 
 let logChannel = '986601542981410816';
