@@ -5,7 +5,7 @@ const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: 'mo0nbot2',
+    botName: 'mo0nbot3',
     dev: false
 }
 
