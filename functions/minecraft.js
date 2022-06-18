@@ -61,13 +61,13 @@ async function sendGlobalChat(bot, content, username, message) {
 
             if(uname.includes('\'')) uname = uname.split('\'')[0];
 
-			saveKills(usernameList[1]);
-			saveDeaths(usernameList[2]);
+			saveKills(usernameList[2]);
+			saveDeaths(usernameList[3]);
 		}
 
 		if(content.match(killAfterRegex)) {
 			let usernameList = content.match(killAfterRegex);
-            let uname = usernameList[2];
+            let uname = usernameList[3];
 
             if(uname.includes('\'')) uname = uname.split('\'')[0];
 
