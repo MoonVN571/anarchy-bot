@@ -51,8 +51,8 @@ async function sendGlobalChat(bot, content, username, message) {
         let killAfterRegex = require('../set').stats.killAft;
 
 		if(content.match(deathsRegex)) {
-			let username = content.split(" ")[0];
-            saveDeaths(username);
+			let username = content.match(deathsRegex);
+            saveDeaths(username[2]);
         }
 
         if(logger.match(killBeforeRegex)) {

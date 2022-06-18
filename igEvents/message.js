@@ -2,7 +2,7 @@ const { sendGlobalChat } = require('../functions/minecraft');
 module.exports = {
     name: 'message',
     execute (bot, msg) {
-        let content = msg.toString().replace("[DM]  ").toString();
+        let content = msg.toString();
 
         let username = '';
         if(content.startsWith('<')) username = content.slice(1).split("> ")[0];
