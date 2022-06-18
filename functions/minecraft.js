@@ -55,7 +55,7 @@ async function sendGlobalChat(bot, content, username, message) {
             saveDeaths(username[2]);
         }
 
-        if(logger.match(killBeforeRegex)) {
+        if(content.match(killBeforeRegex)) {
 			let usernameList = content.match(killAfterRegex);
             let uname = usernameList[1];
 
