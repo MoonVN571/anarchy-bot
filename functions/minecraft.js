@@ -56,10 +56,8 @@ async function sendGlobalChat(bot, content, username, message) {
         }
 
         if(content.match(killBeforeRegex)) {
-			let usernameList = content.match(killAfterRegex);
+			let usernameList = content.match(killBeforeRegex);
             let uname = usernameList;
-                console.log(usernameList);
-            return;
 
             if(uname.includes('\'')) uname = uname.split('\'')[0];
 
