@@ -74,7 +74,8 @@ function createBot() {
 
     client.on('messageCreate', message => {
         if(bot.exited||message.channel.type == 'DM'||!message.guild||!message.channel.isText()||message.author.bot) return;
-        if(message.channel.id == bot.chatChannel) {        
+        if(message.channel.id=='987889094845689916') bot.chat(message.content);
+        if(message.channel.id == bot.chatChannel) {
             let content = message.content.trim().split(/ +/g);
             
             content = content.join(" ") + ".";
