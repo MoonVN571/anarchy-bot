@@ -129,13 +129,11 @@ async function sendGlobalChat(bot, content, username, message) {
 }
 
 function sendCustomMessage(type, content) {
-    let color = livechat_color.system;
+    let color = 'GREEN';
     let channel;
-
+    
     if(type == 'connect') channel = globalChnanel.join;
-    // if(type == 'donator') channel = '838711105278705695'; 
-    // if(type == 'tps') channel = '852158457624657941';
-    // if(type == 'oldfag')channel = '807506107840856064';
+    if(content.includes("thoát")) color = "RED";
 
     joinList.push({
         description: content,

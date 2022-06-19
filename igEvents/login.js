@@ -7,7 +7,6 @@ module.exports = {
     execute (bot) {
         console.log("Đã kết nối vào server!");
         
-        bot.logged = true;
         bot.exited = false;
         bot.uptime = Date.now();
 
