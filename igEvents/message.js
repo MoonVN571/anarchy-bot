@@ -10,7 +10,8 @@ module.exports = {
 
         let userMessage = '';
         if(content.startsWith("<")) userMessage = content.split(" ").slice(1).join(" ");
-        
+        if(!content.split(' ')[0].endsWith(">")) userMessage = content.split(" ").slice(2).join(" ");
+
         sendGlobalChat(bot, content, username, userMessage);
 
         if(!userMessage.startsWith(bot.prefix)) return;
