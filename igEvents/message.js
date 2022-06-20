@@ -6,10 +6,11 @@ module.exports = {
 
         let username = '';
         if(content.startsWith('<')) username = content.slice(1).split("> ")[0];
+        if(username.startsWith('[Donator] ')) username = username.split('[Donator] ')[1];
 
         let userMessage = '';
         if(content.startsWith("<")) userMessage = content.split(" ").slice(1).join(" ");
-
+        
         sendGlobalChat(bot, content, username, userMessage);
 
         if(!userMessage.startsWith(bot.prefix)) return;
