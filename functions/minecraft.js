@@ -73,17 +73,13 @@ async function sendGlobalChat(bot, content, username, message) {
             embeds: messageList
         }).catch(()=>{});
         
-        client.guilds.cache.forEach(async guild => {
-            const serverData = await setup.findOne({guildId:guild.id});
-            if(!serverData) return await setup.create({guildId:guild.id,livechat:undefined});
+        let channel = (await setup.find()).map(d=>d).filter(d=>d.livechat);
 
-            if(serverData.livechat) {
-                client.channels.cache.get(serverData.livechat).send({
-                    embeds: messageList
-                }).catch(()=>{});
-            }
+        channel.forEach(ch=> {
+            client.channels.cache.get(ch.livechat).send({
+                embeds: messageList
+            }).catch(()=>{});
         });
-
         messageList = [];
     }
 }

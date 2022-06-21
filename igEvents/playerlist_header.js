@@ -23,6 +23,8 @@ module.exports = {
             let header = cleanArray(parsedHeader?.text);
             let footer = cleanArray(parsedFooter?.text);
 
+            if(!header) return;
+
             let completeStr = footer[1] +
             "\n- Đã vào server từ "+ getUptime(bot, 'vi') + 
             " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
