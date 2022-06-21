@@ -16,7 +16,7 @@ module.exports = {
     async execute(bot, username, args) {
         let name = args[0] || username;
         
-        let res = /^[a-zA-Z]+$/.test('name');
+        let res = /^[a-zA-Z]+$/.test(name);
         if(!res) name = username;
 
         let seenData = await seen.findOne({username:name});

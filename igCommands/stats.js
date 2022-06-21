@@ -15,14 +15,11 @@ module.exports = {
     async execute(bot, username, args) {
         let name = args[0] || username;
         
-        let res = /^[a-zA-Z]+$/.test('name');
+        let res = /^[a-zA-Z]+$/.test(name);
         if(!res) name = username;
 
         let kdData = await kd.findOne({username:name});
-        if(!kdData) {
-            kdData.deaths = 0;
-            kdData.kills = 0;
-        }
+        if(!kdData) kd.create({username:name,kills:0,deaths:0});
 
 
         let kills = kdData.kills || 0;
