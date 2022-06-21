@@ -88,7 +88,7 @@ async function sendGlobalChat(bot, content, username, message) {
     }
 }
 
-function saveStats(content) {
+function saveStats(bot, content) {
     let deathsRegex = require('../set').stats.deaths;
     let killBeforeRegex = require('../set').stats.killBef;
     let killAfterRegex = require('../set').stats.killAft;
