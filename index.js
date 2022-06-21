@@ -6,10 +6,14 @@ const client = new Client({
     ]
 });
 
+const config = {
+    prefix: '$'
+};
+
 module.exports.discord = client;
 
 client.commands = new Collection();
-
+client.config = config;
 
 // Load env
 require('dotenv').config();

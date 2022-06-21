@@ -6,7 +6,8 @@ require('dotenv').config();
 
 let config = {
     botName: 'mo0nbot5',
-    dev: false
+    dev: false,
+    minecraftPrefix: '!'
 }
 
 let logChannel = '986601542981410816';
@@ -41,7 +42,7 @@ function createBot() {
     let chatChannel = '986599157068361734';
     if(config.dev) chatChannel = '987204059838709780';
 
-    bot.prefix = '!';
+    bot.prefix = config.minecraftPrefix;
     bot.chatChannel = chatChannel;
     bot.client = client;
     bot.adminName = ['MoonX', 'MoonVN'];
