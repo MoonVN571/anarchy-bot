@@ -47,7 +47,7 @@ async function sendGlobalChat(bot, content, username, message) {
     if(content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
 
     if(!bot.config.dev && color == livechat_color.dead) {
-        saveStats(content);
+        saveStats(bot, content);
     }
 
     if(color == livechat_color.system) serverMessageList.push({
