@@ -3,7 +3,7 @@ function legitNumber (value, length) {
     return `${value}`.padStart(length, 0);
 }
 
-function getDorHMS(temp, vi){
+function getDorHMS(temp, vi, fulltime){
 
     let days = parseInt(temp / 86400),
     hours = parseInt(((temp - days * 86400) / 3600)),
@@ -18,7 +18,8 @@ function getDorHMS(temp, vi){
     if(minutes>0) format = format+minutes+str[1] + " ";
     if(seconds>0) format = format+seconds+str[2];
 
-    if(days>0) return days + str[3];
+    if(fulltime) format = days + str[3] + format;
+    if(!fulltime&days>0) return days + str[3];
     return format.trim()
 }
 

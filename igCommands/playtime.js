@@ -1,7 +1,7 @@
 const { Bot } = require('mineflayer');
 const pt = require('../db/playtime');
 const {  } = require('../functions/minecraft');
-const { getDorHMS, legitNumber } = require('../functions/utils');
+const { getDorHMS } = require('../functions/utils');
 
 module.exports = {
     name: 'playtime',
@@ -23,6 +23,6 @@ module.exports = {
         if(!ptData) return bot.sendMessage('whisper', bot.notFoundPlayers);
         
         bot.sendMessage('whisper', name+' : ' 
-        + legitNumber(getDorHMS(ptData.time/1000, true)));
+        + getDorHMS(ptData.time/1000, true, true));
     }
 }
