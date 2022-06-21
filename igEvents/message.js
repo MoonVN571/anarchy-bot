@@ -23,17 +23,17 @@ module.exports = {
 
         if(!cmd) return;
 
-        if(cmd.admin){
-            if(bot.adminName.indexOf(username) > -1) cmd.execute(bot, username, args);
-            else return;
-        }
-
         bot.sendMessage = sendMessage;
         function sendMessage (type, message) {
             // console.log(message);
             // TODO
             if(type == 'whisper') return bot.chat(`/msg ${username} ${message}`);
             if(!message) return bot.chat(type); // message instead
+        }
+
+        if(cmd.admin){
+            if(bot.adminName.indexOf(username) > -1) cmd.execute(bot, username, args);
+            else return;
         }
 
         cmd.execute(bot, username, args);

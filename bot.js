@@ -49,6 +49,7 @@ function createBot() {
 
     bot.notFoundPlayers = 'Không tìm thấy người chơi này.';
 
+    bot.mainServer = false;
     bot.exited = false;
     bot.logged = false;
     bot.uptime = 0;

@@ -27,7 +27,7 @@ module.exports = {
             "\n- Đã vào server từ "+ getUptime(bot, 'vi') + 
             " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
 
-            bot.client.channels.cache.get(bot.chatChannel).setTopic(completeStr);
+            if(bot.mainServer) bot.client.channels.cache.get(bot.chatChannel).setTopic(completeStr);
         }
     }
 }
