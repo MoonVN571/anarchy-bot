@@ -1,4 +1,3 @@
-const { sendBotLog, sendGlobalChat } = require('../functions/minecraft');
 const pt = require('../db/playtime');
 
 module.exports = {
@@ -30,11 +29,6 @@ module.exports = {
                 });
             }
         }, 2 * 60 * 1000);
-
-        if(!bot.logged) return;
-
-        sendBotLog('join', `Bot đã kết nối đến server!`);
-        sendGlobalChat(bot, '☘️ Bot đang vào server ☘️');
     }
 }
 
