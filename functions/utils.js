@@ -18,7 +18,7 @@ function getDorHMS(temp, vi, fulltime){
     if(minutes>0) format = format+minutes+str[1] + " ";
     if(seconds>0) format = format+seconds+str[2];
 
-    if(fulltime) format = days + str[3] + " " + format;
+    if(fulltime&&days>0) format = days + str[3] + " " + format;
     if(!fulltime&days>0) return days + str[3];
     return format.trim()
 }
