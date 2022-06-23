@@ -61,17 +61,19 @@ function createBot() {
 
     readdirSync('./igEvents').forEach(eventName => {
         let event = require('./igEvents/'+eventName);
-        if (event.other && event.once) {
-            bot._client.once(event.name, (...args) => event.execute(bot, ...args));
-        } else if (event.other && !event.once) {
-            bot._client.on(event.name, (...args) => event.execute(bot, ...args));
-        } else {
-            if (event.once) {
-                bot.once(event.name, (...args) => event.execute(bot, ...args));
+        setTimeout(() => {
+            if (event.other && event.once) {
+                bot._client.once(event.name, (...args) => event.execute(bot, ...args));
+            } else if (event.other && !event.once) {
+                bot._client.on(event.name, (...args) => event.execute(bot, ...args));
             } else {
-                bot.on(event.name, (...args) => event.execute(bot, ...args));
+                if (event.once) {
+                    bot.once(event.name, (...args) => event.execute(bot, ...args));
+                } else {
+                    bot.on(event.name, (...args) => event.execute(bot, ...args));
+                }
             }
-        }
+        }, event.timeout);
     });
 
     client.on('messageCreate', message => {
