@@ -94,6 +94,7 @@ async function sendGlobalChat(bot, content, username, message, waitMessage) {
                 embeds: messageList
             }).catch(()=>{});
         });
+        messageList = [];
     }
 }
 
