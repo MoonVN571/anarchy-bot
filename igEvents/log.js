@@ -5,6 +5,5 @@ module.exports = {
     once: true,
     execute (bot) {
         sendBotLog('join', `Bot đã kết nối đến server!`);
-        sendGlobalChat(bot, '☘️ Bot đang vào server ☘️', undefined, undefined, true);
     }
 }
