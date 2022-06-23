@@ -69,7 +69,7 @@ async function sendGlobalChat(bot, content, username, message, waitMessage) {
         serverMessageList = [];
     }
     
-    if(!waitMessage && messageList.length == 5) {
+    if(waitMessage) {
         client.channels.cache.get(bot.chatChannel).send({
             embeds: messageList
         }).catch(()=>{});
@@ -82,7 +82,7 @@ async function sendGlobalChat(bot, content, username, message, waitMessage) {
             }).catch(()=>{});
         });
         messageList = [];
-    } else {
+    } else if(messageList.length == 5) {
         client.channels.cache.get(bot.chatChannel).send({
             embeds: messageList
         }).catch(()=>{});

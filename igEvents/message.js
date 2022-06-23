@@ -1,7 +1,7 @@
 const { sendGlobalChat } = require('../functions/minecraft');
 module.exports = {
     name: 'message',
-    timeout: 3000,
+    timeout: 7000,
     execute (bot, msg) {
         let content = msg.toString();
 
