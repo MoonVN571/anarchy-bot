@@ -5,9 +5,9 @@ module.exports = {
     once: true,
     execute (bot) {
        setTimeout(()=> {
-       if(!bot.logged) return;
-        sendBotLog('join', `Bot đã kết nối đến server!`);
-        sendGlobalChat(bot, '☘️ Bot đang vào server ☘️');
+        if(!bot.logged) return;
+            sendBotLog('join', `Bot đã kết nối đến server!`);
+            sendGlobalChat(bot, '☘️ Bot đang vào server ☘️', undefined, undefined, true);
        },1000)
     }
 }

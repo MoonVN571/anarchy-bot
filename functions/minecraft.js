@@ -23,7 +23,7 @@ let messageList = [];
 let serverMessageList = [];
 let joinList = [];
 
-async function sendGlobalChat(bot, content, username, message) {
+async function sendGlobalChat(bot, content, username, message, waitMessage) {
     let color = livechat_color.default;
 
     let chat = `**<${username}>** ${message}`;
@@ -62,13 +62,14 @@ async function sendGlobalChat(bot, content, username, message) {
         timestamp: new Date()
     });
 
-    if(serverMessageList.length == 5) {
+    if(!waitMessage && serverMessageList.length == 5) {
         client.channels.cache.get(globalChnanel.server).send({
             embeds: serverMessageList
         }).catch(()=>{});
         serverMessageList = [];
     }
-    if(messageList.length == 5) {
+    
+    if(!waitMessage && messageList.length == 5) {
         client.channels.cache.get(bot.chatChannel).send({
             embeds: messageList
         }).catch(()=>{});
@@ -81,6 +82,18 @@ async function sendGlobalChat(bot, content, username, message) {
             }).catch(()=>{});
         });
         messageList = [];
+    } else {
+        client.channels.cache.get(bot.chatChannel).send({
+            embeds: messageList
+        }).catch(()=>{});
+        
+        let channel = (await setup.find()).map(d=>d).filter(d=>d.livechat);
+
+        channel.forEach(ch=> {
+            client.channels.cache.get(ch.livechat).send({
+                embeds: messageList
+            }).catch(()=>{});
+        });
     }
 }
 

@@ -10,11 +10,31 @@ module.exports = {
         bot.uptime = Date.now();
 
         setInterval(() => {
+            /*
             let players = Object.values(bot.players).map(p => p.username);
             let username = players[Math.floor(Math.random()*players.length)-1];
             
             if(username) bot.whisper(username, 'Hi');
             else bot.chat('Hi everyone! [' + Math.floor(Math.random()*99+10) + ']');
+            */
+            
+            bot.setControlState('forward', true);
+            setTimeout(() => {
+                bot.setControlState('forward', false);
+                bot.setControlState('back', true);
+                setTimeout(() => {
+                    bot.setControlState('back', false);
+                    bot.setControlState('right', true);
+                    setTimeout(() => {
+                        bot.setControlState('right', false);
+                        bot.setControlState('left', true);
+                        setTimeout(() => {
+                            bot.setControlState('left', false);
+                            bot.clearControlStates();
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
         }, 3 * 60 * 1000);
 
         setInterval(async() => {

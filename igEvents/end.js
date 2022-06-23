@@ -14,7 +14,7 @@ module.exports = {
         
         sendBotLog('disconnect', `Bot đã mất kết nối đến server. Kết nối lại sau 3 phút.\nThời gian trong server là ${getUptime(bot, 'vi')}`);
 
-        sendGlobalChat('🏮 Bot đã mất kết nối đến server. 🏮');
+        sendGlobalChat(bot, '🏮 Bot đã mất kết nối đến server. 🏮', false);
         bot.exited = true;
         bot.uptime = 0;
     }
