@@ -5,19 +5,25 @@ const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: 'mo0nbot5',
+    botName: 'mo0nbot',
     dev: false,
     minecraftPrefix: '!'
 }
 
-let logChannel = '986601542981410816';
+let logChannel = '';
 if(config.dev) logChannel = '987204075164692551';
 
-let serverChnanel = '986807303565086781';
+let serverChnanel = '';
 if(config.dev) serverChnanel = '987204092113879040';
 
-let joinChannel = '986601627588894720';
+let joinChannel = '';
 if(config.dev) joinChannel = '987204116839284756';
+
+let chatChannel = '';
+if(config.dev) chatChannel = '987204059838709780';
+
+let cmdChannel = '';
+if(config.dev) cmdChannel = '';
 
 let channel = {
     log: logChannel,
@@ -38,9 +44,6 @@ function createBot() {
     readdirSync('./igCommands').forEach(cmdName => {
         bot.commands.set(cmdName.split(".")[0], require('./igCommands/'+cmdName));
     });
-
-    let chatChannel = '986599157068361734';
-    if(config.dev) chatChannel = '987204059838709780';
 
     bot.prefix = config.minecraftPrefix;
     bot.chatChannel = chatChannel;
@@ -78,8 +81,8 @@ function createBot() {
 
     client.on('messageCreate', message => {
         if(bot.exited||message.channel.type == 'DM'||!message.guild||!message.channel.isText()||message.author.bot) return;
-        if(message.channel.id=='987889094845689916') bot.chat(message.content);
-        if(message.channel.id == bot.chatChannel) {
+        if(message.channel.id=='') bot.chat(message.content);
+        if(message.channel.id == chatChannel) {
             let content = message.content.trim().split(/ +/g);
             
             content = content.join(" ") + ".";
