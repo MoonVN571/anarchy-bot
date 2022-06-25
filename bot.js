@@ -33,7 +33,7 @@ let channel = {
 
 function createBot() {
     const bot = m.createBot({
-        host: process.env.IP, // 2y2c.asia
+        host: process.env.IP,
         port: 25565,
         username: config.botName,
         version: '1.12.2'
