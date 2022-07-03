@@ -7,7 +7,7 @@ module.exports = {
     execute (bot, data) {
         if(!main) {
             main=true;
-            setTimeout(()=>main=false, 5*60*1000);
+            setTimeout(()=>main=false, 2*1000+5*60*1000);
         
             let parsedHeader = JSON.parse(data.header);
             let parsedFooter = JSON.parse(data.footer);
