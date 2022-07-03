@@ -26,7 +26,7 @@ module.exports = {
 
         bot.sendMessage('whisper', name+' : '
         + legitNumber(date.getDate(),2)
-        + '.' + legitNumber(date.getMonth()-1,2)
+        + '.' + legitNumber(date.getMonth()+1,2)
         + '.' + date.getFullYear() + ' - '
         + legitNumber(getDorHMS((Date.now()-seenData.time)/1000, true))
         + ' trước');

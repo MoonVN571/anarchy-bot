@@ -24,11 +24,9 @@ module.exports = {
         
         let date = new Date(jdData.time)
 
-        console.log(jdData.time, Date.now());
-
         bot.sendMessage('whisper', name+' : '
         + legitNumber(date.getDate(),2)
-        + '.' + legitNumber(date.getMonth()-1,2)
+        + '.' + legitNumber(date.getMonth()+1,2)
         + '.' + date.getFullYear() + ' - '
         + legitNumber(getDorHMS((Date.now()-jdData.time)/1000, true))
         + ' trước');

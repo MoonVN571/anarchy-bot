@@ -5,30 +5,32 @@ const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: 'mo0nbot',
+    botName: 'mo0nbot2',
     dev: false,
     minecraftPrefix: '!'
 }
 
-let logChannel = '';
-if(config.dev) logChannel = '987204075164692551';
-
-let serverChnanel = '';
-if(config.dev) serverChnanel = '987204092113879040';
-
-let joinChannel = '';
-if(config.dev) joinChannel = '987204116839284756';
-
-let chatChannel = '';
+let chatChannel = '986599157068361734';
 if(config.dev) chatChannel = '987204059838709780';
 
-let cmdChannel = '';
-if(config.dev) cmdChannel = '';
+let logChannel = '986601542981410816';
+if(config.dev) logChannel = '987204075164692551';
+
+let joinChannel = '986601627588894720';
+if(config.dev) joinChannel = '987204116839284756';
+
+let serverChnanel = '986807303565086781';
+if(config.dev) serverChnanel = '987204092113879040';
+
+
+let cmdChannel = '987889094845689916';
+if(config.dev) cmdChannel = '990104136018182154';
 
 let channel = {
+    chat: chatChannel,
     log: logChannel,
-    server: serverChnanel,
-    join: joinChannel
+    join: joinChannel,
+    server: serverChnanel
 }
 
 function createBot() {
@@ -36,7 +38,7 @@ function createBot() {
         host: process.env.IP,
         port: 25565,
         username: config.botName,
-        version: '1.12.2'
+        version: '1.16.5'
     });
 
     bot.commands = new Collection();
@@ -57,6 +59,7 @@ function createBot() {
     bot.exited = false;
     bot.logged = false;
     bot.uptime = 0;
+    bot.queueTime = 0;
 
     // Join Leave
     bot.countPlayers = 0;

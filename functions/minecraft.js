@@ -50,24 +50,19 @@ async function sendGlobalChat(bot, content, username, message, waitMessage) {
         saveStats(bot, content);
     }
 
-    if(color == livechat_color.system) serverMessageList.push({
-        description: chat,
-        color: color,
-        timestamp: new Date()
-    });
-
     messageList.push({
         description: chat,
         color: color,
         timestamp: new Date()
     });
 
-    if(!waitMessage && serverMessageList.length == 5) {
-        client.channels.cache.get(globalChnanel.server).send({
-            embeds: serverMessageList
-        }).catch(()=>{});
-        serverMessageList = [];
-    }
+    if(color == livechat_color.system) client.channels.cache.get(globalChnanel.server).send({
+        embeds: [{
+            description: chat,
+            color: color,
+            timestamp: new Date()
+        }]
+    }).catch(()=>{});
     
     if(waitMessage) {
         client.channels.cache.get(bot.chatChannel).send({
@@ -76,7 +71,7 @@ async function sendGlobalChat(bot, content, username, message, waitMessage) {
         
         let channel = (await setup.find()).map(d=>d).filter(d=>d.livechat);
 
-        channel.forEach(ch=> {
+        if(channel?.length != 0) channel.forEach(ch=> {
             client.channels.cache.get(ch.livechat).send({
                 embeds: messageList
             }).catch(()=>{});

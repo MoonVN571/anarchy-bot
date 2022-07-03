@@ -1,6 +1,6 @@
 const { Bot } = require('mineflayer');
 module.exports = {
-    name: 'ping',
+    name: 'reload',
     aliases: [],
     admin: true,
     /**
@@ -10,7 +10,6 @@ module.exports = {
      * @param {String[]} args 
      */
     async execute(bot, username, args) {
-        // bot.sendMessage('whisper', 'quit');
-        bot.quit();
+        bot.quit('force');
     }
 }

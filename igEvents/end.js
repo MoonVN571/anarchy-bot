@@ -1,19 +1,22 @@
-const { sendBotLog, sendGlobalChat, getUptime } = require('../functions/minecraft');
+const { sendBotLog, getUptime } = require('../functions/minecraft');
 
 module.exports = {
     name: 'end',
-    execute (bot) {
+    execute (bot, reason) {
         console.log("Bot đã mất kết nối");
         
-        setTimeout(() => {
+        if(reason !== 'force') setTimeout(create,  3 * 60 * 1000);
+        else create();
+
+        function create() {
             require('../bot.js').createBot();
-        },  3 * 60 * 1000);
+        }
 
         if(!bot.logged) return;
-        bot.logged = false;
         
         sendBotLog('disconnect', `Bot đã mất kết nối đến server. Kết nối lại sau 3 phút.\nThời gian trong server là ${getUptime(bot, 'vi')}`);
 
+        bot.logged = false;
         bot.exited = true;
         bot.uptime = 0;
     }
