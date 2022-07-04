@@ -32,6 +32,7 @@ async function sendGlobalChat(bot, content, username, message, waitMessage) {
 
     if(!username) {
         color = livechat_color.system;
+        console.log(chat,content)
         chat = content;
     }
 
