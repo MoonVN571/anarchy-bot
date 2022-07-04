@@ -4,7 +4,7 @@ module.exports = {
     timeout: 7000,
     execute (bot, msg) {
         let content = msg.toString();
-
+        console.log(content)
         let username = '';
         if(content.startsWith('<')) username = content.slice(1).split("> ")[0];
         if(username.startsWith('[Donator] ')) username = username.split('[Donator] ')[1];
