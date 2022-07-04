@@ -22,6 +22,7 @@ let botlog_color = {
 
 let messageList = [];
 let joinList = [];
+let serverList = [];
 
 async function sendGlobalChat(bot, content, username, message) {
     /*console.log({
@@ -61,17 +62,19 @@ async function sendGlobalChat(bot, content, username, message) {
         timestamp: new Date()
     });
 
+    if(!chat.includes("has made the advancement")
+    && color == livechat_color.system) serverList.push({
+        description: chat,
+        color: color,
+        timestamp: new Date()
+    });
+
     // Log message để thêm vào death message list
-    if(color == livechat_color.system
-        && !chat.includes("has made the advancement")
-        ) {
+    if(serverList.length == 5) {
         client.channels.cache.get(globalChnanel.server).send({
-            embeds: [{
-                description: chat,
-                color: color,
-                timestamp: new Date()
-            }]
-        })
+            embeds: serverList
+        });
+        serverList = [];
     }
     
     if(messageList.length == 5) {
@@ -87,7 +90,7 @@ async function sendGlobalChat(bot, content, username, message) {
 
         // Lấy tất cả channel đã setup và cho thành array
         let channel = (await setup.find()).map(d=>d).filter(d=>d.livechat);
-        if(!channel || channel.length == 0) return;
+        if(!channel || channel.length == 0) return messageList = [];;
 
         channel.forEach(ch=> {
             let channelable = client.channels.cache.get(ch.livechat);

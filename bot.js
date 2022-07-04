@@ -5,7 +5,7 @@ const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: !main.config.dev ? "mo0nbot2" : "mo0not3",
+    botName: !main.config.dev ? "mo0nbot3" : "mo0bot4",
     dev: main.config.dev,
     minecraftPrefix: !main.config.dev ? "!" : "!!"
 }
