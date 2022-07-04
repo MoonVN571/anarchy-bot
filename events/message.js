@@ -1,4 +1,4 @@
-const client = require('../index').discord;
+const client = require('../index').client;
 const { Permissions } = require('discord.js');
 
 client.on('messageCreate',message=>{

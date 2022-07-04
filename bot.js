@@ -1,36 +1,21 @@
-const client = require('./index').discord;
+const main = require('./index');
 const m = require('mineflayer');
 const { Collection } = require('discord.js');
 const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: 'mo0nbot2',
-    dev: false,
-    minecraftPrefix: '!'
+    botName: !main.config.dev ? "mo0nbot2" : "mo0not3",
+    dev: main.config.dev,
+    minecraftPrefix: !main.config.dev ? "!" : "!!"
 }
 
-let chatChannel = '986599157068361734';
-if(config.dev) chatChannel = '987204059838709780';
-
-let logChannel = '986601542981410816';
-if(config.dev) logChannel = '987204075164692551';
-
-let joinChannel = '986601627588894720';
-if(config.dev) joinChannel = '987204116839284756';
-
-let serverChnanel = '986807303565086781';
-if(config.dev) serverChnanel = '987204092113879040';
-
-
-let cmdChannel = '987889094845689916';
-if(config.dev) cmdChannel = '990104136018182154';
-
 let channel = {
-    chat: chatChannel,
-    log: logChannel,
-    join: joinChannel,
-    server: serverChnanel
+    chat: !config.dev ? "986599157068361734" : "987204059838709780",
+    log: !config.dev ? "986601542981410816" : "987204075164692551",
+    join: !config.dev ? "986601627588894720" : "987204116839284756",
+    server: !config.dev ? "986807303565086781" : "987204092113879040",
+    commands: !config.dev ? "987889094845689916" : "990104136018182154"
 }
 
 function createBot() {
@@ -41,51 +26,46 @@ function createBot() {
         version: '1.16.5'
     });
 
-    bot.commands = new Collection();
-
-    readdirSync('./igCommands').forEach(cmdName => {
-        bot.commands.set(cmdName.split(".")[0], require('./igCommands/'+cmdName));
-    });
-
-    bot.prefix = config.minecraftPrefix;
-    bot.chatChannel = chatChannel;
-    bot.client = client;
-    bot.adminName = ['MoonX', 'MoonVN'];
-    bot.config = config;
-
+    // Chạm được nè
+    bot.adminName = ['MoonX', 'MoonVN', bot.username];
     bot.notFoundPlayers = 'Không tìm thấy người chơi này.';
+
+    // đừng đụng zô
+    bot.client = main.client;
+    bot.config = config;
 
     bot.mainServer = false;
     bot.exited = false;
     bot.logged = false;
+    bot.nextCheckTab = true;
     bot.uptime = 0;
     bot.queueTime = 0;
 
     // Join Leave
     bot.countPlayers = 0;
 
+    bot.commands = new Collection();
+    readdirSync('./igCommands').forEach(cmdName => {
+        bot.commands.set(cmdName.split(".")[0], require('./igCommands/'+cmdName));
+    });
 
     readdirSync('./igEvents').forEach(eventName => {
         let event = require('./igEvents/'+eventName);
-        setTimeout(() => {
-            if (event.other && event.once) {
-                bot._client.once(event.name, (...args) => event.execute(bot, ...args));
-            } else if (event.other && !event.once) {
-                bot._client.on(event.name, (...args) => event.execute(bot, ...args));
-            } else {
-                if (event.once) {
-                    bot.once(event.name, (...args) => event.execute(bot, ...args));
-                } else {
-                    bot.on(event.name, (...args) => event.execute(bot, ...args));
-                }
-            }
-        }, event.timeout);
+        if (event.other && event.once) {
+            bot._client.once(event.name, (...args) => event.execute(bot, ...args));
+        } else if (event.other && !event.once) {
+            bot._client.on(event.name, (...args) => event.execute(bot, ...args));
+        } else {
+            if (event.once) {
+                bot.once(event.name, (...args) => event.execute(bot, ...args));
+            } else bot.on(event.name, (...args) => event.execute(bot, ...args));
+        }
     });
 
-    client.on('messageCreate', message => {
+    main.client.on('messageCreate', message => {
         if(bot.exited||message.channel.type == 'DM'||!message.guild||!message.channel.isText()||message.author.bot) return;
-        if(message.channel.id==cmdChannel) bot.chat(message.content);
-        if(message.channel.id == chatChannel) {
+        if(message.channel.id==channel.commands) bot.chat(message.content);
+        if(message.channel.id == channel.chat) {
             let content = message.content.trim().split(/ +/g);
             
             content = content.join(" ") + ".";

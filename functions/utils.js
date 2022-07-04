@@ -1,8 +1,19 @@
-
+/**
+ * 
+ * @param {Number} value Number từ 0-9
+ * @param {Number} length Số số 0 VD: 1 return về 01
+ * @returns String
+ */
 function legitNumber (value, length) {
     return `${value}`.padStart(length, 0);
 }
-
+/**
+ * 
+ * @param {Number} temp Thời gian tính theo giây
+ * @param {Boolean} vi HMS hoặc giờ phút giây
+ * @param {Boolean} fulltime DHMS hoặc ngày giờ phút giây
+ * @returns String
+ */
 function getDorHMS(temp, vi, fulltime){
 
     let days = parseInt(temp / 86400),

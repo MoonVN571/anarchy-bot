@@ -1,4 +1,4 @@
-const client = require('../index').discord;
+const client = require('../index').client;
 const { readdirSync } = require('fs');
 
 readdirSync('./events/').forEach(eventName =>

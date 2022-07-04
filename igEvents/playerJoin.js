@@ -1,8 +1,10 @@
 const { sendCustomMessage } = require('../functions/minecraft');
 const seen = require('../db/seen');
 const jd = require('../db/joindate');
+
 module.exports = {
     name: 'playerJoined',
+
     async execute (bot, player) {
         // fix spam khi join
         bot.countPlayers++;

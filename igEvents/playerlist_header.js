@@ -1,14 +1,14 @@
 const { getUptime } = require("../functions/minecraft");
 
-let main = false;
 module.exports = {
     name: 'playerlist_header',
     other: true,
+    
     execute (bot, data) {
-        if(!main) {
-            main=true;
-            setTimeout(()=>main=false, 2*1000+5*60*1000);
-        
+        if(bot.nextCheckTab) {
+            setTimeout(()=>nextCheckTab=true, 5*60*1000);
+            bot.nextCheckTab = false;
+
             let parsedHeader = JSON.parse(data.header);
             let parsedFooter = JSON.parse(data.footer);
             
@@ -26,7 +26,7 @@ module.exports = {
             if(!header) return;
 
             let completeStr = footer[1] +
-            "\n- Đã vào server từ "+ getUptime(bot, 'vi') + 
+            "\n- Đã vào server từ "+ getUptime(bot, true) + 
             " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
 
             if(bot.mainServer) bot.client.channels.cache.get(bot.chatChannel).setTopic(completeStr);

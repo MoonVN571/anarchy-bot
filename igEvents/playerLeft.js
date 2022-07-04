@@ -1,7 +1,9 @@
 const { sendCustomMessage } = require('../functions/minecraft');
 const seen = require('../db/seen');
+
 module.exports = {
     name: 'playerLeft',
+    
     async execute (bot, player) {
         if (bot.countPlayers <= Object.values(bot.players).map(p => p.username).length) return;
 
@@ -12,6 +14,6 @@ module.exports = {
             seenData.save();
         }
 
-        sendCustomMessage('connect', player.username + ' đã thoát khỏi server.');
+        sendCustomMessage('disconnect', player.username + ' đã thoát khỏi server.');
     }
 }

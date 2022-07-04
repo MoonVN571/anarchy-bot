@@ -16,25 +16,25 @@ module.exports = {
         if(!message.guild.members.cache.get(message.author.id).permissions.has('ADMINISTRATOR'))
             return message.sendMessage("Bạn không có thẩm quyền để dùng lệnh này!");
 
-        if(!args[0]) return message.sendMessage('Cung cấp loại setup (livechat).');
-        if(!args[1]) return message.sendMessage('Cung cấp ID channel hoặc tag kênh để setup');
+        if(!args[0]) return message.sendMessage('Cung cấp loại setup. (livechat)');
+        if(!args[1]) return message.sendMessage('Cung cấp ID channel hoặc tag kênh để setup.');
 
         let serverData = await db.findOne({guildId:message.guildId});
         if(!serverData) await db.create({guildId:message.guildId,livechat:undefined});
+
+        function isValidChannel(data) {
+            if(!isNaN(data)) channel = client.channels.cache.get(data)?.id;
+            else channel = message.mentions.channels.first()?.id;
+            return channel;
+        }
 
         switch(args[0]) {
             case 'livechat': {
                 if(serverData.livechat) return message.sendMessage("Đã có setup livechat tại server này! Sử dụng ");
 
-                let channel;
-                if(!isNaN(args[1])) {
-                    channel = client.channels.cache.get(args[1])?.id;
-                } else {
-                    channel = message.mentions.channels.first()?.id;
-                }
-
+                let channel = isValidChannel(args[1]);
                 if(!channel) return message.sendMessage("Channel ID hoặc kênh tag không hợp lệ");
-
+            
                 let guildChannel = message.guild.channels.cache.get(channel);
                 if(!message.guild.me.permissionsIn(guildChannel).has('SEND_MESSAGES'))
                     return message.sendMessage('Bot không thể gửi tin nhắn trong kênh này!');
@@ -64,6 +64,5 @@ module.exports = {
             default:
                 return message.sendMessage('Không tìm thấy setting này (livechat/delete)');
         }
-
     }
 }

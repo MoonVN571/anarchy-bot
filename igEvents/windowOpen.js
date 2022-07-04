@@ -10,7 +10,7 @@ module.exports = {
         await bot.clickWindow(pin.slice(2,3),0,0);
         await bot.clickWindow(pin.slice(3,4),0,0);
 
-        setTimeout(() => { bot.chat('/2y2c'); }, 7*1000);
+        setTimeout(() => { bot.chat('/2y2c'); }, 10*1000);
 
         setTimeout(() => { bot.clickWindow(10,0,0) }, 15*1000);
 

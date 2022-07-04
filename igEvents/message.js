@@ -1,10 +1,11 @@
 const { sendGlobalChat } = require('../functions/minecraft');
+
 module.exports = {
     name: 'message',
-    timeout: 7000,
+
     execute (bot, msg) {
         let content = msg.toString();
-        console.log(content)
+
         let username = '';
         if(content.startsWith('<')) username = content.slice(1).split("> ")[0];
         if(username.startsWith('[Donator] ')) username = username.split('[Donator] ')[1];
@@ -14,6 +15,10 @@ module.exports = {
         if(!content.split(' ')[0].endsWith(">")) userMessage = content.split(" ").slice(2).join(" ");
 
         sendGlobalChat(bot, content, username, userMessage);
+
+        /**
+         *        COMMAND
+         */
 
         if(!userMessage.startsWith(bot.prefix)) return;
 
@@ -25,17 +30,12 @@ module.exports = {
         if(!cmd) return;
 
         bot.sendMessage = sendMessage;
-        function sendMessage (type, message) {
-            // console.log(message);
-            // TODO
+        function sendMessage(type, message) {
             if(type == 'whisper') return bot.chat(`/msg ${username} ${message}`);
             if(!message) return bot.chat(type); // message instead
         }
 
-        if(cmd.admin){
-            if(bot.adminName.indexOf(username) > -1) cmd.execute(bot, username, args);
-            else return;
-        }
+        if(cmd.admin && bot.adminName.indexOf(username) < 0) return;
 
         cmd.execute(bot, username, args);
     }

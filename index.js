@@ -7,10 +7,11 @@ const client = new Client({
 });
 
 const config = {
-    prefix: '$'
+    prefix: '$',
+    dev: false
 };
 
-module.exports.discord = client;
+module.exports = { client, config };
 
 client.commands = new Collection();
 client.config = config;
@@ -24,8 +25,6 @@ const mongoose = require('mongoose');
 mongoose.connect(process.env.MONGO_STRING).then(() => {
     console.log("Đã kết nối đến MongoDB!");
 });
-
-
 
 // LOAD event & command
 require('./handler/index');

@@ -1,4 +1,5 @@
-const client = require('../index').discord;
+const client = require('../index').client;
+const { Bot } = require('mineflayer');
 const { getDorHMS } = require('./utils');
 const kd = require('../db/stats');
 const setup = require('../db/setup');
@@ -20,80 +21,91 @@ let botlog_color = {
 }
 
 let messageList = [];
-let serverMessageList = [];
 let joinList = [];
 
-async function sendGlobalChat(bot, content, username, message, waitMessage) {
-    let color = livechat_color.default;
-
+async function sendGlobalChat(bot, content, username, message) {
+    /*console.log({
+        content: content,
+        username: username,
+        message: message
+    }) */
     let chat = `**<${username}>** ${message}`;
 
+    let color = livechat_color.default;
+
+    // Nếu message player = ">" color là xanh
     if(message?.startsWith(">")) color = livechat_color.highlight;
 
     if(!username) {
         color = livechat_color.system;
-        console.log(chat,content)
         chat = content;
     }
 
-    if(!content) return;
+    // Lưu lại KD của player nếu không phài dev mode
+    if(!bot.config.dev && color == livechat_color.dead) saveStats(bot, content);
 
-    if(fetchData(content)) color = livechat_color.dead;
+    // Check nếu tin nhắn là death message
+    if(isDeathMessage(content)) color = livechat_color.dead;
 
+    // Tin nhắn được gửi bởi bot
     if(username == bot.config.botName) color = livechat_color.chatbot;
 
-    if(content.startsWith("☘️")) color = botlog_color.join_log;
-    if(content.startsWith("🏮")) color = botlog_color.disconnect_log;
-
+    // Tin nhắn whisper của bot gửi và player nhắn cho bot
     if(content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
 
-    if(!bot.config.dev && color == livechat_color.dead) {
-        saveStats(bot, content);
-    }
 
+    // Push vào array embed, nếu trên x lần sẽ gửi vào kênh tránh ratelimit
     messageList.push({
         description: chat,
         color: color,
         timestamp: new Date()
     });
 
-    if(color == livechat_color.system) client.channels.cache.get(globalChnanel.server).send({
-        embeds: [{
-            description: chat,
-            color: color,
-            timestamp: new Date()
-        }]
-    }).catch(()=>{});
+    // Log message để thêm vào death message list
+    if(color == livechat_color.system
+        && !chat.includes("has made the advancement")
+        ) {
+        client.channels.cache.get(globalChnanel.server).send({
+            embeds: [{
+                description: chat,
+                color: color,
+                timestamp: new Date()
+            }]
+        })
+    }
     
-    if(waitMessage) {
-        client.channels.cache.get(bot.chatChannel).send({
+    if(messageList.length == 5) {
+        // Gửi message vào server dev của bot
+        client.channels.cache.get(globalChnanel.chat).send({
             embeds: messageList
-        }).catch(()=>{});
-        
-        let channel = (await setup.find()).map(d=>d).filter(d=>d.livechat);
-
-        if(channel?.length != 0) channel.forEach(ch=> {
-            client.channels.cache.get(ch.livechat).send({
-                embeds: messageList
-            }).catch(()=>{});
         });
-        messageList = [];
-    } else if(messageList.length == 5) {
-        client.channels.cache.get(bot.chatChannel).send({
-            embeds: messageList
-        }).catch(()=>{});
-        
+
+        if(bot.config.dev) {
+            messageList = [];
+            return;
+        }
+
+        // Lấy tất cả channel đã setup và cho thành array
         let channel = (await setup.find()).map(d=>d).filter(d=>d.livechat);
+        if(!channel || channel.length == 0) return;
 
         channel.forEach(ch=> {
-            client.channels.cache.get(ch.livechat).send({
+            let channelable = client.channels.cache.get(ch.livechat);
+
+            if(channelable) channelable.send({
                 embeds: messageList
             }).catch(()=>{});
         });
+
         messageList = [];
     }
 }
 
+/**
+ * 
+ * @param {Bot} bot 
+ * @param {String} content 
+ */
 function saveStats(bot, content) {
     let deathsRegex = require('../set').stats.deaths;
     let killBeforeRegex = require('../set').stats.killBef;
@@ -151,12 +163,17 @@ function saveStats(bot, content) {
     }
 }
 
+/**
+ * 
+ * @param {String} type Loại log khác
+ * @param {String} content 
+ */
 function sendCustomMessage(type, content) {
-    let color = 'GREEN';
+    let color = livechat_color.default;
     let channel;
     
-    if(type == 'connect') channel = globalChnanel.join;
-    if(content.includes("thoát")) color = "RED";
+    if(type == 'connect') { channel = globalChnanel.join; color = "GREEN"; }
+    if(type == 'disconnect') { channel = globalChnanel.join; color = "RED"; }
 
     joinList.push({
         description: content,
@@ -172,8 +189,12 @@ function sendCustomMessage(type, content) {
     }
 }
 
+/**
+ * 
+ * @param {String} type Loại
+ * @param {String} content Nội dung
+ */
 function sendBotLog(type, content) {
-
     let chat = content;
     let color;
 
@@ -190,7 +211,12 @@ function sendBotLog(type, content) {
     });
 }
 
-function fetchData(message) {
+/**
+ * 
+ * @param {String} message 
+ * @returns 
+ */
+function isDeathMessage(message) {
     if(!message) return;
     if(message.match(require('../set').stats.deaths)
     || message.match(require('../set').stats.killBef)
@@ -198,12 +224,16 @@ function fetchData(message) {
     || message.match(require('../set').stats.noStats)) return true;
 }
 
-
-function getUptime(bot, type) {
-    // console.log(bot.uptime);
+/**
+ * 
+ * @param {Bot} bot Mineflayer API
+ * @param {boolean} vi Thời gian trả về tiếng việt
+ * @returns String
+ */
+function getUptime(bot, vi) {
     if(!bot.uptime) return '';
 
-    if(type == 'vi') return getDorHMS((Date.now()-bot.uptime)/1000, true);
+    if(vi) return getDorHMS((Date.now()-bot.uptime)/1000, true);
 
     return getDorHMS((Date.now()-bot.uptime)/1000);
 }

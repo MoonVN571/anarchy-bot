@@ -18,6 +18,6 @@ module.exports = {
         let find = Object.values(bot.players).filter(data=>data.username==name);
 
         if(!find || find.length == 0) return;
-        else bot.sendMessage('whisper', (args[0]?args[0]:username) + ' : ' + find[0].ping + 'ms.');
+        else bot.sendMessage('whisper', name + ' : ' + find[0].ping + 'ms.');
     }
 }
