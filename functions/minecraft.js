@@ -64,7 +64,8 @@ async function sendGlobalChat(bot, content, username, message) {
 
     if(!chat.includes("has made the advancement")
     && !chat.includes("has complete")
-    && !chat.length !== 3
+    && !chat.includes("has reached")
+    && chat.length !== 3
     && color == livechat_color.system) serverList.push({
         description: chat,
         color: color,
