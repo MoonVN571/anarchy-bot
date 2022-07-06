@@ -25,7 +25,7 @@ module.exports = {
         let args = userMessage.trim().toLowerCase().slice(bot.config.minecraftPrefix.length).split(/ +/g);
         let cmdName = args.shift().toLowerCase();
         
-        const cmd = bot.commands.get(cmdName) || bot.commands.find(cmd=>cmd.aliases.includes(cmdName));
+        const cmd = bot.commands.get(cmdName) //|| bot.commands.find(cmd=>cmd.aliases.includes(cmdName));
 
         if(!cmd) return;
 
