@@ -22,7 +22,6 @@ let botlog_color = {
 
 let messageList = [];
 let joinList = [];
-let serverList = [];
 
 async function sendGlobalChat(bot, content, username, message) {
     /*console.log({
@@ -66,19 +65,13 @@ async function sendGlobalChat(bot, content, username, message) {
     && !chat.includes("has complete")
     && !chat.includes("has reached")
     && chat.length !== 3
-    && color == livechat_color.system) serverList.push({
-        description: chat,
-        color: color,
-        timestamp: new Date()
+    && color == livechat_color.system) client.channels.cache.get(globalChnanel.server).send({
+        embeds: [{
+            description: chat,
+            color: color,
+            timestamp: new Date()
+        }]
     });
-
-    // Log message để thêm vào death message list
-    if(serverList.length == 5) {
-        client.channels.cache.get(globalChnanel.server).send({
-            embeds: serverList
-        });
-        serverList = [];
-    }
     
     if(messageList.length == 5) {
         // Gửi message vào server dev của bot
