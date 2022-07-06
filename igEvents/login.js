@@ -1,4 +1,5 @@
 const pt = require('../db/playtime');
+const { autoMessage, messageArray } = require('../set');
 
 module.exports = {
     name: 'login',
@@ -8,6 +9,8 @@ module.exports = {
         
         bot.exited = false;
         bot.uptime = Date.now();
+
+        if(!bot.logged && !bot.mainServer) return;
 
         setInterval(() => {
             bot.setControlState('forward', true);
@@ -29,8 +32,15 @@ module.exports = {
             }, 500);
         }, 3 * 60 * 1000);
 
+        setInterval(() => {
+            // Lấy ngẫu nhiên 1 message trả về biến
+            let randomMsg = messageArray[Math.floor(Math.random() * messageArray.length) - 1];
+            bot.chat(randomMsg);
+        }, 2 * 60 * 1000);
+
+        if(bot.config.dev) return;
+        
         setInterval(async() => {
-            if(!bot.config.dev && bot.logged && bot.mainServer) {
                 let players = Object.values(bot.players).map(p => p.username);
 
                 players.forEach(async username => {
@@ -39,7 +49,6 @@ module.exports = {
                     ptData.time += 2 * 60 * 1000;
                     ptData.save();
                 });
-            }
         }, 2 * 60 * 1000);
     }
 }

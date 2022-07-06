@@ -4,5 +4,13 @@ module.exports = {
         killBef: /^([^ ]*) (?:killed) ([^ ]*)(.*)$/,
         killAft: /^([^ ]*) (?:đã được|stood too close to|was spat on by a|was ganed up on by some|tried climbing to greater heights and fell off|was ganged up on by some|was pushed off a high place by|was shot by|was blown up by a|was slain by|đã bị|was shot by a|was slain by a) ([^ ]*)(.*)$/,
         noStats: /^([^ ]*) (?:murdered a dog using) ([^ ]*)(.*)$/
-    }
+    },
+    messageArray: [
+        'Xem K/D của ai đó hoặc bản thân, sử dụng !kd <tên>',
+        'Xem thời gian chơi của ai đó hoặc bản thân, sử dụng !pt <tên>',
+        'Xem ai đó lần đầu tham gia vào server ngày nào, bao lâu, sử dụng !jd <tên>',
+        'Xem toạ độ của bot, sử dụng !coords',
+        'Xem ping của ai đó, sử dụng !ping <tên>',
+        'Tham gia discord developer của bot, link: https://discord.mo0nbot.tk/',
+    ]
 }
