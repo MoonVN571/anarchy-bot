@@ -6,7 +6,7 @@ module.exports = {
     
     execute (bot, data) {
         if(bot.nextCheckTab) {
-            setTimeout(()=>nextCheckTab=true, 5*60*1000);
+            setTimeout(()=>bot.nextCheckTab=true, 10*60*1000);
             bot.nextCheckTab = false;
 
             let parsedHeader = JSON.parse(data.header);
