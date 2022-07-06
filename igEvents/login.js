@@ -10,8 +10,6 @@ module.exports = {
         bot.exited = false;
         bot.uptime = Date.now();
 
-        if(!bot.logged && !bot.mainServer) return;
-
         setInterval(() => {
             bot.setControlState('forward', true);
             setTimeout(() => {
@@ -33,6 +31,7 @@ module.exports = {
         }, 3 * 60 * 1000);
 
         setInterval(() => {
+            if(!bot.logged && !bot.mainServer) return;
             // Lấy ngẫu nhiên 1 message trả về biến
             let randomMsg = messageArray[Math.floor(Math.random() * messageArray.length) - 1];
             bot.chat(randomMsg);
@@ -41,14 +40,16 @@ module.exports = {
         if(bot.config.dev) return;
         
         setInterval(async() => {
-                let players = Object.values(bot.players).map(p => p.username);
+            if(!bot.logged && !bot.mainServer) return;
+        
+            let players = Object.values(bot.players).map(p => p.username);
 
-                players.forEach(async username => {
-                    let ptData = await pt.findOne({username:username});
-                    if(!ptData) return pt.create({username:username,time:2*60*1000});
-                    ptData.time += 2 * 60 * 1000;
-                    ptData.save();
-                });
+            players.forEach(async username => {
+                let ptData = await pt.findOne({username:username});
+                if(!ptData) return pt.create({username:username,time:2*60*1000});
+                ptData.time += 2 * 60 * 1000;
+                ptData.save();
+            });
         }, 2 * 60 * 1000);
     }
 }
