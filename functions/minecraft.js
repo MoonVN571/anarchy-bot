@@ -11,7 +11,8 @@ let livechat_color = {
     dead: 0xDB2D2D,
     system: 0xb60000,
     whisper: 0xFD00FF,
-    chatbot: 0x4983e7
+    chatbot: 0x4983e7,
+    queue: 0xFFC214
 }
 
 let botlog_color = {
@@ -49,6 +50,9 @@ async function sendGlobalChat(bot, content, username, message) {
 
     // Tin nhắn được gửi bởi bot
     if(username == bot.config.botName) color = livechat_color.chatbot;
+
+    // Tin nhắn hàng chờ
+    if(content.startsWith('Vị trí hàng chờ')) color = livechat_color.queue;
 
     // Tin nhắn whisper của bot gửi và player nhắn cho bot
     if(content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
