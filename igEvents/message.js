@@ -11,7 +11,7 @@ module.exports = {
         if(username.startsWith('[Donator] ')) username = username.split('[Donator] ')[1];
 
         let userMessage = '';
-        if(content.startsWith("<")) userMessage = content.split(" ").slice(1).join(" ");
+        if(content.startsWith("<")) userMessage = content.split(" ").slice(bot.config.prefix.length).join(" ");
         if(!content.split(' ')[0].endsWith(">")) userMessage = content.split(" ").slice(2).join(" ");
 
         sendGlobalChat(bot, content, username, userMessage);
@@ -20,7 +20,7 @@ module.exports = {
          *        COMMAND
          */
 
-        if(!userMessage.startsWith(bot.prefix)) return;
+        if(!userMessage.startsWith(bot.config.prefix)) return;
 
         let args = userMessage.trim().toLowerCase().slice(bot.prefix.length).split(/ +/g);
         let cmdName = args.shift().toLowerCase();
