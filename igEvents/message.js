@@ -22,7 +22,7 @@ module.exports = {
 
         if(!userMessage.startsWith(bot.prefix)) return;
 
-        let args = userMessage.trim().slice(bot.prefix.length).split(/ +/g);
+        let args = userMessage.trim().toLowerCase().slice(bot.prefix.length).split(/ +/g);
         let cmdName = args.shift().toLowerCase();
         
         const cmd = bot.commands.get(cmdName) || bot.commands.find(cmd=>cmd.aliases.includes(cmdName));
