@@ -7,7 +7,7 @@ require('dotenv').config();
 let config = {
     botName: !main.config.dev ? "mo0nbot3" : "mo0bot4",
     dev: main.config.dev,
-    minecraftPrefix: !main.config.dev ? "!!" : "!"
+    minecraftPrefix: !main.config.dev ? "!" : "!!"
 }
 
 let channel = {
