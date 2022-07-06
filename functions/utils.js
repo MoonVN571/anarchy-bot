@@ -1,3 +1,5 @@
+const client = require('../index').client;
+
 /**
  * 
  * @param {Number} value Number từ 0-9
@@ -34,8 +36,20 @@ function getDorHMS(temp, vi, fulltime){
     return format.trim()
 }
 
+function setStatus(status, type, message) {
+    client.user.setPresence({
+        status: status,
+        activities: [
+            {
+                type: type,
+                name: message
+            }
+        ]
+    });
+}
 
 module.exports = {
     legitNumber,
-    getDorHMS
+    getDorHMS,
+    setStatus
 }

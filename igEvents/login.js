@@ -1,4 +1,5 @@
 const pt = require('../db/playtime');
+const { setStatus } = require('../functions/utils');
 const { autoMessage, messageArray } = require('../set');
 
 module.exports = {
@@ -7,6 +8,8 @@ module.exports = {
     execute (bot) {
         console.log("Đã kết nối vào server!");
         
+        setStatus('idle', 'WATCHING', 'chờ kết nối!');
+
         bot.exited = false;
         bot.uptime = Date.now();
 

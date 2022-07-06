@@ -52,7 +52,7 @@ async function sendGlobalChat(bot, content, username, message) {
     if(username == bot.config.botName) color = livechat_color.chatbot;
 
     // Tin nhắn hàng chờ
-    if(content.startsWith('Vị trí hàng chờ')) color = livechat_color.queue;
+    if(content?.toLowerCase().startsWith('vị trí hàng chờ')) color = livechat_color.queue;
 
     // Tin nhắn whisper của bot gửi và player nhắn cho bot
     if(content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
