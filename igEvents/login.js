@@ -36,7 +36,7 @@ module.exports = {
         setInterval(() => {
             if(!bot.logged && !bot.mainServer) return;
             // Lấy ngẫu nhiên 1 message trả về biến
-            let randomMsg = messageArray[Math.floor(Math.random() * messageArray.length) - 1];
+            let randomMsg = messageArray[Math.floor(Math.random() * messageArray.length)];
             bot.chat('>'+randomMsg);
         }, 2 * 60 * 1000);
 

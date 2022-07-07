@@ -11,9 +11,6 @@ module.exports = {
      */
     async execute(bot, username, args) {
         let name = args[0] || username;
-        
-        let res = /^[a-zA-Z]+$/.test(name);
-        if(!res) name = username;
 
         let find = Object.values(bot.players).filter(data=>data.username==name);
 

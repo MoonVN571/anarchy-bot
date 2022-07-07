@@ -52,57 +52,59 @@ async function sendGlobalChat(bot, content, username, message) {
     if(username == bot.config.botName) color = livechat_color.chatbot;
 
     // Tin nhắn hàng chờ
-    if(content?.toLowerCase().startsWith('vị trí hàng chờ') && content.includes('thời')) color = livechat_color.queue;
+    if(content?.toLowerCase().startsWith('vị trí của bạn')) color = livechat_color.queue;
     if(content?.toLowerCase().startsWith('vị trí hàng chờ')) return;
 
     // Tin nhắn whisper của bot gửi và player nhắn cho bot
     if(content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
 
+    if(chat.length == 3 || chat.length == 4) return;
 
-    // Push vào array embed, nếu trên x lần sẽ gửi vào kênh tránh ratelimit
-    messageList.push({
+    let embedObject = {
         description: chat,
         color: color,
         timestamp: new Date()
-    });
+    };
 
     if(!chat.includes("has made the advancement")
     && !chat.includes("has complete")
     && !chat.includes("has reached")
-    && chat.length !== 3
     && color == livechat_color.system) client.channels.cache.get(globalChnanel.server).send({
-        embeds: [{
-            description: chat,
-            color: color,
-            timestamp: new Date()
-        }]
+        embeds: [embedObject]
     });
+
+    if(color == livechat_color.queue) return sendMessage(bot, [embedObject]);
     
-    if(messageList.length == 5) {
-        // Gửi message vào server dev của bot
-        client.channels.cache.get(globalChnanel.chat).send({
-            embeds: messageList
-        });
+    // Push vào array embed, nếu trên x lần sẽ gửi vào kênh tránh ratelimit
+    messageList.push(embedObject);
 
-        if(bot.config.dev) {
-            messageList = [];
-            return;
-        }
+    if(messageList.length == 5) sendMessage(bot, messageList);
+}
 
-        // Lấy tất cả channel đã setup và cho thành array
-        let channel = (await setup.find()).map(d=>d).filter(d=>d.livechat);
-        if(!channel || channel.length == 0) return messageList = [];;
+async function sendMessage(bot, messageList) {
+    // Gửi message vào server dev của bot
+    client.channels.cache.get(globalChnanel.chat).send({
+        embeds: messageList
+    });
 
-        channel.forEach(ch=> {
-            let channelable = client.channels.cache.get(ch.livechat);
-
-            if(channelable) channelable.send({
-                embeds: messageList
-            }).catch(()=>{});
-        });
-
+    if(bot.config.dev) {
         messageList = [];
+        return;
     }
+
+    // Lấy tất cả channel đã setup và cho thành array
+    let channel = (await setup.find()).map(d=>d).filter(d=>d.livechat);
+    if(!channel || channel.length == 0) return messageList = [];;
+
+    channel.forEach(ch=> {
+        let channelable = client.channels.cache.get(ch.livechat);
+
+        if(channelable) channelable.send({
+            embeds: messageList
+        }).catch(()=>{});
+    });
+
+    messageList = [];
 }
 
 /**

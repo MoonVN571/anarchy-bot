@@ -15,9 +15,6 @@ module.exports = {
      */
     async execute(bot, username, args) {
         let name = args[0] || username;
-        
-        let res = /^[a-zA-Z]+$/.test(name);
-        if(!res) name = username;
 
         let ptData = await pt.findOne({username:name});
         if(!ptData) return bot.sendMessage('whisper', bot.notFoundPlayers);

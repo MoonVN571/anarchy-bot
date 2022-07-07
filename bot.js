@@ -5,17 +5,17 @@ const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: !main.config.dev ? "mo0nbot3" : "mo0bot4",
+    botName: main.config.dev ? "mo0nbot4" : "mo0nbot3",
     dev: main.config.dev,
-    minecraftPrefix: !main.config.dev ? "!" : "!!"
+    minecraftPrefix: main.config.dev ? "!!" : "!"
 }
 
 let channel = {
-    chat: !config.dev ? "986599157068361734" : "987204059838709780",
-    log: !config.dev ? "986601542981410816" : "987204075164692551",
-    join: !config.dev ? "986601627588894720" : "987204116839284756",
-    server: !config.dev ? "986807303565086781" : "987204092113879040",
-    commands: !config.dev ? "990104136018182154" : "987889094845689916"
+    chat: config.dev ? "987204059838709780" : "986599157068361734",
+    log: config.dev ? "987204075164692551" : "986601542981410816",
+    join: config.dev ? "987204116839284756" : "987204116839284756",
+    server: config.dev ? "987204092113879040" : "986807303565086781",
+    commands: config.dev ? "990104136018182154" : "987889094845689916"
 }
 
 function createBot() {

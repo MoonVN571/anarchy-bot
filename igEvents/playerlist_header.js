@@ -1,7 +1,7 @@
 const { getUptime, sendGlobalChat } = require("../functions/minecraft");
 const { setStatus } = require("../functions/utils");
 const axios = require('axios');
-let minutes = 10;
+let minutes = 1;
 
 module.exports = {
     name: 'playerlist_header',
@@ -34,28 +34,29 @@ module.exports = {
                     let completeStr = footer[1] +   
                     "\n- Đã vào server từ "+ getUptime(bot, true) + 
                     " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
-                    
+
                     if(bot.mainServer) bot.client.channels.cache.get(require("../bot").channel.chat).setTopic(completeStr);
-                    else {
-                        let queue = res.data.players.online - 110;
-                        if(queue < 95) queue = 0;
-                        
-                        let est = header[4].trim() + ' -' + header[5];
-                        let parseBotQ = header[4].trim().split(" ");
-                        let botQ = parseBotQ[parseBotQ.length-1];
+                    
+                    let queue = res.data.players?.online - 100 || 0;
+                    if(queue < 0) queue = 0;
+                    
+                    let est = header[4].trim() + ' -' + header[5];
+                    let parseBotQ = header[4].trim().split(" ");
+                    let botQ = parseBotQ[parseBotQ.length-1];
 
-                        if(botQ == 'None' && queue == 0) { botQ = 1; queue = 1; }
-                        let stt = 'trong hàng chờ: ' + botQ + '/' + queue;
+                    if(botQ == 'None') botQ = 1;
+                    if(queue == 0) queue = 1;
+                    let stt = 'trong hàng chờ: ' + botQ + '/' + queue;
 
-                        if(!bot.mainServer) {
-                            minutes = 1;
-                            sendGlobalChat(bot, est);
-                            setStatus('idle', 'PLAYING', stt);
-                        } else {
-                            minutes = 5;
-                            let tps = footer[1]?.split(" ")[0];
-                            setStatus('online', 'PLAYING', 'TPS: ' + tps + ' - Hàng Chờ: ' + queue);
-                        }
+                    if(!bot.mainServer) {
+                        console.log(est);
+                        sendGlobalChat(bot, est);
+                        setStatus('idle', 'PLAYING', stt);
+                    } else {
+                        minutes = 5;
+                        let tps = footer[1]?.split(" ")[0];
+                        console.log(tps);
+                        setStatus('online', 'PLAYING', 'TPS: ' + tps + ' - Hàng Chờ: ' + queue);
                     }
                 } catch(e) {
                     console.log(e);
