@@ -81,7 +81,7 @@ async function sendGlobalChat(bot, content, username, message) {
     if(messageList.length == 5) sendMessage(bot, messageList);
 }
 
-async function sendMessaage(bot, msg) {
+async function sendMessage(bot, msg) {
     // Gửi message vào server dev của bot
     client.channels.cache.get(globalChnanel.chat).send({
         embeds: msg
