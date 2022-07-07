@@ -75,7 +75,7 @@ async function sendGlobalChat(bot, content, username, message) {
     messageList.push(embedObject);
     log('Đã nhận ' + messageList.length + ' tin nhắn để gửi hàng loạt.');
 
-    if(messageList.length == 5) sendMessage(bot, messageList);
+    if(messageList.length >= 5) sendMessage(bot, messageList);
 }
 
 async function sendMessage(bot, msg) {
@@ -85,7 +85,7 @@ async function sendMessage(bot, msg) {
     });
 
     if(bot.config.dev) {
-        if(msg.length == 5) messageList = [];
+        if(msg.length >= 5) messageList = [];
         return;
     }
 
@@ -101,7 +101,7 @@ async function sendMessage(bot, msg) {
         }).catch(()=>{});
     });
 
-    if(msg.length == 5) messageList = [];
+    if(msg.length >= 5) messageList = [];
 }
 
 /**
