@@ -42,11 +42,11 @@ async function sendGlobalChat(bot, content, username, message) {
         chat = content;
     }
 
-    // Lưu lại KD của player nếu không phài dev mode
-    if(!bot.config.dev && color == livechat_color.dead) saveStats(bot, content);
-
     // Check nếu tin nhắn là death message
     if(isDeathMessage(content)) color = livechat_color.dead;
+
+    // Lưu lại KD của player nếu không phài dev mode
+    if(!bot.config.dev && color == livechat_color.dead) saveStats(bot, content);
 
     // Tin nhắn được gửi bởi bot
     if(username == bot.config.botName) color = livechat_color.chatbot;
