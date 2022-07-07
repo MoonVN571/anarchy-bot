@@ -81,14 +81,14 @@ async function sendGlobalChat(bot, content, username, message) {
     if(messageList.length == 5) sendMessage(bot, messageList);
 }
 
-async function sendMessage(bot, messageList) {
+async function sendMessaage(bot, msg) {
     // Gửi message vào server dev của bot
     client.channels.cache.get(globalChnanel.chat).send({
-        embeds: messageList
+        embeds: msg
     });
 
     if(bot.config.dev) {
-        messageList = [];
+        if(msg.length == 5) messageList = [];
         return;
     }
 
@@ -100,11 +100,11 @@ async function sendMessage(bot, messageList) {
         let channelable = client.channels.cache.get(ch.livechat);
 
         if(channelable) channelable.send({
-            embeds: messageList
+            embeds: msg
         }).catch(()=>{});
     });
 
-    messageList = [];
+    if(msg.length == 5) messageList = [];
 }
 
 /**
