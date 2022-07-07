@@ -1,13 +1,13 @@
 const { getUptime, sendGlobalChat } = require("../functions/minecraft");
 const { setStatus } = require("../functions/utils");
 const axios = require('axios');
+let minutes = 10;
 
 module.exports = {
     name: 'playerlist_header',
     other: true,
     
     async execute (bot, data) {
-        let minutes = 10;
         if(bot.nextCheckTab) {
             setTimeout(()=>bot.nextCheckTab=true, minutes*60*1000);
             bot.nextCheckTab = false;
@@ -27,35 +27,40 @@ module.exports = {
             let footer = cleanArray(parsedFooter?.text);
 
             if(!header) return;
-
-            let est = header[5].trim() + '-' + header[6];
-            let stt = header[5].trim();
-            if(!bot.mainServer) {
-                minutes = 1;
-                sendGlobalChat(bot, est);
-                setStatus('idle', 'PLAYING', stt);
-            } else minutes = 10;
             
-            let completeStr = footer[1] +   
-            "\n- Đã vào server từ "+ getUptime(bot, true) + 
-            " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
-            
-            let tps = footer[1]?.split(" ")[0];
-
-            if(bot.mainServer) {
-                bot.client.channels.cache.get(require("../bot").channel.chat).setTopic(completeStr);
-                
-                await axios.default.get('https://api.mcsrvstat.us/2/2y2c.org').then(res => {
-                    try {
-                        let queue = res.data.players.online - 95;
+            await axios.default.get('https://api.mcsrvstat.us/2/2y2c.org').then(res => {
+                try {
+                    // BOT STATUS MAIN SERVER TAB
+                    let completeStr = footer[1] +   
+                    "\n- Đã vào server từ "+ getUptime(bot, true) + 
+                    " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
+                    
+                    if(bot.mainServer) bot.client.channels.cache.get(require("../bot").channel.chat).setTopic(completeStr);
+                    else {
+                        let queue = res.data.players.online - 110;
                         if(queue < 95) queue = 0;
                         
-                        setStatus('online', 'PLAYING', 'TPS: ' + tps + ' - Queue: ' + queue + ' - Prio: -1');
-                    } catch(e) {
-                        console.log(e);
+                        let est = header[4].trim() + ' -' + header[5];
+                        let parseBotQ = header[4].trim().split(" ");
+                        let botQ = parseBotQ[parseBotQ.length-1];
+
+                        if(botQ == 'None' && queue == 0) { botQ = 1; queue = 1; }
+                        let stt = 'trong hàng chờ: ' + botQ + '/' + queue;
+
+                        if(!bot.mainServer) {
+                            minutes = 1;
+                            sendGlobalChat(bot, est);
+                            setStatus('idle', 'PLAYING', stt);
+                        } else {
+                            minutes = 5;
+                            let tps = footer[1]?.split(" ")[0];
+                            setStatus('online', 'PLAYING', 'TPS: ' + tps + ' - Hàng Chờ: ' + queue);
+                        }
                     }
-                }).catch(err => console.log(err));
-            }
+                } catch(e) {
+                    console.log(e);
+                }
+            }).catch(err => console.log(err));
         }
     }
 }

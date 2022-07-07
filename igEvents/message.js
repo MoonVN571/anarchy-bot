@@ -25,11 +25,11 @@ module.exports = {
         let userMessageDefault = userMessage;
         if(userMessage.endsWith('.')) userMessage = userMessage?.split('.')?.pop();
         if(!userMessage) userMessage = userMessageDefault;
-        
+
         let args = userMessage.trim().toLowerCase().slice(bot.config.minecraftPrefix.length).split(/ +/g);
         let cmdName = args.shift().toLowerCase();
         
-        const cmd = bot.commands.get(cmdName) || bot.commands.find(cmd=>cmd&&cmd.aliases.includes(cmdName));
+        const cmd = bot.commands.get(cmdName) || bot.commands.find(cmd=>cmd.aliases&&cmd.aliases.indexOf(cmdName) > -1);
 
         if(!cmd) return;
 
