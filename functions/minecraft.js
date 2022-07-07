@@ -58,7 +58,7 @@ async function sendGlobalChat(bot, content, username, message) {
     // Tin nhắn whisper của bot gửi và player nhắn cho bot
     if(content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
 
-    if(chat.length == 3 || chat.length == 4) return;
+    //if(chat.length == 3 || chat.length == 4) return;
 
     let embedObject = {
         description: chat,
@@ -77,7 +77,7 @@ async function sendGlobalChat(bot, content, username, message) {
     
     // Push vào array embed, nếu trên x lần sẽ gửi vào kênh tránh ratelimit
     messageList.push(embedObject);
-
+    console.log("Pushed message to array")
     if(messageList.length == 5) sendMessage(bot, messageList);
 }
 
