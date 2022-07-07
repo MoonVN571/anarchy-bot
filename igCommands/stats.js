@@ -15,7 +15,7 @@ module.exports = {
     async execute(bot, username, args) {
         let name = args[0] || username;
 
-        let kdData = await kd.findOne({username:name});
+        let kdData = await kd.findOne({'$regex':'^'+name+'$'});
         if(!kdData) kd.create({username:name,kills:0,deaths:0});
 
 

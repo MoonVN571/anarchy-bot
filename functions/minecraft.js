@@ -1,6 +1,6 @@
 const client = require('../index').client;
 const { Bot } = require('mineflayer');
-const { getDorHMS } = require('./utils');
+const { getDorHMS, log } = require('./utils');
 const kd = require('../db/stats');
 const setup = require('../db/setup');
 const globalChnanel = require('../bot').channel;
@@ -25,13 +25,7 @@ let messageList = [];
 let joinList = [];
 
 async function sendGlobalChat(bot, content, username, message) {
-    /*console.log({
-        content: content,
-        username: username,
-        message: message
-    }) */
-    let chat = `**<${username}>** ${message}`;
-
+    let userChat = `**<${username}>** ${message}`;
     let color = livechat_color.default;
 
     // Nếu message player = ">" color là xanh
@@ -39,7 +33,7 @@ async function sendGlobalChat(bot, content, username, message) {
 
     if(!username) {
         color = livechat_color.system;
-        chat = content;
+        userChat = content;
     }
 
     // Check nếu tin nhắn là death message
@@ -56,28 +50,31 @@ async function sendGlobalChat(bot, content, username, message) {
     if(content?.toLowerCase().startsWith('vị trí hàng chờ')) return;
 
     // Tin nhắn whisper của bot gửi và player nhắn cho bot
-    if(content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
+    if(content?.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
 
-    //if(chat.length == 3 || chat.length == 4) return;
+    // Ẩn spam message number
+    if(!isNaN(userChat)) return;
 
     let embedObject = {
-        description: chat,
+        description: userChat,
         color: color,
         timestamp: new Date()
     };
 
-    if(!chat.includes("has made the advancement")
-    && !chat.includes("has complete")
-    && !chat.includes("has reached")
+    log(embedObject);
+
+    if(!content.includes("has made the advancement")
+    && !content.includes("has complete")
+    && !content.includes("has reached")
     && color == livechat_color.system) client.channels.cache.get(globalChnanel.server).send({
         embeds: [embedObject]
     });
 
     if(color == livechat_color.queue) return sendMessage(bot, [embedObject]);
     
-    // Push vào array embed, nếu trên x lần sẽ gửi vào kênh tránh ratelimit
     messageList.push(embedObject);
-    console.log("Pushed message to array")
+    log('Đã nhận ' + messageList.length + ' tin nhắn để gửi hàng loạt.');
+
     if(messageList.length == 5) sendMessage(bot, messageList);
 }
 

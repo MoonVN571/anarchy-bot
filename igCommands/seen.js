@@ -19,7 +19,7 @@ module.exports = {
         let res = /^[a-zA-Z]+$/.test(name);
         if(!res) name = username;
 
-        let seenData = await seen.findOne({username:name});
+        let seenData = await seen.findOne({'$regex':'^'+name+'$'});
         if(!seenData) return bot.sendMessage('whisper', bot.notFoundPlayers);
         
         let date = new Date(seenData.time);

@@ -1,4 +1,5 @@
 const client = require('../index').client;
+const config = require('../bot').config;
 
 /**
  * 
@@ -49,8 +50,28 @@ function setStatus(status, type, message) {
     });
 }
 
+function log(string) {
+    if(config.debug) console.log('[' +
+        new Date().toLocaleDateString('vi-VN', {timeZone: 'Asia/Ho_Chi_minh'})
+        + ' ' + new Date().toLocaleTimeString('vi-VN', {timeZone: 'Asia/Ho_Chi_minh'}) + ']'
+        ,string
+    );
+}
+
+function solveAlotMessage(bot) {
+    bot.arrayMessages;
+    console.log(bot.arrayMessages);
+    if(bot.arrayMessages.length <= 0) return;
+    log('Thực thi lệnh: ' + bot.arrayMessages[0]);
+    bot.chat(bot.arrayMessages[0]);
+    bot.arrayMessages.shift();
+    setTimeout(() => solveAlotMessage(bot), 5 * 1000);
+}
+
 module.exports = {
     legitNumber,
     getDorHMS,
-    setStatus
+    setStatus,
+    log,
+    solveAlotMessage
 }

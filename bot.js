@@ -7,13 +7,14 @@ require('dotenv').config();
 let config = {
     botName: main.config.dev ? "mo0nbot4" : "mo0nbot3",
     dev: main.config.dev,
-    minecraftPrefix: main.config.dev ? "!!" : "!"
+    minecraftPrefix: main.config.dev ? "!!" : "!",
+    debug: true
 }
 
 let channel = {
     chat: config.dev ? "987204059838709780" : "986599157068361734",
     log: config.dev ? "987204075164692551" : "986601542981410816",
-    join: config.dev ? "987204116839284756" : "987204116839284756",
+    join: config.dev ? "987204116839284756" : "986601627588894720",
     server: config.dev ? "987204092113879040" : "986807303565086781",
     commands: config.dev ? "990104136018182154" : "987889094845689916"
 }
@@ -23,7 +24,7 @@ function createBot() {
         host: process.env.IP,
         port: 25565,
         username: config.botName,
-        version: '1.16.5'
+        version: '1.18.1'
     });
 
     // Chạm được nè
@@ -33,7 +34,9 @@ function createBot() {
     // đừng đụng zô
     bot.client = main.client;
     bot.config = config;
-
+    
+    bot.arrayMessages = [];
+    
     bot.mainServer = false;
     bot.exited = false;
     bot.logged = false;

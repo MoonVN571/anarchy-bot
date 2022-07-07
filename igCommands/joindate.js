@@ -15,8 +15,8 @@ module.exports = {
      */
     async execute(bot, username, args) {
         let name = args[0] || username;
-
-        let jdData = await jd.findOne({username:name});
+        
+        let jdData = await jd.findOne({'$regex':'^'+name+'$'});
         if(!jdData) return bot.sendMessage('whisper', bot.notFoundPlayers);
         
         let date = new Date(jdData.time)
