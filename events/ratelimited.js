@@ -37,5 +37,5 @@ client.on('rateLimit',data=>{
             color: 'RED',
             timestamp: new Date()
         }]
-    }).catch(()=>{});
+    });
 });
