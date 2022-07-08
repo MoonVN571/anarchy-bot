@@ -2,7 +2,7 @@ const { sendBotLog } = require("../functions/minecraft");
 const { getDorHMS } = require("../functions/utils");
 
 module.exports = {
-    name: 'spawn',
+    name: 'login',
     once: false,
     execute (bot) {
         bot.logged = true;
