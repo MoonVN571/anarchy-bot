@@ -17,7 +17,7 @@ module.exports = {
 
         let kdData = await kd.findOne({'$regex':'^'+name+'$'});
         
-        log(kdData, await kd.findOne({username:name));
+        log(kdData, await kd.findOne({username:name}));
         
         if(!kdData) return bot.sendMessage('whisper', 'Không tìm thấy người chơi');
 
