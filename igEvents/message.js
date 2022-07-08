@@ -20,7 +20,7 @@ module.exports = {
 
         if(content.startsWith('<')) {
             log('Nhận msg từ player.');
-            let parse = content.replace(/ |\[Donator\]|\~|\<|/i, '').replace('>', ''); // bat buoc phai lam z :<
+            let parse = content.replace("[Donator] ", "").replace("<", "").replace('>', ''); // bat buoc phai lam z :<
             username = parse.split(' ')[0];
             message = parse.split(' ').slice(1).join(" ");
             log(`Đã phân giải msg của player:`);
