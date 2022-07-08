@@ -74,7 +74,7 @@ function solveAlotMessage(bot) {
 
 function createWebhook(url, message) {
     const webhook = new WebhookClient({ url: url });
-    webhook.send(message);
+    webhook.send(message).catch(() => {});
 }
 
 module.exports = {
