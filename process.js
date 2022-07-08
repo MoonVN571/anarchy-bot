@@ -14,7 +14,7 @@ process.on('uncaughtException', (err) => {
                 fields: [
                     {
                         name: 'Detail',
-                        value: '```' + err + '```',
+                        value: '```' + err.toString() + '```',
                     }
                 ],
                 timestamp: Date.now(),
