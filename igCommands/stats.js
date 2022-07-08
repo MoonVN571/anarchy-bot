@@ -16,13 +16,13 @@ module.exports = {
         let name = args[0] || username;
 
         let kdData = await kd.findOne({'$regex':'^'+name+'$'});
-        if(!kdData) kd.create({username:name,kills:0,deaths:0});
+        if(!kdData) return bot.sendMessage('whisper', 'Không tìm thấy người chơi');
 
 
         let kills = kdData?.kills || 0;
         let deaths= kdData?.deaths || 0;
         let kda = kills/deaths || 0.00;
 
-        bot.sendMessage('whisper', name+' | Kills: ' + kills + " - Deaths: " + deaths + " K/D: " + kda.toFixed(2));
+        bot.sendMessage('whisper', name+' - Kills: ' + kills + " - Deaths: " + deaths + " K/D: " + kda.toFixed(2));
     }
 }
