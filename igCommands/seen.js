@@ -15,11 +15,11 @@ module.exports = {
      */
     async execute(bot, username, args) {
         let name = args[0] || username;
-        
-        let res = /^[a-zA-Z]+$/.test(name);
-        if(!res) name = username;
 
-        let seenData = await seen.findOne({'$regex':'^'+name+'$'});
+
+        let mapData = (await seen.find()).filter(data=>data.username.toLowerCase()==name);
+        let seenData = mapData[0];
+        
         if(!seenData) return bot.sendMessage('whisper', bot.notFoundPlayers);
         
         let date = new Date(seenData.time);

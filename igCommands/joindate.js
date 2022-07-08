@@ -1,6 +1,5 @@
 const { Bot } = require('mineflayer');
 const jd = require('../db/joindate');
-const {  } = require('../functions/minecraft');
 const { getDorHMS, legitNumber } = require('../functions/utils');
 
 module.exports = {
@@ -16,7 +15,10 @@ module.exports = {
     async execute(bot, username, args) {
         let name = args[0] || username;
         
-        let jdData = await jd.findOne({'$regex':'^'+name+'$'});
+
+        let mapData = (await jd.find()).filter(data=>data.username.toLowerCase()==name);
+        let jdData = mapData[0];
+        
         if(!jdData) return bot.sendMessage('whisper', bot.notFoundPlayers);
         
         let date = new Date(jdData.time)

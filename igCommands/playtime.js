@@ -1,6 +1,5 @@
 const { Bot } = require('mineflayer');
 const pt = require('../db/playtime');
-const {  } = require('../functions/minecraft');
 const { getDorHMS } = require('../functions/utils');
 
 module.exports = {
@@ -16,7 +15,10 @@ module.exports = {
     async execute(bot, username, args) {
         let name = args[0] || username;
 
-        let ptData = await pt.findOne({'$regex':'^'+name+'$'});
+
+        let mapData = (await pt.find()).filter(data=>data.username.toLowerCase()==name);
+        let ptData = mapData[0];
+        
         if(!ptData) return bot.sendMessage('whisper', bot.notFoundPlayers);
         
         bot.sendMessage('whisper', name+' : ' 

@@ -21,7 +21,7 @@ module.exports = {
         if(content.startsWith('<')) {
             let parse = content;
             if(content.startsWith("<[")) parse = content.replace("[Donator] ", "")
-            if(content.split("] ")[1]?.split(">")[0].startsWith("~")) parse = content.replace("~","");
+            if(content.split("] ")[1]?.split(">")[0].startsWith("~")) parse = parse.replace("~","");
             parse = parse.replace("<", "").replace('>', '');
             username = parse.split(' ')[0];
             message = parse.split(' ').slice(1).join(" ");
@@ -38,14 +38,14 @@ module.exports = {
 
         if(!message.startsWith(bot.config.minecraftPrefix)) return;
 
-        let args = message.trim().slice(bot.config.minecraftPrefix.length).split(/ +/g);
-        let cmdName = args.shift().toLowerCase();
+        let args = message.trim().toLowerCase().slice(bot.config.minecraftPrefix.length).split(/ +/g);
+        let cmdName = args.shift();
         
         const cmd = bot.commands.get(cmdName) || bot.commands.find(cmd=>cmd.aliases?.indexOf(cmdName) > -1);
 
         if(!cmd) return;
 
-        log('Nhận command: ' + cmdName);
+        log(username + ' used command: ' + cmdName);
 
         bot.sendMessage = (type, message) => sendMessage(bot, type, message);
         function sendMessage(bot, type, message) {

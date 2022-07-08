@@ -1,6 +1,5 @@
 const { Bot } = require('mineflayer');
 const kd = require('../db/stats');
-const { log } = require('../functions/utils');
 
 module.exports = {
     name: 'stats',
@@ -15,10 +14,9 @@ module.exports = {
     async execute(bot, username, args) {
         let name = args[0] || username;
 
-        let kdData = await kd.findOne({'$regex':'^'+name+'$'});
-        
-        log(kdData, await kd.findOne({username:name}));
-        
+        let mapData = (await kd.find()).filter(data=>data.username.toLowerCase()==name);
+        let kdData = mapData[0];
+
         if(!kdData) return bot.sendMessage('whisper', 'Không tìm thấy người chơi');
 
         let kills = kdData?.kills || 0;
