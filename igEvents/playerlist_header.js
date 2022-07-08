@@ -1,5 +1,5 @@
 const { getUptime, sendGlobalChat } = require("../functions/minecraft");
-const { setStatus } = require("../functions/utils");
+const { setStatus, log } = require("../functions/utils");
 const axios = require('axios');
 let minutes = 1;
 
@@ -49,13 +49,13 @@ module.exports = {
                     let stt = 'trong hàng chờ: ' + botQ + '/' + queue;
 
                     if(!bot.mainServer) {
-                        console.log(est);
+                        log(est);
                         sendGlobalChat(bot, est);
                         setStatus('idle', 'PLAYING', stt);
                     } else {
                         minutes = 5;
                         let tps = footer[1]?.split(" ")[0];
-                        console.log(tps);
+                        log('tps: '+ tps);
                         setStatus('online', 'PLAYING', 'TPS: ' + tps + ' - Hàng Chờ: ' + queue);
                     }
                 } catch(e) {

@@ -3,6 +3,7 @@ const { Bot } = require('mineflayer');
 const { getDorHMS, log } = require('./utils');
 const kd = require('../db/stats');
 const setup = require('../db/setup');
+const { config } = require('../bot');
 const globalChnanel = require('../bot').channel;
 
 let livechat_color = {
@@ -40,7 +41,7 @@ async function sendGlobalChat(bot, content, username, message) {
     if(isDeathMessage(content)) color = livechat_color.dead;
 
     // Lưu lại KD của player nếu không phài dev mode
-    if(!bot.config.dev && color == livechat_color.dead) saveStats(bot, content);
+    if(color == livechat_color.dead) saveStats(bot, content);
 
     // Tin nhắn được gửi bởi bot
     if(username == bot.config.botName) color = livechat_color.chatbot;
@@ -61,19 +62,17 @@ async function sendGlobalChat(bot, content, username, message) {
         timestamp: new Date()
     };
 
-    log(embedObject);
-
-    if(!content.includes("has made the advancement")
+    if((!content.includes("has made the advancement")
     && !content.includes("has complete")
     && !content.includes("has reached")
-    && color == livechat_color.system) client.channels.cache.get(globalChnanel.server).send({
+    && color == livechat_color.system) || color == livechat_color.whisper) client.channels.cache.get(globalChnanel.server).send({
         embeds: [embedObject]
     });
 
     if(color == livechat_color.queue) return sendMessage(bot, [embedObject]);
     
     messageList.push(embedObject);
-    log('Đã nhận ' + messageList.length + ' tin nhắn để gửi hàng loạt.');
+    // log('Đã nhận ' + messageList.length + ' tin nhắn để gửi hàng loạt.');
 
     if(messageList.length >= 5) sendMessage(bot, messageList);
 }
@@ -116,14 +115,14 @@ function saveStats(bot, content) {
 
     if(content.match(deathsRegex)) {
         let username = content.match(deathsRegex);
-        saveDeaths(username[2]);
+        log(username[1] + ' + death');
+        saveDeaths(username[1]);
     }
 
     if(content.match(killBeforeRegex)) {
         let usernameList = content.match(killBeforeRegex);
-        let uname = usernameList;
 
-        if(uname.includes('\'')) uname = uname.split('\'')[0];
+        log('Death: ' + usernameList[3] + ' - Kills: ' + usernameList[2]);
 
         saveKills(usernameList[2]);
         saveDeaths(usernameList[3]);
@@ -131,9 +130,12 @@ function saveStats(bot, content) {
 
     if(content.match(killAfterRegex)) {
         let usernameList = content.match(killAfterRegex);
-        let uname = usernameList[3];
+        let uname = usernameList[2];
 
         if(uname.includes('\'')) uname = uname.split('\'')[0];
+        if(uname?.split(" ").length > 1) uname = uname.split(' ')[0];
+
+        log('Death: ' + usernameList[1] + ' - Kills: ' + uname);
 
         saveDeaths(usernameList[1]);
         saveKills(uname);
@@ -148,6 +150,8 @@ function saveStats(bot, content) {
         if(!kdData) return kd.create({username:username,deaths:1,kills:0});
 
         if(playerList.indexOf(username) > -1) {
+            log(username + ' + 1 death');
+            if(config.dev) return;
             kdData.deaths += 1; 
             kdData.save();
         }
@@ -161,6 +165,8 @@ function saveStats(bot, content) {
         let kdData = await kd.findOne({username:username});
         if(!kdData) return kd.create({username:username,deaths:0,kills:1});
 
+        log(username + ' + 1 kill');
+        if(config.dev) return;
         kdData.kills += 1; 
         kdData.save();
     }

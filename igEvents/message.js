@@ -16,17 +16,15 @@ module.exports = {
         let username;
         let message;
 
-        log('Nhận msg từ server:\n'+content);
+        log(content);
 
         if(content.startsWith('<')) {
-            log('Nhận msg từ player.');
             let parse = content;
             if(content.startsWith("<[")) parse = content.replace("[Donator] ", "")
             if(content.split("] ")[1]?.split(">")[0].startsWith("~")) parse = content.replace("~","");
-            parse = parse.replace("<", "").replace('>', ''); // bat buoc phai lam z :<
+            parse = parse.replace("<", "").replace('>', '');
             username = parse.split(' ')[0];
             message = parse.split(' ').slice(1).join(" ");
-            log(`Đã phân giải msg của player:`);
             log(`${username} : ${message}`);
         }
 
