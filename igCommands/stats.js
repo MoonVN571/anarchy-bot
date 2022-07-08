@@ -1,6 +1,6 @@
 const { Bot } = require('mineflayer');
 const kd = require('../db/stats');
-const {  } = require('../functions/minecraft');
+const { log } = require('../functions/utils');
 
 module.exports = {
     name: 'stats',
@@ -16,8 +16,10 @@ module.exports = {
         let name = args[0] || username;
 
         let kdData = await kd.findOne({'$regex':'^'+name+'$'});
+        
+        log(kdData, await kd.findOne({username:name));
+        
         if(!kdData) return bot.sendMessage('whisper', 'Không tìm thấy người chơi');
-
 
         let kills = kdData?.kills || 0;
         let deaths= kdData?.deaths || 0;
