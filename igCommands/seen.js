@@ -17,7 +17,7 @@ module.exports = {
         let name = args[0] || username;
 
 
-        let mapData = (await seen.find()).filter(data=>data.username.toLowerCase()==name);
+        let mapData = (await seen.find()).filter(data=>data.username.toLowerCase()== name.toLowerCase());
         let seenData = mapData[0];
         
         if(!seenData) return bot.sendMessage('whisper', bot.notFoundPlayers);
