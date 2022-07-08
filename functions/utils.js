@@ -1,5 +1,9 @@
+const { WebhookClient } = require('discord.js');
+
 const client = require('../index').client;
 const config = require('../bot').config;
+
+require('dotenv').config();
 
 /**
  * 
@@ -68,10 +72,16 @@ function solveAlotMessage(bot) {
     setTimeout(() => solveAlotMessage(bot), 5 * 1000);
 }
 
+function createWebhook(url, message) {
+    const webhook = new WebhookClient({ url: url });
+    webhook.send(message);
+}
+
 module.exports = {
     legitNumber,
     getDorHMS,
     setStatus,
     log,
-    solveAlotMessage
+    solveAlotMessage,
+    createWebhook
 }

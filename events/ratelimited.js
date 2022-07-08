@@ -1,8 +1,9 @@
 const client = require('../index').client;
+const { createWebhook } = require('./functions/utils');
+require('dotenv').config();
 
 client.on('rateLimit',data=>{
-    client.channels.cache.get('993497805312233592')
-    .send({
+    createWebhook(process.env.WEBHOOK_RATELIMIT_URL,{
         embeds: [{
             author: {
                 name: 'Bot rateLimit',
