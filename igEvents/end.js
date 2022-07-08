@@ -19,6 +19,6 @@ module.exports = {
 
         bot.logged = false;
         bot.exited = true;
-        bot.uptime = 0;
+        bot.uptime = Date.now();
     }
 }
