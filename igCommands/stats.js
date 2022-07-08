@@ -14,7 +14,7 @@ module.exports = {
     async execute(bot, username, args) {
         let name = args[0] || username;
 
-        let mapData = (await kd.find()).filter(data=>data.username.toLowerCase()==name);
+        let mapData = (await kd.find()).filter(data=>data.username.toLowerCase()==name.toLowerCase());
         let kdData = mapData[0];
 
         if(!kdData) return bot.sendMessage('whisper', 'Không tìm thấy người chơi');
