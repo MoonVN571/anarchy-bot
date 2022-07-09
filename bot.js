@@ -5,7 +5,7 @@ const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: main.config.dev ? 'mo0nbot2' : 'mo0nbot',
+    botName: main.config.dev ? 'mo0nbot4' : 'mo0nbot3',
     dev: main.config.dev,
     minecraftPrefix: main.config.dev ? "!!" : "!",
     debug: true
@@ -23,13 +23,9 @@ function createBot() {
     const bot = m.createBot({
         host: '2y2c.org',
         port: 25565,
-        username: config.dev ? config.botName : process.env.MAIL,
-        password: config.dev ? null : process.env.PASS,
-        auth: config.dev ? null : 'microsoft',
+        username: config.botName,
         version: '1.18.1'
     });
-
-    console.log(process.env.MAIL, process.env.PASS);
 
     // Chạm được nè
     bot.adminName = ['MoonX', 'MoonVN', bot.username];
