@@ -1,6 +1,6 @@
 module.exports = {
     name: 'eval',
-    admin: true,
+    dev: true,
 
     async execute(bot, username, args) {
         try {

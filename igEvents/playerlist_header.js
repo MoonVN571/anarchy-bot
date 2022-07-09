@@ -1,6 +1,9 @@
-const { getUptime, sendGlobalChat } = require("../functions/minecraft");
-const { setStatus, log } = require("../functions/utils");
 const axios = require('axios');
+
+const { getUptime, sendGlobalChat } = require("../functions/minecraft");
+const { setStatus } = require('../functions/botFunc');
+const { log } = require("../functions/utils");
+
 let minutes = 1;
 
 module.exports = {

@@ -5,7 +5,7 @@ const { readdirSync } = require('fs');
 require('dotenv').config();
 
 let config = {
-    botName: main.config.dev ? "mo0nbot4" : "mo0nbot3",
+    botName: main.config.dev ? 'mo0nbot2' : 'mo0nbot',
     dev: main.config.dev,
     minecraftPrefix: main.config.dev ? "!!" : "!",
     debug: true
@@ -23,7 +23,9 @@ function createBot() {
     const bot = m.createBot({
         host: '2y2c.org',
         port: 25565,
-        username: config.botName,
+        username: config.dev ? config.botName : process.env.MAIL,
+        password: config.dev ? null : process.env.PASS,
+        auth: config.dev ? null : 'microsoft',
         version: '1.18.1'
     });
 
@@ -34,9 +36,9 @@ function createBot() {
     // đừng đụng zô
     bot.client = main.client;
     bot.config = config;
-    
+
     bot.arrayMessages = [];
-    
+
     bot.mainServer = false;
     bot.exited = false;
     bot.logged = false;
@@ -47,40 +49,31 @@ function createBot() {
     // Join Leave
     bot.countPlayers = 0;
 
-    bot.on('error',console.error);
-
     bot.commands = new Collection();
     readdirSync('./igCommands').forEach(cmdName => {
-        bot.commands.set(cmdName.split(".")[0], require('./igCommands/'+cmdName));
+        bot.commands.set(cmdName.split(".")[0], require('./igCommands/' + cmdName));
     });
 
     readdirSync('./igEvents').forEach(eventName => {
-        let event = require('./igEvents/'+eventName);
-        if (event.other && event.once) {
-            bot._client.once(event.name, (...args) => event.execute(bot, ...args));
-        } else if (event.other && !event.once) {
-            bot._client.on(event.name, (...args) => event.execute(bot, ...args));
-        } else {
-            if (event.once) {
-                bot.once(event.name, (...args) => event.execute(bot, ...args));
-            } else bot.on(event.name, (...args) => event.execute(bot, ...args));
-        }
+        let event = require('./igEvents/' + eventName);
+
+        if (event.other && event.once) bot._client.once(event.name, (...args) => event.execute(bot, ...args));
+        if (event.other && !event.once) bot._client.on(event.name, (...args) => event.execute(bot, ...args));
+        if (!event.other && event.once) bot.once(event.name, (...args) => event.execute(bot, ...args));
+        if (!event.other && !event.once) bot.on(event.name, (...args) => event.execute(bot, ...args));
     });
 
     main.client.on('messageCreate', message => {
-        if(bot.exited||message.channel.type == 'DM'||!message.guild||!message.channel.isText()||message.author.bot) return;
-        if(message.channel.id==channel.commands) bot.chat(message.content);
-        if(message.channel.id == channel.chat) {
-            let content = message.content.trim().split(/ +/g);
-            
-            content = content.join(" ") + ".";
-            if(!content.endsWith(".")) content = content.join(" ");
+        if (bot.logged || message.channel.type == 'DM' || !message.guild || !message.channel.isText() || message.author.bot) return;
+        if (message.channel.id == channel.commands) bot.chat(message.content);
+        if (message.channel.id == channel.chat) {
+            let content = message.content;
 
-            content = content.charAt(0).toUpperCase() + content.slice(1);
+            if (message.author.username.includes("§") || content.includes("§")) return;
+            if(content.split('\n').length > 1) content = content.split('\n')[0];
 
-            if(message.author.username.includes("§") || content.includes("§")) return;
             message.react('<a:1505_yes:797268802680258590>');
-            if(content !== "") bot.chat(`[${message.author.tag}] ${content}`);
+            bot.chat(`[${message.author.tag}] ${content}`);
         }
     });
 }

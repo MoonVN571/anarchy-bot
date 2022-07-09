@@ -1,11 +1,13 @@
 const { sendBotLog, getUptime } = require('../functions/minecraft');
+const { setStatus } = require('../functions/botFunc');
 
 module.exports = {
     name: 'end',
     
     execute (bot, reason) {
         console.log("Bot đã mất kết nối");
-        
+        setStatus('idle', 'WATCHING', 'chờ kết nối!');
+
         if(reason == 'force') create();
         else setTimeout(create,  3 * 60 * 1000);
 
@@ -18,7 +20,6 @@ module.exports = {
         sendBotLog('disconnect', `Bot đã mất kết nối đến server. Kết nối lại sau 3 phút.\nThời gian trong server là ${getUptime(bot, true)}`);
 
         bot.logged = false;
-        bot.exited = true;
         bot.uptime = Date.now();
     }
 }

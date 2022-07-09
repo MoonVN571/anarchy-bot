@@ -1,5 +1,6 @@
 const { sendGlobalChat } = require('../functions/minecraft');
-const { log, solveAlotMessage } = require('../functions/utils');
+const { solveAlotMessage } = require('../functions/botFunc');
+const { log } = require('../functions/utils');
 
 module.exports = {
     name: 'message',
@@ -8,10 +9,12 @@ module.exports = {
      * 
      * @param {} bot 
      * @param {String} msg 
-     * @returns 
      */
     execute (bot, msg) {
         let content = msg.toString();
+        
+        // Credit to vaitosoi
+        if(content.startsWith(' dùng lệnh/2y2c')) bot.chat('/2y2c');
 
         let username;
         let message;
@@ -55,7 +58,7 @@ module.exports = {
             }
         }
 
-        if(cmd.admin && bot.adminName.indexOf(username) < 0) return;
+        if(cmd.dev && bot.adminName.indexOf(username) < 0) return;
 
         cmd.execute(bot, username, args);
     }

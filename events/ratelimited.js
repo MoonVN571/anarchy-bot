@@ -1,5 +1,6 @@
 const client = require('../index').client;
-const { createWebhook } = require('../functions/utils');
+const { createWebhook } = require('../functions/botFunc');
+
 require('dotenv').config();
 
 client.on('rateLimit',data=>{

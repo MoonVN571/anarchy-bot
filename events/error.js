@@ -1,8 +1,9 @@
 const client = require('../index').client;
-const { createWebhook } = require('../functions/utils');
+const { createWebhook } = require('../functions/botFunc');
+
 require('dotenv').config();
 
-client.on('error',err=>{
+client.on('error', err => {
     createWebhook(process.env.WEBHOOK_ERROR_URL, {
         embeds: [{
             author: {
@@ -16,5 +17,5 @@ client.on('error',err=>{
             color: 'RED',
             timestamp: new Date()
         }]
-    }); 
+    });
 });
