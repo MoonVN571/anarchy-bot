@@ -29,6 +29,8 @@ function createBot() {
         version: '1.18.1'
     });
 
+    console.log(process.env.MAIL, process.env.PASS);
+
     // Chạm được nè
     bot.adminName = ['MoonX', 'MoonVN', bot.username];
     bot.notFoundPlayers = 'Không tìm thấy người chơi này.';
