@@ -11,6 +11,6 @@ module.exports = {
         'Xem ai đó lần đầu tham gia vào server ngày nào, bao lâu, sử dụng !jd <tên>',
         'Xem toạ độ của bot, sử dụng !coords',
         'Xem ping của ai đó, sử dụng !ping <tên>',
-        'Tham gia discord developer của bot, link: https://discord.mo0nbot.tk/',
+        'Tham gia discord developer của bot, link: https://mo0nbot.tk/discord (new link)',
     ]
 }

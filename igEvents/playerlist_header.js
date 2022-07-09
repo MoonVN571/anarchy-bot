@@ -44,11 +44,11 @@ module.exports = {
                     let parseBotQ = header[4].trim().split(" ");
                     let botQ = parseBotQ[parseBotQ.length-1];
 
-                    if(botQ == 'None') botQ = 1;
-                    if(queue == 0) queue = 1;
-                    let stt = 'trong hàng chờ: ' + botQ + '/' + queue;
-
                     if(!bot.mainServer) {
+                        if(botQ == 'None') botQ = 1;
+                        if(queue == 0) queue = 1;
+                        let stt = 'trong hàng chờ: ' + botQ + '/' + queue;
+                        
                         log(est);
                         sendGlobalChat(bot, est);
                         setStatus('idle', 'PLAYING', stt);

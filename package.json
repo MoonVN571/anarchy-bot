@@ -1,6 +1,6 @@
 {
   "name": "2y2c-bot",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "Một project hoàn toàn mới với bot được viết lại hoàn toàn",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,6 @@
     "discord.js": "13.8.1",
     "dotenv": "16.0.1",
     "mineflayer": "^4.3.0",
-    "mongoose": "6.4.3"
+    "mongoose": "6.4.4"
   }
 }

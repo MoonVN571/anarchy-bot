@@ -21,7 +21,7 @@ let channel = {
 
 function createBot() {
     const bot = m.createBot({
-        host: process.env.IP,
+        host: '2y2c.org',
         port: 25565,
         username: config.botName,
         version: '1.18.1'
@@ -46,6 +46,8 @@ function createBot() {
 
     // Join Leave
     bot.countPlayers = 0;
+
+    bot.on('error',console.error);
 
     bot.commands = new Collection();
     readdirSync('./igCommands').forEach(cmdName => {

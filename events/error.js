@@ -1,8 +1,9 @@
 const client = require('../index').client;
+const { createWebhook } = require('../functions/utils');
+require('dotenv').config();
 
 client.on('error',err=>{
-    client.channels.cache.get('993499095694057484')
-    .send({
+    createWebhook(process.env.WEBHOOK_ERROR_URL, {
         embeds: [{
             author: {
                 name: 'Bot Error',
@@ -15,5 +16,5 @@ client.on('error',err=>{
             color: 'RED',
             timestamp: new Date()
         }]
-    }).catch(()=>{});
+    }); 
 });
