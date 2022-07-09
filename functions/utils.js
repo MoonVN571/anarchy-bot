@@ -1,3 +1,5 @@
+const { createWebhook } = require('./botFunc');
+
 const config = require('../bot').config;
 
 require('dotenv').config();
@@ -44,11 +46,12 @@ function getDorHMS(temp, vi, fulltime) {
  * @param {String} string 
  */
 function log(...string) {
-    if (config.debug) console.log('[' +
-        new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })
-        + ' ' + new Date().toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' }) + ']'
-        , ...string
-    );
+    if (!config.debug) return;
+    let timeFormat = '[' +
+    new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })
+    + ' ' + new Date().toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' }) + ']';
+
+    createWebhook(process.env.WEBHOOK_LOGS_URL, timeFormat + " " + string.join('\n'));
 }
 
 module.exports = {

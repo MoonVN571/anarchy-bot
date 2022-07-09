@@ -2,6 +2,7 @@ const { Permissions } = require('discord.js');
 
 const client = require('../index').client;
 const { notFoundPlayers, manager } = require('../set');
+const { log } = require('../functions/utils');
 
 client.on('messageCreate', message => {
     if (message.author.bot || !message.content.startsWith(client.config.prefix) || message.author == client.user || message.channel.type == "DM" || !message.channel) return;
@@ -23,15 +24,12 @@ client.on('messageCreate', message => {
     message.notFoundPlayers = notFoundPlayers;
     message.prefix = client.config.prefix;
 
+    log(message.author.tag + ' used command: ' + cmdName + ' ' + args.join(" "));
+
     function sendMessage(embed) {
         if (typeof embed == 'object') message.reply({ embed, allowedMentions: { repliedUser: false } }).catch(err => { });
         else message.reply({ content: embed, allowedMentions: { repliedUser: false } }).catch(err => { });
     }
 
-    try {
-        cmd.execute(client, message, args);
-    } catch (err) {
-        console.log(cmdName);
-        console.log(err);
-    }
+    cmd.execute(client, message, args);
 });
