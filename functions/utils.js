@@ -50,8 +50,8 @@ function log(...string) {
     let timeFormat = '[' +
     new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })
     + ' ' + new Date().toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' }) + ']';
-
-    createWebhook(process.env.WEBHOOK_LOGS_URL, timeFormat + " " + string.join('\n'));
+    console.log(timeFormat + " " + string.join("\n"));
+    //createWebhook(process.env.WEBHOOK_LOGS_URL, timeFormat + " " + string.join('\n'));
 }
 
 module.exports = {
