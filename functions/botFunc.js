@@ -26,7 +26,7 @@ function solveAlotMessage(bot) {
 
 function createWebhook(option, message) {
     const webhook = new WebhookClient(option);
-    webhook.send(message).catch(() => {});
+    webhook.send(message).catch(console.error);
 }
 
 module.exports = {

@@ -1,3 +1,4 @@
-module.exports= (str) => {
-    require('../botFunc').createWebhook({ id: '995306729334112256' }, str);
+require('dotenv').config();
+module.exports = (str) => {
+    require('../botFunc').createWebhook({ url: process.env.WEBHOOK_LOGS_URL }, str);
 }
