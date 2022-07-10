@@ -1,7 +1,4 @@
-const { createWebhook } = require('./botFunc');
-
 const config = require('../bot').config;
-
 require('dotenv').config();
 
 /**
@@ -50,8 +47,8 @@ function log(...string) {
     let timeFormat = '[' +
     new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })
     + ' ' + new Date().toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' }) + ']';
-    console.log(timeFormat + " " + string.join("\n"));
-    //createWebhook(process.env.WEBHOOK_LOGS_URL, timeFormat + " " + string.join('\n'));
+    console.log(timeFormat + " " + string.join(" "));
+    require('./force/logWebhook')(timeFormat + " " + string.join(' '));
 }
 
 module.exports = {

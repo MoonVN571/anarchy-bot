@@ -20,11 +20,15 @@ module.exports = {
             .filter(cmdName => !require('../../igCommands/' + cmdName)?.dev);
 
         readdirSync('./commands').forEach(category => {
-            if(category == 'admin') return;
+            if (category == 'admin') return;
 
             let cmdList = readdirSync('./commands/' + category)
                 .map(cmdName => cmdName.split(".js")[0])
-                .filter(cmdName => !require('../../commands/' + category + '/' + cmdName)?.dev);
+                .filter(cmdName => {
+                    let cmd = require('../../commands/' + category + '/' + cmdName);
+                    if(cmd.dev || cmd.disable) return false;
+                    else return true;
+                });
 
             if (cmdList.indexOf(args[0]) > -1) {
                 let cmd = require('../../commands/' + category + '/' + args[0]);
@@ -40,7 +44,7 @@ module.exports = {
 
                 return;
             }
-            
+
             stage++;
 
             botCmd.push('***' + category + '***: `' + cmdList.join('`, `') + '`');

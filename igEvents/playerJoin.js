@@ -9,6 +9,8 @@ module.exports = {
         // fix spam khi join
         bot.countPlayers++;
 
+        if(!bot.mainServer) return;
+
         let jdData = await jd.findOne({username:player.username});
         if(!jdData) await jd.create({username:player.username,time:Date.now()});
         

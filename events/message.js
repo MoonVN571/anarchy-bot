@@ -1,6 +1,6 @@
 const { Permissions } = require('discord.js');
 
-const client = require('../index').client;
+const client = require('../discord').client;
 const { notFoundPlayers, manager } = require('../set');
 const { log } = require('../functions/utils');
 
@@ -16,15 +16,21 @@ client.on('messageCreate', message => {
     if (!cmd) return;
 
     if (cmd.dev && manager.adminBot.indexOf(message.author.id) < 0) return;
-    if (cmd.admin && !message.member.permissions.a(Permissions.FLAGS.ADMINISTRATOR)) return;
+    if (cmd.admin && !message.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return;
+    if (cmd.disable) return;
 
     if (!message.guild.me.permissions.has(Permissions.FLAGS.SEND_MESSAGES) || !message.guild.me.permissionsIn(message.channel).has(Permissions.FLAGS.SEND_MESSAGES)) return;
+
+    if(cmd.categories == 'players') {
+
+        return;
+    }
 
     message.sendMessage = sendMessage;
     message.notFoundPlayers = notFoundPlayers;
     message.prefix = client.config.prefix;
 
-    log(message.author.tag + ' used command: ' + cmdName + ' ' + args.join(" "));
+    log(message.author.tag + ' was used command: ' + cmdName + ' ' + args.join(" "));
 
     function sendMessage(embed) {
         if (typeof embed == 'object') message.reply({ embed, allowedMentions: { repliedUser: false } }).catch(err => { });

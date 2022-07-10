@@ -4,7 +4,8 @@ const db = require('../../db/setup');
 module.exports = {
     name: 'setup',
     description: 'Setup dữ liệu xuất từ server',
-
+    disable: true,
+    
     /**
      * 
      * @param {Client} client 
@@ -81,14 +82,14 @@ module.exports = {
                 }
             }
             default:
-                return message.sendMessage('Không tìm thấy setting này (livechat/delete)');
+                return message.sendMessage('Không tìm thấy setting này (livechat/command/delete)');
         }
     }
 }
 
 function setupServer(client, message, args) {
     let channel = isValidChannel(client, message, args[1]);
-    if (!channel) return "Kênh không hợp lệ.";
+    if (!channel) return { error: "Kênh không hợp lệ." };
 
     let guildChannel = message.guild.channels.cache.get(channel);
     if (!message.guild.me.permissionsIn(guildChannel).has('SEND_MESSAGES'))

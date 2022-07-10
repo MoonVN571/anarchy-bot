@@ -4,7 +4,7 @@ require('dotenv').config();
 process.on('uncaughtException', (err) => {
     console.log(err);
 
-    createWebhook(process.env.WEBHOOK_ERROR_URL, {
+    createWebhook({ id: '993499095694057484' }, {
         embeds: [{
             author: {
                 name: 'Processing ERROR'

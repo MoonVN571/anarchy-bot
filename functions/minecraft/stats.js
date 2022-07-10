@@ -1,0 +1,63 @@
+const { log } = require('../utils');
+const kd = require('../../db/stats');
+const set = require('../../set');
+
+module.exports.isDeathMessage = (message) => {
+    if (!message) return;
+    if (message.match(set.stats.deaths)
+        || message.match(set.stats.killAft)
+        || message.match(set.stats.noStats)) return true;
+}
+
+module.exports.save = async (bot, content) => {
+    let deathsRegex = require('../../set').stats.deaths;
+    let killAfterRegex = set.stats.killAft;
+
+    if (content.match(deathsRegex)) {
+        let username = content.match(deathsRegex);
+        log(username[1] + ' + death');
+        saveDeaths(username[1]);
+    }
+    if (content.match(killAfterRegex)) {
+        let usernameList = content.match(killAfterRegex);
+        let uname = usernameList[2];
+
+        if (uname.includes('\'')) uname = uname.split('\'')[0];
+        if (uname?.split(" ").length > 1) uname = uname.split(' ')[0];
+
+        log('Death: ' + usernameList[1] + ' - Kill: ' + uname);
+
+        saveDeaths(usernameList[1]);
+        saveKills(uname);
+    }
+
+    async function saveDeaths(username) {
+        let playerList = Object.values(bot.players).map(d => d.username);
+
+        if (playerList.indexOf(username) < 0) return;
+
+        let kdData = await kd.findOne({ username: username });
+        if (!kdData) return kd.create({ username: username, deaths: 1, kills: 0 });
+
+        if (playerList.indexOf(username) > -1) {
+            log(username + ' + 1 death');
+            if (bot.config.dev) return;
+            kdData.deaths += 1;
+            kdData.save();
+        }
+    }
+
+    async function saveKills(username) {
+        let playerList = Object.values(bot.players).map(d => d.username);
+
+        if (playerList.indexOf(username) < 0) return;
+
+        let kdData = await kd.findOne({ username: username });
+        if (!kdData) return kd.create({ username: username, deaths: 0, kills: 1 });
+
+        log(username + ' + 1 kill');
+        if (bot.config.dev) return;
+        kdData.kills += 1;
+        kdData.save();
+    }
+}

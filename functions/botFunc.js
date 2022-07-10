@@ -1,7 +1,7 @@
 const { WebhookClient } = require('discord.js');
-
-const client = require('../index').client;
+const client = require('../discord').client;
 const { log } = require("./utils");
+
 function setStatus(status, type, message) {
     client.user.setPresence({
         status: status,
@@ -24,8 +24,8 @@ function solveAlotMessage(bot) {
     setTimeout(() => solveAlotMessage(bot), 5 * 1000);
 }
 
-function createWebhook(url, message) {
-    const webhook = new WebhookClient({ url: url });
+function createWebhook(option, message) {
+    const webhook = new WebhookClient(option);
     webhook.send(message).catch(() => {});
 }
 
