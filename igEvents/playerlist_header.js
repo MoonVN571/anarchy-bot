@@ -52,13 +52,13 @@ module.exports = {
                         if(queue == 0) queue = 1;
                         let stt = 'trong hàng chờ: ' + botQ + '/' + queue;
                         
-                        log(est);
+                        // log(est);
                         sendGlobalChat(bot, est);
                         setStatus('idle', 'PLAYING', stt);
                     } else {
                         minutes = 5;
                         let tps = footer[1]?.split(" ")[0];
-                        log('tps: '+ tps);
+                        // log('tps: '+ tps);
                         setStatus('online', 'PLAYING', 'TPS: ' + tps + ' - Hàng Chờ: ' + queue);
                     }
                 } catch(e) {

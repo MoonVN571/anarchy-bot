@@ -28,7 +28,7 @@ module.exports = {
             parse = parse.replace("<", "").replace('>', '');
             username = parse.split(' ')[0];
             message = parse.split(' ').slice(1).join(" ");
-            log(`${username} : ${message}`);
+            // log(`${username} : ${message}`);
         }
 
         sendGlobalChat(bot, content, username, message);
