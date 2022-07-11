@@ -24,7 +24,7 @@ module.exports = {
         if(content.startsWith('<')) {
             let parse = content;
             if(content.startsWith("<[")) parse = content.replace("[Donator] ", "")
-            if(content.split("] ")[1]?.split(">")[0].startsWith("~")) parse = parse.replace("~","");
+            if(parse.includes("~")) parse = parse.replace("~","");
             parse = parse.replace("<", "").replace('>', '');
             username = parse.split(' ')[0];
             message = parse.split(' ').slice(1).join(" ");

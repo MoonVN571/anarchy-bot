@@ -24,7 +24,7 @@ function getDorHMS(temp, vi, fulltime) {
         minutes = parseInt(((temp - days * 86400 - hours * 3600)) / 60),
         seconds = parseInt(temp % 60);
 
-    log(days, hours, minutes, seconds);
+    // log(days, hours, minutes, seconds);
 
     let format = '';
     let str = ['h', 'm', 's', 'd'];
