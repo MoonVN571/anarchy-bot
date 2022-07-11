@@ -15,7 +15,7 @@ module.exports.save = async (bot, content) => {
 
     if (content.match(deathsRegex)) {
         let username = content.match(deathsRegex);
-        log(username[1] + ' + death');
+        // log(username[1] + ' + death');
         saveDeaths(username[1]);
     }
     if (content.match(killAfterRegex)) {
@@ -25,7 +25,7 @@ module.exports.save = async (bot, content) => {
         if (uname.includes('\'')) uname = uname.split('\'')[0];
         if (uname?.split(" ").length > 1) uname = uname.split(' ')[0];
 
-        log('Death: ' + usernameList[1] + ' - Kill: ' + uname);
+        // log('Death: ' + usernameList[1] + ' - Kill: ' + uname);
 
         saveDeaths(usernameList[1]);
         saveKills(uname);
@@ -40,7 +40,7 @@ module.exports.save = async (bot, content) => {
         if (!kdData) return kd.create({ username: username, deaths: 1, kills: 0 });
 
         if (playerList.indexOf(username) > -1) {
-            log(username + ' + 1 death');
+            // log(username + ' + 1 death');
             if (bot.config.dev) return;
             kdData.deaths += 1;
             kdData.save();
@@ -55,7 +55,7 @@ module.exports.save = async (bot, content) => {
         let kdData = await kd.findOne({ username: username });
         if (!kdData) return kd.create({ username: username, deaths: 0, kills: 1 });
 
-        log(username + ' + 1 kill');
+        // log(username + ' + 1 kill');
         if (bot.config.dev) return;
         kdData.kills += 1;
         kdData.save();

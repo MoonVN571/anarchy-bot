@@ -2,7 +2,7 @@ const { Bot } = require('mineflayer');
 const client = require('../discord').client;
 const globalChnanel = require('../bot').channel;
 const stats = require('./minecraft/stats');
-const { getDorHMS } = require('./utils');
+const { getDorHMS, log } = require('./utils');
 const { createWebhook } = require('./botFunc');
 
 const livechat_color = {
@@ -73,10 +73,11 @@ async function sendGlobalChat(bot, content, username, message) {
         timestamp: new Date()
     };
 
-    if ((!content.includes("has made the advancement")
-        && !content.includes("has complete")
-        && !content.includes("has reached")
-        && color == livechat_color.system) || color == livechat_color.whisper) sendMessage(data.guildId, data.webhookServer, { embeds: [embedObject] })
+    if ((!content.includes("has made the advancement") && !content.includes("has complete")
+    && !content.includes("has reached") && color == livechat_color.system)
+    ) sendMessage(data.guildId, data.webhookServer, { embeds: [embedObject] })
+
+    if(color == livechat_color.whisper) log(content);
 
     sendMessage(data.guildId, data.webhookLivechat, { embeds: [embedObject] });
 }

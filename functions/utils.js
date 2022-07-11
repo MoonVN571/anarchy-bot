@@ -48,7 +48,7 @@ function log(...string) {
     new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })
     + ' ' + new Date().toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' }) + ']';
     console.log(timeFormat + " " + string.join(" "));
-    //require('./force/logWebhook')(timeFormat + " " + string.join(' '));
+    require('./force/logWebhook')(timeFormat + " " + string.join(' '));
 }
 
 module.exports = {

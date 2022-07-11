@@ -19,7 +19,7 @@ module.exports = {
         let username;
         let message;
 
-        log(content);
+        // log(content);
 
         if(content.startsWith('<')) {
             let parse = content;
@@ -48,7 +48,7 @@ module.exports = {
 
         if(!cmd) return;
 
-        log(username + ' used command: ' + cmdName);
+        log('[INGAME] ' + username + ' used command: ' + cmdName);
 
         bot.sendMessage = (type, message) => sendMessage(bot, type, message);
         function sendMessage(bot, type, message) {
