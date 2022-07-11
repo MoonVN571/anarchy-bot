@@ -1,4 +1,7 @@
+const { getWebhook } = require('../botFunc');
+const index = require('../../index');
 require('dotenv').config();
-module.exports = (str) => {
-    require('../botFunc').createWebhook({ url: process.env.WEBHOOK_LOGS_URL }, str);
+module.exports = async (str) => {
+    let webhook = await getWebhook(index.config.devGuild, index.logger.logs );
+    require('../botFunc').createWebhook({ url: webhook.url }, str);
 }

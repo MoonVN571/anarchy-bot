@@ -1,9 +1,9 @@
 const { Bot } = require('mineflayer');
-const client = require('../discord').client;
 const globalChnanel = require('../bot').channel;
 const stats = require('./minecraft/stats');
+const index = require('../index');
 const { getDorHMS, log } = require('./utils');
-const { createWebhook } = require('./botFunc');
+const { createWebhook, getWebhook } = require('./botFunc');
 
 const livechat_color = {
     default: 0x979797,
@@ -22,7 +22,7 @@ const botlog_color = {
 }
 
 const data = {
-    guildId: '794912016237985802',
+    guildId: index.config.devGuild,
     webhookLivechat: globalChnanel.webhookLivechat,
     webhookJoin: globalChnanel.webhookJoin,
     webhookJoinMessage: globalChnanel.webhookJoinMessage,
@@ -83,19 +83,12 @@ async function sendGlobalChat(bot, content, username, message) {
 }
 
 async function sendMessage(guildId, webhookId, msg) {
-    if (!data.webhookLivechat) return;
-    let webhook = (await client.guilds.cache.get(guildId)?.fetchWebhooks())
-        .map(d => d).find(webhook => webhook.id == webhookId);
+    let webhook = await getWebhook(guildId, webhookId);
 
-    if (!webhook?.id) return console.log(webhook);
-
-    if (webhook.name !== 'moonbot' || webhook.avatar !== client.user.avatarURL()) webhook.edit({
-        name: 'moonbot',
-        avatar: client.user.avatarURL()
-    });
-
+    if(webhook?.error) return;
     createWebhook({ url: webhook.url }, msg);
 }
+
 
 /**
  * 
@@ -108,6 +101,7 @@ function sendCustomMessage(type, content) {
     if (type == 'connect') color = "GREEN";
     if (type == 'disconnect') color = "RED";
 
+    return;
     sendMessage(data.guildId, data.webhookJoinMessage, {
         embeds: [{
             description: content,

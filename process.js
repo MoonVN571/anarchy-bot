@@ -7,7 +7,7 @@ process.on('uncaughtException', (err) => {
     createWebhook({ url: process.env.WEBHOOK_ERRORS_URL }, {
         embeds: [{
             author: {
-                name: 'Processing ERROR'
+                name: 'Progress ERROR'
             },
             description: err.message ? err.message : "Unknown",
             fields: [

@@ -16,7 +16,7 @@ function setStatus(status, type, message) {
 
 function solveAlotMessage(bot) {
     bot.arrayMessages;
-    console.log(bot.arrayMessages);
+    log(bot.arrayMessages);
     if(bot.arrayMessages.length <= 0) return;
     log('Thực thi lệnh: ' + bot.arrayMessages[0]);
     bot.chat(bot.arrayMessages[0]);
@@ -29,8 +29,23 @@ function createWebhook(option, message) {
     webhook.send(message).catch(console.error);
 }
 
+async function getWebhook(guildId, webhookId) {
+    let webhook = (await client.guilds.cache.get(guildId)?.fetchWebhooks())
+        ?.map(d => d).find(webhook => webhook.id == webhookId);
+
+    if (!webhook?.id) return { error: 'Unknown webhooks.' };
+
+    if (webhook.name !== 'moonbot' || webhook.avatar !== client.user.avatarURL()) webhook.edit({
+        name: 'moonbot',
+        avatar: client.user.avatarURL()
+    });
+
+    return webhook;
+}
+
 module.exports = {
     createWebhook,
+    getWebhook,
     setStatus,
     solveAlotMessage
 }
