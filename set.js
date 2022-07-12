@@ -8,7 +8,7 @@ module.exports = {
     },
     // Random send message
     messageArray: [
-        'Xem ai đó lần đầu tham gia vào server ngày nào, bao lâu, sử dụng !jd <tên>',
+        'Xem tất cả lệnh của bot tại https://mo0nbot.tk/',
         'Chat trong server ở discord tại server: https://discord.mo0nbot.tk/',
     ],
     // Text khi k có player data
