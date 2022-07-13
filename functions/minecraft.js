@@ -84,7 +84,7 @@ async function sendGlobalChat(bot, content, username, message) {
 
 async function sendMessage(guildId, webhookId, msg) {
     let webhook = await getWebhook(guildId, webhookId);
-
+    console.log(webhookId)
     if(webhook?.error) return;
     createWebhook({ url: webhook.url }, msg);
 }
