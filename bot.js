@@ -14,16 +14,16 @@ let config = {
 }
 
 let channel = {
-    webhookLivechat: config.dev ? "995568425613152358" : "995576636214886491",
-    webhookJoinMessage: config.dev ? "995585131123331112" : "995584897899057242",
-    webhookJoin: config.dev ? "995585063582453862" : "995584779460300840",
-    webhookServer: config.dev ? "995585187889037312" : "995584976932319302",
+    webhookLivechat: config.dev ? "995568425613152358" : "996799726420762765",
+    webhookJoinMessage: config.dev ? "995585131123331112" : "",
+    webhookJoin: config.dev ? "995585063582453862" : "996800070685044856",
+    webhookServer: config.dev ? "995585187889037312" : "996800472981712969",
     chat: config.dev ? "987204059838709780" : "986599157068361734",
     commands: config.dev ? "990104136018182154" : "987889094845689916"
 }
 function createBot() {
     const bot = m.createBot({
-        host: '2y2c.org',
+        host: '2b2c.org',
         port: 25565,
         username: config.botName,
         version: '1.12.2'
