@@ -19,7 +19,7 @@ let channel = {
     webhookJoin: config.dev ? "995585063582453862" : "996999642912931952",
     webhookServer: config.dev ? "995585187889037312" : "996999899398799420",
     chat: config.dev ? "987204059838709780" : "986599157068361734",
-    commands: config.dev ? "990104136018182154" : "987889094845689916"
+    commands: config.dev ? "990104136018182154" : "996797865378709674"
 }
 function createBot() {
     const bot = m.createBot({

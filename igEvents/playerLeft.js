@@ -8,13 +8,15 @@ module.exports = {
         if (bot.countPlayers <= Object.values(bot.players).map(p => p.username).length) return;
         if(!bot.mainServer) return;
 
-        let seenData = await seen.findOne({username:player.username});
-        if(!seenData) await seen.create({username:player.username,time:Date.now()});
-        else {
-            seenData.time = Date.now();
-            seenData.save();
+        if(!bot.config.dev) {
+            let seenData = await seen.findOne({username:player.username});
+            if(!seenData) await seen.create({username:player.username,time:Date.now()});
+            else {
+                seenData.time = Date.now();
+                seenData.save();
+            }
         }
-
+        
         sendCustomMessage('disconnect', player.username + ' đã thoát khỏi server.');
     }
 }

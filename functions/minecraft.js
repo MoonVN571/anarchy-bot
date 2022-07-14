@@ -84,7 +84,7 @@ async function sendGlobalChat(bot, content, username, message) {
 
 async function sendMessage(guildId, webhookId, msg) {
     let webhook = await getWebhook(guildId, webhookId);
-    console.log(webhook.url)
+
     if(webhook?.error) return;
     createWebhook({ url: webhook.url }, msg);
 }
@@ -101,8 +101,7 @@ function sendCustomMessage(type, content) {
     if (type == 'connect') color = "GREEN";
     if (type == 'disconnect') color = "RED";
 
-    return;
-    sendMessage(data.guildId, data.webhookJoinMessage, {
+    sendMessage(data.guildId, data.webhookLivechat, {
         embeds: [{
             description: content,
             color: color,

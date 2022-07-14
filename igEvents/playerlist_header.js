@@ -4,7 +4,7 @@ const { getUptime, sendGlobalChat } = require("../functions/minecraft");
 const { setStatus } = require('../functions/botFunc');
 const { log } = require("../functions/utils");
 
-let minutes = 1;
+let minutes = 5;
 
 module.exports = {
     name: 'playerlist_header',
@@ -30,8 +30,16 @@ module.exports = {
             let footer = cleanArray(parsedFooter?.text);
 
             if(!header) return;
-            
-            await axios.default.get('https://api.mcsrvstat.us/2/2y2c.org').then(res => {
+            let completeStr = footer[1] +   
+            "\n- Đã vào server từ "+ getUptime(bot, true) + 
+            " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
+
+            if(bot.mainServer) bot.client.channels.cache.get(require("../bot").channel.chat).setTopic(completeStr);
+            let tps = footer[1]?.trim().split(" ")[0];
+
+            setStatus('online', 'PLAYING', 'TPS: ' + tps);
+            /*
+            await axios.default.get('https://api.mcsrvstat.us/2/2b2c.org').then(res => {
                 try {
                     // BOT STATUS MAIN SERVER TAB
                     let completeStr = footer[1] +   
@@ -64,7 +72,7 @@ module.exports = {
                 } catch(e) {
                     console.log(e);
                 }
-            }).catch(err => console.log(err));
+            }).catch(err => console.log(err)); */
         }
     }
 }

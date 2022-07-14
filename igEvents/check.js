@@ -9,7 +9,8 @@ module.exports = {
         
         if(bot.player?.gamemode !== 0) return;
         if(bot.mainServer) return;
-        sendBotLog('queue', 'Đã đợi ' + getDorHMS((Date.now() - bot.queueStart)/1000, true, true) + " trước khi vào server");
+        let time = getDorHMS((Date.now() - bot.queueStart)/1000, true, true);
+        if(time) sendBotLog('queue', 'Đã đợi ' + time + " trước khi vào server");
         bot.mainServer = true;
         bot.uptime = Date.now();
     }
