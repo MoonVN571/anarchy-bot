@@ -6,18 +6,21 @@ module.exports.isDeathMessage = (message) => {
     if (!message) return;
     if (message.match(set.stats.deaths)
         || message.match(set.stats.killAft)
+        || message.match(set.stats.killBef)
         || message.match(set.stats.noStats)) return true;
 }
 
 module.exports.save = async (bot, content) => {
     let deathsRegex = require('../../set').stats.deaths;
     let killAfterRegex = set.stats.killAft;
+    let killBeforeRegex = set.stats.killBef;
 
     if (content.match(deathsRegex)) {
         let username = content.match(deathsRegex);
         // log(username[1] + ' + death');
         saveDeaths(username[1]);
     }
+
     if (content.match(killAfterRegex)) {
         let usernameList = content.match(killAfterRegex);
         let uname = usernameList[2];
@@ -29,6 +32,13 @@ module.exports.save = async (bot, content) => {
 
         saveDeaths(usernameList[1]);
         saveKills(uname);
+    }
+
+    if (content.match(killBeforeRegex)) {
+        let usernameList = content.match(killBeforeRegex);
+        
+        saveDeaths(usernameList[2]);
+        saveKills(usernameList[1]);
     }
 
     async function saveDeaths(username) {
