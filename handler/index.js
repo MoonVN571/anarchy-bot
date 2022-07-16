@@ -4,7 +4,7 @@ const { readdirSync } = require('fs');
 readdirSync('./events/').forEach(eventName =>
     require('../events/'+eventName)
 );
-
+/*
 readdirSync('./commands').forEach(dir => {
     const cmd = readdirSync('./commands/'+dir);
 
@@ -13,4 +13,4 @@ readdirSync('./commands').forEach(dir => {
 
         client.commands.set(cmdName.split(".")[0], promo);
     });
-});
+});*/
