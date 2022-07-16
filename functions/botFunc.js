@@ -3,6 +3,7 @@ const client = require('../discord').client;
 const { log } = require("./utils");
 
 function setStatus(status, type, message) {
+    return;
     client.user.setPresence({
         status: status,
         activities: [
