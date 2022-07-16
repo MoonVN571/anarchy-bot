@@ -37,7 +37,7 @@ module.exports = {
             if(bot.mainServer) bot.client.channels.cache.get(require("../bot").channel.chat).setTopic(completeStr);
             let tps = footer[1]?.trim().split(" ")[0];
 
-            setStatus('online', 'PLAYING', 'TPS: ' + tps);
+            //setStatus('online', 'PLAYING', 'TPS: ' + tps);
             /*
             await axios.default.get('https://api.mcsrvstat.us/2/2b2c.org').then(res => {
                 try {
