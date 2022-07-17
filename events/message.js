@@ -31,7 +31,7 @@ client.on('messageCreate', message => {
     message.notFoundPlayers = notFoundPlayers;
     message.prefix = client.config.prefix;
 
-    log(message.author.tag + " (" + message.author.id + ') used command: ' + cmdName + ' ' + args.join(" "));
+    log(message.guild.name + ' - ' + message.author.tag + ' used command: ' + cmdName + ' ' + args.join(" "));
 
     function sendMessage(embed) {
         if (typeof embed == 'object') message.reply({ embed, allowedMentions: { repliedUser: false } }).catch(err => { });

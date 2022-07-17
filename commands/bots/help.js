@@ -12,7 +12,12 @@ module.exports = {
      * @param {String[]} args 
      */
     async execute(client, message, args) {
-        let stage = 0;
+        if (args[0]) {
+            let cmd = client.commands.get(args[0])
+                || client.commands.find(cmd => cmd.aliases && cmd.aliases.indexOf(args[0]) > -1);
+
+            if (cmd && (!cmd.dev || !cmd.disable) && cmd.description) return message.sendMessage(`**${args[0]}**: *${cmd.description}*`);   
+        }
 
         let botCmd = [];
         let igCmdList = readdirSync('./igCommands/')
@@ -26,34 +31,14 @@ module.exports = {
                 .map(cmdName => cmdName.split(".js")[0])
                 .filter(cmdName => {
                     let cmd = require('../../commands/' + category + '/' + cmdName);
-                    if(cmd.dev || cmd.disable) return false;
+                    if (cmd.dev || cmd.disable) return false;
                     else return true;
                 });
-
-            if (cmdList.indexOf(args[0]) > -1) {
-                let cmd = require('../../commands/' + category + '/' + args[0]);
-
-                if (!cmd.description) return message.sendMessage("Lệnh này không có mô tả.");
-                else message.sendMessage('**' + args[0] + "**: " + cmd.description);
-                return;
-            } if (igCmdList.indexOf(args[0]) > -1) {
-                let cmd = require('../../igCommands/' + args[0]);
-
-                if (!cmd.description) return message.sendMessage("Lệnh này không có mô tả.");
-                else message.sendMessage('**' + args[0] + "**: " + cmd.description);
-
-                return;
-            }
-
-            stage++;
 
             botCmd.push('***' + category + '***: `' + cmdList.join('`, `') + '`');
         });
 
-        if (stage > 0 && args[0]) return message.sendMessage("Không tìm thấy lệnh này.");
-
         let igCmd = '`' + igCmdList.join('`, `') + '`';
-
 
         message.sendMessage(
             '**Discord Commands**' + '\n\n'
@@ -61,6 +46,8 @@ module.exports = {
             + '\n\n'
             + '**Ingame Commands**' + '\n\n'
             + igCmd
+            + '\n\n'
+            + 'Các lệnh tại mục **players** chỉ check stats của player 2Y2C'
             + '\n\n'
             + '*Mẹo: Sử dụng `' + message.prefix + 'help <tên lệnh>` để xem thêm mô tả.*'
         );

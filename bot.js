@@ -30,7 +30,7 @@ function createBot() {
     });
 
     // Chạm được nè
-    bot.adminName = ['MoonX', 'MoonVN', bot.username];
+    bot.adminName = ['MoonVN', bot.username];
     bot.notFoundPlayers = set.notFoundPlayers;
 
     // đừng đụng zô
