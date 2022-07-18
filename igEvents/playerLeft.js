@@ -7,7 +7,7 @@ module.exports = {
 
     async execute(bot, player) {
         if (bot.data.countPlayers <= getPlayersList(bot).length) return;
-        if (!bot.mainServer) return;
+        if (!bot.data.mainServer) return;
 
         let seenData = await seen.findOne({ username: player.username });
         if (!seenData) await seen.create({ username: player.username, time: Date.now() });
