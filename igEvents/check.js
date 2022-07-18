@@ -52,10 +52,7 @@ module.exports = {
                 components: [button]
             }).then(async msg => {
                 let collection = msg.channel.createMessageComponentCollector();
-
-                let embed = await getEmbed();
-                setInterval(() => msg.edit({ embeds: [embed] }).catch(err => { }), 5 * 60 * 1000);
-
+                
                 collection.on('collect', async interaction => {
                     if (!bot.data.logged) return interaction.reply({ content: "Bot chưa kết nối vào server thử lại sau!", ephemeral: true });
 

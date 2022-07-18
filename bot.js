@@ -5,6 +5,7 @@ const main = require('./discord');
 const index = require('./index');
 const set = require('./set');
 const { manager } = require('./set');
+const { log } = require('./functions/utils');
 require('dotenv').config();
 
 let config = {
@@ -66,7 +67,7 @@ function createBot() {
     });
 
     main.client.on('messageCreate', message => {
-        if (!bot.logged || message.channel.type == ChannelType.DM || !message.guild || message.channel.type !== ChannelType.GuildText || message.author.bot) return;
+        if (!bot.data.logged || message.author.bot) return;
         if (message.channel.id == channel.commands) bot.chat(message.content);
         if (message.channel.id == channel.livechat) {
             let content = message.content;
@@ -74,8 +75,11 @@ function createBot() {
             if (message.author.username.includes("§") || content.includes("§")) return;
             if (content.split('\n').length > 1) content = content.split('\n')[0];
 
+            let toServer = `[${message.author.tag}] ${content}`;
+            log(toServer);
+            
             message.react('<a:1505_yes:797268802680258590>');
-            bot.chat(`[${message.author.tag}] ${content}`);
+            bot.chat(`${toServer}`);
         }
     });
 }
