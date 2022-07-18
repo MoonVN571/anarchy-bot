@@ -1,4 +1,5 @@
 const { Colors, WebhookClient } = require('discord.js');
+const { config } = require('../bot');
 const client = require('../discord').client;
 require('dotenv').config();
 
@@ -9,7 +10,7 @@ client.rest.on('rateLimited', data => {
     new WebhookClient({ url: process.env.WEBHOOK_ERRORS_URL }).send({
         embeds: [{
             author: {
-                name: 'Ralimited',
+                name: 'Ralimited - ' + config.dev,
             },
             fields: [
                 {
@@ -46,5 +47,5 @@ client.rest.on('rateLimited', data => {
             color: Colors.Red,
             timestamp: new Date().toISOString()
         }]
-    });
+    }).catch(err => console.log(err));
 });
