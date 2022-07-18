@@ -1,6 +1,6 @@
 let config = {
     prefix: "$",
-    dev: true
+    dev: false
 };
 
 if(config.dev) config.prefix = "dev$";
