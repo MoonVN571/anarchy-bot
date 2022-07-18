@@ -16,14 +16,12 @@ module.exports = {
      */
     async execute(client, message, args) {
         let name = args[0] || 'mo0nbot';
-        
 
         let mapData = (await pt.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let ptData = mapData[0];
 
         if (!ptData) return message.sendMessage(message.notFoundPlayers);
 
-        message.sendMessage('**' + name + '** : '
-            + getDorHMS(ptData.time / 1000, true, true));
+        message.sendMessage('**' + name + '** đã chơi ' + getDorHMS(ptData.time / 1000, true, true));
     }
 }

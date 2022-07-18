@@ -1,10 +1,8 @@
-const { createWebhook } = require('./functions/botFunc');
+const { WebhookClient, Colors } = require('discord.js');
 require('dotenv').config();
 
 process.on('uncaughtException', (err) => {
-    console.log(err);
-
-    createWebhook({ url: process.env.WEBHOOK_ERRORS_URL }, {
+    new WebhookClient({ url: process.env.WEBHOOK_ERRORS_URL }).send({
         embeds: [{
             author: {
                 name: 'Progress ERROR'
@@ -16,8 +14,8 @@ process.on('uncaughtException', (err) => {
                     value: '```' + err.toString() + '```',
                 }
             ],
-            timestamp: Date.now(),
-            color: "RED"
+            timestamp: new Date().toISOString(),
+            color: Colors.Red
         }]
     });
 });

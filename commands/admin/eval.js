@@ -15,7 +15,7 @@ module.exports = {
         if (!args[0]) return message.sendMessage('Cung cấp 1 đoạn code.');
         try {
             await eval(args.join(" "));
-            message.sendMessage("Thực thi thành công!");
+            message.channel.send("Thực thi thành công!");
         } catch (e) {
             message.sendMessage('**Lỗi:** ' + e.message);
         }

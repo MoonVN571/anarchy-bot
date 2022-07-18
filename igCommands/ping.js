@@ -13,8 +13,10 @@ module.exports = {
         let name = args[0] || username;
 
         let find = Object.values(bot.players).filter(data => data.username.toLowerCase() == name.toLowerCase());
+        if (find.length == 0) return bot.sendMessage('whisper', bot.data.notFoundPlayers);
 
-        if (!find || find.length == 0) return;
+        let ping = find[0].ping;
+        if (ping == 0) bot.sendMessage('whisper', "Server chưa ping người chơi này.");
         else bot.sendMessage('whisper', name + ' : ' + find[0].ping + 'ms.');
     }
 }

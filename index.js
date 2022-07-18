@@ -1,16 +1,10 @@
-const config = {
-    prefix: '$',
-    devGuild: '794912016237985802',
-    dev: false,
-    debug: true
+let config = {
+    prefix: "$",
+    dev: true
 };
 
-const logger = {
-    errors: '994885312369131561',
-    logs: '995306729334112256'
-}
+if(config.dev) config.prefix = "dev$";
 
-// LOGIC: Load Mongoose -> Load Discord -> Load Mineflayer
-require('./db/index');
+require('./mongoose');
 
-module.exports = { config, logger };
+module.exports = { config };

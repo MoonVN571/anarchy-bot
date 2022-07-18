@@ -23,6 +23,6 @@ module.exports = {
         let deaths = kdData?.deaths || 0;
         let kda = kills / deaths || 0.00;
 
-        message.sendMessage('**' + name + '** | Kills: ' + kills + " - Deaths: " + deaths + " - K/D: " + kda.toFixed(2));
+        message.sendMessage('**' + name + '** - K: ' + kills + " - D: " + deaths + " - K/D: " + kda.toFixed(2));
     }
 }

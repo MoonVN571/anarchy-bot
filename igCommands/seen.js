@@ -18,15 +18,12 @@ module.exports = {
         let mapData = (await seen.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let seenData = mapData[0];
 
-        if (!seenData) return bot.sendMessage('whisper', bot.notFoundPlayers);
+        if (!seenData) return bot.sendMessage('whisper', bot.data.notFoundPlayers);
 
         let date = new Date(seenData.time);
 
-        bot.sendMessage('whisper', name + ' : '
-            + legitNumber(date.getDate(), 2)
-            + '.' + legitNumber(date.getMonth() + 1, 2)
-            + '.' + date.getFullYear() + ' - '
-            + legitNumber(getDorHMS((Date.now() - seenData.time) / 1000, true))
-            + ' trước');
+        bot.sendMessage('whisper', 'Bot đã thấy ' + name + " vào "
+            + legitNumber(date.getDate(), 2) + '.' + legitNumber(date.getMonth() + 1, 2) + '.' + date.getFullYear()
+            + ' (' + legitNumber(getDorHMS((Date.now() - seenData.time) / 1000, true)) + ' trước)');
     }
 }

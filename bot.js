@@ -1,9 +1,10 @@
 const m = require('mineflayer');
-const { Collection } = require('discord.js');
+const { Collection, ChannelType } = require('discord.js');
 const { readdirSync } = require('fs');
 const main = require('./discord');
 const index = require('./index');
 const set = require('./set');
+const { manager } = require('./set');
 require('dotenv').config();
 
 let config = {
@@ -14,13 +15,14 @@ let config = {
 }
 
 let channel = {
-    webhookLivechat: config.dev ? "995568425613152358" : "995576636214886491",
-    webhookJoinMessage: config.dev ? "995585131123331112" : "995584897899057242",
-    webhookJoin: config.dev ? "995585063582453862" : "995584779460300840",
-    webhookServer: config.dev ? "995585187889037312" : "995584976932319302",
-    chat: config.dev ? "987204059838709780" : "986599157068361734",
-    commands: config.dev ? "990104136018182154" : "987889094845689916"
+    livechat: config.dev ? "987204059838709780" : "986599157068361734",
+    join: config.dev ? "987204116839284756" : "986601627588894720",
+    log: config.dev ? "995936735852769320" : "986601542981410816",
+    server: config.dev ? "987204092113879040" : "986807303565086781",
+    commands: config.dev ? "990104136018182154" : "987889094845689916",
+    stats: config.dev ? "998406738011234346" : "998362618613989396"
 }
+
 function createBot() {
     const bot = m.createBot({
         host: '2y2c.org',
@@ -30,23 +32,24 @@ function createBot() {
     });
 
     // Chạm được nè
-    bot.adminName = ['MoonVN', bot.username];
+    bot.adminName = manager.adminGame;
     bot.notFoundPlayers = set.notFoundPlayers;
 
     // đừng đụng zô
     bot.client = main.client;
     bot.config = config;
 
-    bot.arrayMessages = [];
-
-    bot.mainServer = false;
-    bot.logged = false;
-    bot.nextCheckTab = true;
-    bot.uptime = 0;
-    bot.queueTime = 0;
-
-    // Join Leave
-    bot.countPlayers = 0;
+    bot.data = {
+        arrayMessages: [],
+        mainServer: false,
+        logged: false,
+        nextCheckTab: true,
+        uptime: 0,
+        queueTime: 0,
+        spawnCount: 0,
+        tps: null,
+        countPlayers: 0
+    }
 
     bot.commands = new Collection();
     readdirSync('./igCommands').forEach(cmdName => {
@@ -63,13 +66,13 @@ function createBot() {
     });
 
     main.client.on('messageCreate', message => {
-        if (!bot.logged || message.channel.type == 'DM' || !message.guild || !message.channel.isText() || message.author.bot) return;
+        if (!bot.logged || message.channel.type == ChannelType.DM || !message.guild || message.channel.type !== ChannelType.GuildText || message.author.bot) return;
         if (message.channel.id == channel.commands) bot.chat(message.content);
-        if (message.channel.id == channel.chat) {
+        if (message.channel.id == channel.livechat) {
             let content = message.content;
 
             if (message.author.username.includes("§") || content.includes("§")) return;
-            if(content.split('\n').length > 1) content = content.split('\n')[0];
+            if (content.split('\n').length > 1) content = content.split('\n')[0];
 
             message.react('<a:1505_yes:797268802680258590>');
             bot.chat(`[${message.author.tag}] ${content}`);

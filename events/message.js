@@ -1,25 +1,23 @@
-const { Permissions } = require('discord.js');
+const { ChannelType } = require('discord.js');
 const client = require('../discord').client;
 const { notFoundPlayers, manager } = require('../set');
 const { log } = require('../functions/utils');
-const setup = require('../db/setup');
 
 client.on('messageCreate', message => {
-    if (message.author.bot || !message.content.startsWith(client.config.prefix) || message.author == client.user || message.channel.type == "DM" || !message.channel) return;
+    if (message.author.bot || !message.content.startsWith(client.config.prefix)) return;
 
     const args = message.content.slice(client.config.prefix.length).trim().split(/ +/);
     const cmdName = args.shift().toLowerCase();
-
     const cmd = client.commands.get(cmdName)
-        || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(cmdName));
+        || client.commands.find(cmd => cmd.aliases?.includes(cmdName));
 
     if (!cmd) return;
-
     if (cmd.dev && manager.adminBot.indexOf(message.author.id) < 0) return;
-    if (cmd.admin && !message.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return;
+    if (cmd.admin && !message.member.permissions.has('Administrator')) return;
+
     if (cmd.disable) return;
 
-    if (!message.guild.me.permissions.has(Permissions.FLAGS.SEND_MESSAGES) || !message.guild.me.permissionsIn(message.channel).has(Permissions.FLAGS.SEND_MESSAGES)) return;
+    if (!message.guild.members.me.permissionsIn(message.channel).has('SendMessages')) return;
 
     /*
     if (cmd.categories == 'players') {

@@ -1,11 +1,12 @@
+const { getCoords } = require('../functions/minecraft/mcUtils');
+
 module.exports = {
     name: 'coords',
     description: 'Xem toạ độ của bot',
     aliases: ['coordinate', 'xyz'],
 
     execute(bot, username, args) {
-        bot.sendMessage('whisper', 'X: ' + parseInt(bot.entity.position.x)
-        + " - Y: " + parseInt(bot.entity.position.y)
-        + " - Z: " + parseInt(bot.entity.position.z));
+        let coords = getCoords(bot);
+        bot.sendMessage('whisper', `X: ${coords.x} / ${coords.y} / ${coords.z}`);
     }
 }

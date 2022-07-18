@@ -25,11 +25,8 @@ module.exports = {
 
         let date = new Date(seenData.time);
 
-        message.sendMessage('**' + name + '** : '
-            + legitNumber(date.getDate(), 2)
-            + '.' + legitNumber(date.getMonth() + 1, 2)
-            + '.' + date.getFullYear() + ' - '
-            + legitNumber(getDorHMS((Date.now() - seenData.time) / 1000, true))
-            + ' trước');
+        message.sendMessage('Bot đã thấy **' + name + '** vào '
+            + legitNumber(date.getDate(), 2) + '.' + legitNumber(date.getMonth() + 1, 2) + '.' + date.getFullYear()
+            + ' (' + legitNumber(getDorHMS((Date.now() - seenData.time) / 1000, true)) + ' trước)');
     }
 }

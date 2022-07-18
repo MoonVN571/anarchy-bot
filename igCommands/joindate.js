@@ -15,19 +15,15 @@ module.exports = {
     async execute(bot, username, args) {
         let name = args[0] || username;
 
-
         let mapData = (await jd.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let jdData = mapData[0];
 
-        if (!jdData) return bot.sendMessage('whisper', bot.notFoundPlayers);
+        if (!jdData) return bot.sendMessage('whisper', bot.data.notFoundPlayers);
 
         let date = new Date(jdData.time)
 
-        bot.sendMessage('whisper', name + ' : '
-            + legitNumber(date.getDate(), 2)
-            + '.' + legitNumber(date.getMonth() + 1, 2)
-            + '.' + date.getFullYear() + ' - '
-            + legitNumber(getDorHMS((Date.now() - jdData.time) / 1000, true))
-            + ' trước');
+        bot.sendMessage('whisper', name + ' đã tham gia vào '
+            + legitNumber(date.getDate(), 2) + '.' + legitNumber(date.getMonth() + 1, 2) + '.' + date.getFullYear()
+            + ' (' + legitNumber(getDorHMS((Date.now() - jdData.time) / 1000, true)) + ' trước)');
     }
 }

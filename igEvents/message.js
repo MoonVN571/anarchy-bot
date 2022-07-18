@@ -1,5 +1,5 @@
 const { sendGlobalChat } = require('../functions/minecraft');
-const { solveAlotMessage } = require('../functions/botFunc');
+const { solveAlotMessage } = require('../functions/minecraft/mcUtils');
 const { log } = require('../functions/utils');
 
 module.exports = {
@@ -53,7 +53,7 @@ module.exports = {
         bot.sendMessage = (type, message) => sendMessage(bot, type, message);
         function sendMessage(bot, type, message) {
             if (type == 'whisper') {
-                bot.arrayMessages.push(`/msg ${username} ${message}`);
+                bot.data.arrayMessages.push(`/msg ${username} ${message}`);
                 solveAlotMessage(bot);
             }
         }

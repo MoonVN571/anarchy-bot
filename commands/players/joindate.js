@@ -26,11 +26,8 @@ module.exports = {
 
         let date = new Date(jdData.time)
 
-        message.sendMessage('**' +name + '** : '
-            + legitNumber(date.getDate(), 2)
-            + '.' + legitNumber(date.getMonth() + 1, 2)
-            + '.' + date.getFullYear() + ' - '
-            + legitNumber(getDorHMS((Date.now() - jdData.time) / 1000, true))
-            + ' trước');
+        message.sendMessage('**' +name + '** đã tham gia server vào '
+            + legitNumber(date.getDate(), 2) + '.' + legitNumber(date.getMonth() + 1, 2) + '.' + date.getFullYear()
+            + ' (' + legitNumber(getDorHMS((Date.now() - jdData.time) / 1000, true)) + ' trước)');
     }
 }

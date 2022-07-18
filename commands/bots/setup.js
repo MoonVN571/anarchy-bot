@@ -5,7 +5,7 @@ module.exports = {
     name: 'setup',
     description: 'Setup dữ liệu xuất từ server',
     disable: true,
-    
+
     /**
      * 
      * @param {Client} client 
@@ -14,7 +14,7 @@ module.exports = {
      * @returns 
      */
     async execute(client, message, args) {
-        if (!message.guild.members.cache.get(message.author.id).permissions.has('ADMINISTRATOR'))
+        if (!message.guild.members.cache.get(message.author.id).permissions.has("Administrator"))
             return message.sendMessage("Bạn không có thẩm quyền để dùng lệnh này!");
 
         if (!args[0]) return message.sendMessage('Cung cấp loại setting. (livechat/command)');

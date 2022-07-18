@@ -47,8 +47,6 @@ module.exports = {
             + '**Ingame Commands**' + '\n\n'
             + igCmd
             + '\n\n'
-            + 'Các lệnh tại mục **players** chỉ check stats của player 2Y2C'
-            + '\n\n'
             + '*Mẹo: Sử dụng `' + message.prefix + 'help <tên lệnh>` để xem thêm mô tả.*'
         );
     }

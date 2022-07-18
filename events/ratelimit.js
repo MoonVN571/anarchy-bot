@@ -1,40 +1,50 @@
+const { Colors, WebhookClient } = require('discord.js');
 const client = require('../discord').client;
 require('dotenv').config();
 
-client.on('rateLimit', data => {
-    createWebhook(process.env.WEBHOOK_RATELIMIT_URL, {
+client.rest.on('rateLimited', data => {
+    let ignore = ['986599157068361734', '987204059838709780'];
+    if(ignore.indexOf(data.majorParameter) > -1) return;
+
+    new WebhookClient({ url: process.env.WEBHOOK_ERRORS_URL }).send({
         embeds: [{
             author: {
-                name: 'Bot rateLimit',
+                name: 'Ralimited',
             },
             fields: [
                 {
-                    name: 'Path',
-                    value: data.path
+                    name: 'Major Parameter',
+                    value: data.majorParameter,
+                    inline: true
                 },
                 {
-                    name: 'Global',
-                    value: data.global ? 'True' : 'False'
+                    name: 'Giới hạn Global',
+                    value: data.global ? 'True' : 'False',
+                    inline: true
                 },
                 {
                     name: 'Method',
-                    value: data.method
+                    value: data.method,
+                    inline: true
                 },
                 {
-                    name: 'Route',
-                    value: data.route
+                    name: 'URL',
+                    value: data.url,
+                    inline: true
                 },
                 {
                     name: 'Timeout',
-                    value: data.timeout.toString()
+                    value: data.timeToReset.toString(),
+                    inline: true
                 },
                 {
-                    name: 'Limit',
-                    value: data.limit.toString()
+                    name: 'Giới hạn Requests',
+                    value: data.limit.toString(),
+                    inline: true
                 }
             ],
-            color: 'RED',
-            timestamp: new Date()
+            color: Colors.Red,
+            timestamp: new Date().toISOString()
         }]
     });
 });
