@@ -4,7 +4,7 @@ const { setStatus } = require('../functions/botFunc');
 module.exports = {
     name: 'end',
     
-    execute (bot, reason) {
+    async execute (bot, reason) {
         console.log(reason);
 
         let channel = client.channels.cache.get(globalChannel.stats);
