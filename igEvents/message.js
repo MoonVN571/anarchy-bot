@@ -1,5 +1,5 @@
 const { sendGlobalChat } = require('../functions/minecraft');
-const { solveAlotMessage } = require('../functions/botFunc');
+const { solveAlotMessage } = require('../functions/minecraft/mcUtils');
 const { log } = require('../functions/utils');
 require('dotenv').config();
 
@@ -51,12 +51,12 @@ module.exports = {
 
         if (!cmd) return;
 
-        log('[INGAME] ' + username + ' used command: ' + cmdName + " " + args.join(" "));
+        log('[2B2C-INGAME] ' + username + ' used command: ' + cmdName + ' ' + args.join(" "));
 
         bot.sendMessage = (type, message) => sendMessage(bot, type, message);
         function sendMessage(bot, type, message) {
             if (type == 'whisper') {
-                bot.arrayMessages.push(`/msg ${username} ${message}`);
+                bot.data.arrayMessages.push(`/msg ${username} ${message}`);
                 solveAlotMessage(bot);
             }
         }

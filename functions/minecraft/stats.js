@@ -1,4 +1,5 @@
 const { log } = require('../utils');
+const { getPlayersList } = require('./mcUtils');
 const kd = require('../../db/stats');
 const set = require('../../set');
 
@@ -42,25 +43,19 @@ module.exports.save = async (bot, content) => {
     }
 
     async function saveDeaths(username) {
-        let playerList = Object.values(bot.players).map(d => d.username);
-
-        if (playerList.indexOf(username) < 0) return;
+        if (getPlayersList(bot).indexOf(username) < 0) return;
 
         let kdData = await kd.findOne({ username: username });
         if (!kdData) return kd.create({ username: username, deaths: 1, kills: 0 });
 
-        if (playerList.indexOf(username) > -1) {
             // log(username + ' + 1 death');
             if (bot.config.dev) return;
             kdData.deaths += 1;
             kdData.save();
-        }
     }
 
     async function saveKills(username) {
-        let playerList = Object.values(bot.players).map(d => d.username);
-
-        if (playerList.indexOf(username) < 0) return;
+        if (getPlayersList(bot).indexOf(username) < 0) return;
 
         let kdData = await kd.findOne({ username: username });
         if (!kdData) return kd.create({ username: username, deaths: 0, kills: 1 });

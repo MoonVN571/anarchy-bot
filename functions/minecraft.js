@@ -1,9 +1,10 @@
-const { Bot } = require('mineflayer');
-const globalChnanel = require('../bot').channel;
+const { EmbedBuilder } = require('@discordjs/builders');
+const { Colors } = require('discord.js');
+const { client } = require('../discord');
+const { getPlayersList } = require('./minecraft/mcUtils');
+const globalChannel = require('../bot').channel;
 const stats = require('./minecraft/stats');
-const index = require('../index');
 const { getDorHMS, log } = require('./utils');
-const { createWebhook, getWebhook } = require('./botFunc');
 
 const livechat_color = {
     default: 0x979797,
@@ -21,21 +22,8 @@ const botlog_color = {
     disconnect_log: 0xF71319
 }
 
-const data = {
-    guildId: index.config.devGuild,
-    webhookLivechat: globalChnanel.webhookLivechat,
-    webhookJoin: globalChnanel.webhookJoin,
-    webhookJoinMessage: globalChnanel.webhookJoinMessage,
-    webhookServer: globalChnanel.webhookServer
-}
+// let msgs = [];
 
-/**
- * 
- * @param {Bot} bot 
- * @param {String} content 
- * @param {String} username 
- * @param {String} message 
- */
 async function sendGlobalChat(bot, content, username, message) {
     let userChat = `**<${username}>** ${message}`;
     let color = livechat_color.default;
@@ -67,54 +55,52 @@ async function sendGlobalChat(bot, content, username, message) {
     // Ẩn spam message number
     if (!isNaN(userChat)) return;
 
-    let embedObject = {
+    let embed = {
         description: userChat,
         color: color,
-        timestamp: new Date()
+        timestamp: new Date().toISOString()
     };
 
     if ((!content.includes("has made the advancement") && !content.includes("has complete")
-    && !content.includes("has reached") && color == livechat_color.system)
-    ) sendMessage(data.guildId, data.webhookServer, { embeds: [embedObject] })
+        && !content.includes("has reached") && color == livechat_color.system)
+    ) sendMessage(globalChannel.server, { embeds: [embed] })
 
-    if(color == livechat_color.whisper) log(content);
+    if (color == livechat_color.whisper) log(content);
 
-    sendMessage(data.guildId, data.webhookLivechat, { embeds: [embedObject] });
+    /*
+    msgs.push(embed);
+
+    let length = 5;
+
+    let players = getPlayersList(bot)
+    if (players.length < 30 && bot.data.mainServer) length = 1;
+
+    if (msgs.length >= length) {
+        sendMessage(globalChannel.livechat, { embeds: msgs });
+        msgs = [];
+    }*/
+    sendMessage(globalChannel.livechat, { embeds: [embed] });
 }
 
-async function sendMessage(guildId, webhookId, msg) {
-    let webhook = await getWebhook(guildId, webhookId);
-
-    if(webhook?.error) return;
-    createWebhook({ url: webhook.url }, msg);
+function sendMessage(channelId, msg) {
+    client.channels.cache.get(channelId).send(msg).catch(err => console.log(err));
 }
 
-
-/**
- * 
- * @param {String} type Loại log khác
- * @param {String} content 
- */
 function sendCustomMessage(type, content) {
     let color = livechat_color.default;
 
-    if (type == 'connect') color = "GREEN";
-    if (type == 'disconnect') color = "RED";
+    if (type == 'connect') color = Colors.Green;
+    if (type == 'disconnect') color = Colors.Red;
 
-    sendMessage(data.guildId, data.webhookLivechat, {
+    sendMessage(globalChannel.join, {
         embeds: [{
             description: content,
             color: color,
-            timestamp: new Date()
+            timestamp: new Date().toISOString()
         }]
     });
 }
 
-/**
- * 
- * @param {String} type Loại
- * @param {String} content Nội dung
- */
 function sendBotLog(type, content) {
     let chat = content;
     let color;
@@ -123,27 +109,18 @@ function sendBotLog(type, content) {
     if (type == 'queue') color = botlog_color.queue_log;
     if (type == 'disconnect') color = botlog_color.disconnect_log;
 
-    sendMessage(data.guildId, data.webhookJoin, {
+    sendMessage(globalChannel.log, {
         embeds: [{
             description: chat,
             color: color,
-            timestamp: Date.now()
+            timestamp: new Date().toISOString()
         }]
     });
 }
 
-/**
- * 
- * @param {Bot} bot Mineflayer API
- * @param {boolean} vi Thời gian trả về tiếng việt
- * @returns String
- */
-function getUptime(bot, vi) {
-    if (!bot.uptime) return '';
-
-    if (vi) return getDorHMS((Date.now() - bot.uptime) / 1000, true);
-
-    return getDorHMS((Date.now() - bot.uptime) / 1000);
+function getUptime(bot) {
+    if (!bot.data.uptime) return '';
+    return getDorHMS((Date.now() - bot.data.uptime) / 1000);
 }
 
 module.exports = {
