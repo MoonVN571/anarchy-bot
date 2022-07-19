@@ -1,5 +1,6 @@
 const { sendBotLog, getUptime } = require('../functions/minecraft');
 const { setStatus } = require('../functions/botFunc');
+const client = require('../discord').client;
 
 module.exports = {
     name: 'end',
