@@ -7,6 +7,16 @@ module.exports = {
     execute (bot, reason) {
         console.log(reason);
 
+        let channel = client.channels.cache.get(globalChannel.stats);
+
+        await channel.messages.fetch().then(message => {
+            let botMessage = message.map(m => m).filter(m => m.author.id == client.user.id);
+
+            botMessage.forEach(message => {
+                message.delete().catch(err => { });
+            });
+        });
+
         console.log("Bot đã mất kết nối");
         setStatus('idle', 'Watching', 'chờ kết nối!');
 
@@ -17,7 +27,7 @@ module.exports = {
             require('../bot.js').createBot();
         }
 
-        if(!bot.logged) return;
+        if(!bot.data.logged) return;
         
         sendBotLog('disconnect', `Bot đã mất kết nối đến server. Kết nối lại sau 3 phút.\nThời gian trong server là ${getUptime(bot, true)}`);
 

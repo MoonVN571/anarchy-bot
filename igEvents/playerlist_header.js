@@ -30,7 +30,7 @@ module.exports = {
         let tps = footer[1]?.split(" ")[0];
         bot.data.tps = tps;
 
-        if (bot.nextCheckTab) {
+        if (bot.data.nextCheckTab) {
             setTimeout(() => bot.data.nextCheckTab = true, minutes * 60 * 1000);
             bot.data.nextCheckTab = false;
 
@@ -49,7 +49,7 @@ module.exports = {
             let parseBotQ = header[4].trim().split(" ");
             let botQ = parseBotQ[parseBotQ.length - 1];
 
-            if (!bot.mainServer) {
+            if (!bot.data.mainServer) {
                 if (botQ == 'None') botQ = 1;
                 if (queue == 0) queue = 1;
                 let stt = 'trong hàng chờ: ' + botQ + '/' + queue;
