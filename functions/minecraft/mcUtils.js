@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { log } = require('./utils.js');
+const { log } = require('../utils.js');
 
 function getCoords(bot) {
     return {
