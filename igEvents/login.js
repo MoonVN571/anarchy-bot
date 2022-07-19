@@ -11,20 +11,13 @@ module.exports = {
 
         bot.data.uptime = Date.now();
 
-        setInterval(async () => {
-            if (!bot.data.logged && !bot.data.mainServer) return;
-
-            bot.swingArm("left");
-            bot.look(Math.floor(Math.random() * Math.floor("360")), 0, true, null);
-        }, 1 * 60 * 1000);
-
 
         setInterval(() => {
             if (!bot.data.logged && !bot.data.mainServer) return;
 
             let randomMsg = messageArray[Math.floor(Math.random() * messageArray.length)];
             bot.chat('> ' + randomMsg);
-        }, 10 * 60 * 1000);
+        }, 3 * 60 * 1000);
 
         if (bot.config.dev) return;
 
