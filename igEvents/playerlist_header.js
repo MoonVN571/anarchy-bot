@@ -39,7 +39,7 @@ module.exports = {
                 "\n- Đã vào server từ " + getUptime(bot) +
                 " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
 
-            if (bot.data.mainServer) bot.client.channels.cache.get(require("../bot").channel.chat).setTopic(completeStr);
+            if (bot.data.mainServer) bot.client.channels.cache.get(require("../bot").channel.livechat).setTopic(completeStr);
 
             let getPlayersAPI = await getCountPlayersAPI();
             let queue = getPlayersAPI - getPlayersList(bot).length;
