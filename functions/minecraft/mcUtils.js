@@ -10,6 +10,7 @@ function getCoords(bot) {
 }
 
 function getPlayersList(bot) {
+    if(!bot?.players) return [];
     return Object.values(bot.players).map(d => d.username);
 }
 
