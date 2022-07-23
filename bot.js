@@ -29,7 +29,7 @@ function createBot() {
         host: '2b2c.org',
         port: 25565,
         username: config.botName,
-        version: '1.12.2'
+        version: '1.16.5'
     });
 
     // Chạm được nè
