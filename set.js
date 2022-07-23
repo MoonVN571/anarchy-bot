@@ -9,8 +9,8 @@ module.exports = {
     },
     // Random send message
     messageArray: [
-        ' Xem tất cả lệnh của bot tại https://mo0nbot.tk/',
-        ' Chat trong server ở discord tại server: https://discord.mo0nbot.tk/',
+        ' Xem tất cả lệnh của bot tại https://mo0nbot.ga/',
+        ' Chat trong server ở discord tại server: https://discord.mo0nbot.ga/',
     ],
     // Text khi k có player data
     notFoundPlayers: 'Không tìm thấy người chơi này.',    
