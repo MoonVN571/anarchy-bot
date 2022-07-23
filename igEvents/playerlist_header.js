@@ -1,9 +1,6 @@
-const { getUptime, sendGlobalChat } = require("../functions/minecraft");
-const { setStatus } = require('../functions/botFunc');
-const { log } = require("../functions/utils");
-const { getCountPlayersAPI, getPlayersList } = require('../functions/minecraft/mcUtils');
+const { getUptime } = require("../functions/minecraft");
 
-let minutes = 1;
+let minutes = 10;
 
 module.exports = {
     name: 'playerlist_header',
