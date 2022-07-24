@@ -10,8 +10,13 @@ function getCoords(bot) {
 }
 
 function getPlayersList(bot) {
-    if(!bot?.players) return [];
+    if (!bot?.players) return [];
     return Object.values(bot.players).map(d => d.username);
+}
+
+function getPlayer(bot, username) {
+    if (!bot) return;
+    return Object.values(bot.players).map(d => d).find(obj => obj.username == username);
 }
 
 async function getCountPlayersAPI() {
@@ -19,13 +24,13 @@ async function getCountPlayersAPI() {
     await axios.default.get('https://api.mcsrvstat.us/2/2b2c.org').then(res => {
         players = res.data.players?.online;
     });
-    if(isNaN(players)) players = 0;
-    
+    if (isNaN(players)) players = 0;
+
     return players;
 }
 
 function solveAlotMessage(bot) {
-    if(bot.data.arrayMessages.length <= 0) return;
+    if (bot.data.arrayMessages.length <= 0) return;
     log('Thực thi lệnh: ' + bot.data.arrayMessages[0]);
     bot.chat(bot.data.arrayMessages[0]);
     bot.data.arrayMessages.shift();
@@ -36,5 +41,6 @@ module.exports = {
     getCoords,
     getCountPlayersAPI,
     getPlayersList,
+    getPlayer,
     solveAlotMessage
 }

@@ -1,7 +1,7 @@
 const { ButtonBuilder } = require("@discordjs/builders");
 const { ButtonStyle, ActionRowBuilder, Colors } = require("discord.js");
 const { sendBotLog, getUptime } = require("../functions/minecraft");
-const { getCoords, getPlayersList, getCountPlayersAPI } = require('../functions/minecraft/mcUtils');
+const { getCoords, getPlayersList, getPlayer, getCountPlayersAPI } = require('../functions/minecraft/mcUtils');
 const { getDorHMS } = require("../functions/utils");
 const { manager } = require("../set");
 const globalChannel = require("../bot").channel;
@@ -18,7 +18,7 @@ module.exports = {
             sendBotLog('join', `Bot đã kết nối đến server!`);
             bot.data.logged = true;
 
-            if((await getCountPlayersAPI()) < 100) bot.data.spawnCount += 2;
+            if ((await getCountPlayersAPI()) < 100) bot.data.spawnCount += 2;
 
             let channel = client.channels.cache.get(globalChannel.stats);
 
@@ -53,7 +53,7 @@ module.exports = {
                 components: [button]
             }).then(async msg => {
                 let collection = msg.channel.createMessageComponentCollector();
-                
+
                 collection.on('collect', async interaction => {
                     if (!bot.data.logged) return interaction.reply({ content: "Bot chưa kết nối vào server thử lại sau!", ephemeral: true });
 
@@ -87,8 +87,9 @@ module.exports = {
                 list.forEach(username => {
                     count++;
                     let str = '';
-                    if (count == 3) { count = 0; str = '\n'; }
-                    arr.push(username.padEnd(16, ' ') + "   " + str);
+                    if (count == 2) { count = 0; str = '\n'; }
+                    let player = getPlayer(bot, username);
+                    arr.push((username + ` [${player.ping}ms]`).padEnd(16, ' ') + "   " + str);
                 });
 
                 return arr;
@@ -115,7 +116,7 @@ module.exports = {
 
                 let getPlayerAPI = await getCountPlayersAPI();
                 let queue = getPlayerAPI - players.length;
-                if(queue < 0) queue = 0;
+                if (queue < 0) queue = 0;
 
                 if (server == "Main") fields.push({
                     name: 'Uptime',
