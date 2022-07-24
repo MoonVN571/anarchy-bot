@@ -89,7 +89,9 @@ module.exports = {
                     let str = '';
                     if (count == 2) { count = 0; str = '\n'; }
                     let player = getPlayer(bot, username);
-                    arr.push((username + ` [${player.ping}ms]`).padEnd(16, ' ') + "   " + str);
+                    let ping = ` [${player.ping}ms]`;
+                    let pingLength = player.ping.toString().length;
+                    arr.push((username + ping).padEnd(16 + (pingLength == 1 ? 2 : pingLength) + 4, ' ') + "   " + str);
                 });
 
                 return arr;
