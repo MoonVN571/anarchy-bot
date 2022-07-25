@@ -55,29 +55,29 @@ module.exports = {
                 let collection = msg.channel.createMessageComponentCollector();
 
                 collection.on('collect', async interaction => {
-                    if (!bot.data.logged) return interaction.reply({ content: "Bot chưa kết nối vào server thử lại sau!", ephemeral: true });
+                    if (!bot.data.logged) return await interaction.reply({ content: "Bot chưa kết nối vào server thử lại sau!", ephemeral: true });
 
                     if (interaction.customId == 'botinfo') {
-                        let embed = await getEmbed(interaction);
+                        let embed = await getEmbed();
                         msg.edit({ embeds: [embed] });
                     }
 
                     if (interaction.customId == 'playerlist') {
-                        if (bot.data.spawnCount < 4) return interaction.reply({ content: "Bot đang ở hàng chờ thử lại sau!", ephemeral: true });
+                        if (bot.data.spawnCount < 4) return await interaction.reply({ content: "Bot đang ở hàng chờ thử lại sau!", ephemeral: true });
 
-                        return interaction.reply({
-                            content: `\`\`\`${formatList(getPlayersList(bot).sort()).join('')}\`\`\``,
+                        return await interaction.reply({
+                            content: `\`\`\`${formatList(bot, getPlayersList(bot).sort()).join('')}\`\`\``,
                             ephemeral: true
                         });
                     }
 
                     if (interaction.customId == 'kill') {
-                        if (manager.adminBot.indexOf(interaction.user.id) < 0) return interaction.reply({ content: "Mơ đi con ko xài được đâu :))", ephemeral: true });
+                        if (manager.adminBot.indexOf(interaction.user.id) < 0) return await interaction.reply({ content: "Mơ đi con ko xài được đâu :))", ephemeral: true });
 
                         bot.chat('/kill');
                     }
 
-                    interaction.deferUpdate();
+                    await interaction.deferUpdate();
                 });
             });
 
