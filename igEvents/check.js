@@ -87,7 +87,7 @@ module.exports = {
                     let username = list[i];
                     if (!username) return;
                     let player = getPlayer(bot, username);
-                    arr.push(`${i + 1}. ${username} [${player.ping}ms]` + "\n");
+                    arr.push(`${i + 1 < 10 ? "0" + (i + 1) : i + 1}. ${username} [${player.ping}ms]` + "\n");
                 }
 
                 return arr;
