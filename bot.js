@@ -49,7 +49,8 @@ function createBot() {
         queueTime: 0,
         spawnCount: 0,
         tps: null,
-        countPlayers: 0
+        countPlayers: 0,
+        playerBefore: []
     }
 
     bot.commands = new Collection();

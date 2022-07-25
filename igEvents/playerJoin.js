@@ -21,7 +21,7 @@ module.exports = {
             seenData.save();
         }
 
-        if (bot.data.countPlayers <= getPlayersList(bot).length) return;
+        if (getPlayersList(bot).indexOf(player.username) > -1) return;
 
         sendCustomMessage('connect', player.username + ' đã tham gia vào server.');
     }

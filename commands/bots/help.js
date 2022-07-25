@@ -47,6 +47,8 @@ module.exports = {
             + '**Ingame Commands**' + '\n\n'
             + igCmd
             + '\n\n'
+            + '*Player stats chỉ khả dụng của player 2y2c*'
+            + "\n\n"
             + '*Mẹo: Sử dụng `' + message.prefix + 'help <tên lệnh>` để xem thêm mô tả.*'
         );
     }

@@ -6,7 +6,6 @@ const { getDorHMS } = require("../functions/utils");
 const { manager } = require("../set");
 const globalChannel = require("../bot").channel;
 const client = require('../discord').client;
-let delayed = false;
 
 module.exports = {
     name: 'spawn',
@@ -38,7 +37,7 @@ module.exports = {
                     new ButtonBuilder()
                         .setCustomId('playerlist')
                         .setLabel("Players")
-                        .setStyle(ButtonStyle.Secondary),
+                        .setStyle(ButtonStyle.Success),
                     new ButtonBuilder()
                         .setCustomId('kill')
                         .setLabel('Suicide')
@@ -57,10 +56,6 @@ module.exports = {
                     if (!bot.data.logged) return interaction.reply({ content: "Bot chưa kết nối vào server thử lại sau!", ephemeral: true });
 
                     if (interaction.customId == 'botinfo') {
-                        if (delayed) return interaction.reply({ content: "Hãy thử lại sau vài phút!", ephemeral: true });
-                        delayed = true;
-                        setTimeout(() => delayed = false, 2 * 60 * 1000);
-
                         let embed = await getEmbed(interaction);
                         msg.edit({ embeds: [embed] });
                     }
