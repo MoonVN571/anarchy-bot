@@ -66,7 +66,7 @@ module.exports = {
                         if (bot.data.spawnCount < 4) return await interaction.reply({ content: "Bot đang ở hàng chờ thử lại sau!", ephemeral: true });
 
                         return await interaction.reply({
-                            content: `\`\`\`${formatList(bot, getPlayersList(bot))}\`\`\``,
+                            content: `\`\`\`${formatList(bot, getPlayersList(bot).sort()).join("")}\`\`\``,
                             ephemeral: true
                         });
                     }
@@ -81,15 +81,14 @@ module.exports = {
                 });
             });
 
-            function formatList(list) {
+            function formatList(bot, list) {
                 let arr = [];
-                let count = 0;
-                list.forEach(username => {
-                    count++;
-                    let str = '';
-                    if (count == 3) { count = 0; str = '\n'; }
-                    arr.push(username.padEnd(16, ' ') + "   " + str);
-                });
+                for (let i = 0; i < list.length; i++) {
+                    let username = list[i];
+                    if (!username) return;
+                    let player = getPlayer(bot, username);
+                    arr.push(`${i + 1}. ${username} [${player.ping}ms]` + "\n");
+                }
 
                 return arr;
             }
