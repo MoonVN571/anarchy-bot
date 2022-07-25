@@ -66,7 +66,7 @@ module.exports = {
                         if (bot.data.spawnCount < 4) return await interaction.reply({ content: "Bot đang ở hàng chờ thử lại sau!", ephemeral: true });
 
                         return await interaction.reply({
-                            content: `\`\`\`${formatList(bot, getPlayersList(bot).sort()).join('')}\`\`\``,
+                            content: `\`\`\`${formatList(bot, getPlayersList(bot))}\`\`\``,
                             ephemeral: true
                         });
                     }
@@ -87,11 +87,8 @@ module.exports = {
                 list.forEach(username => {
                     count++;
                     let str = '';
-                    if (count == 2) { count = 0; str = '\n'; }
-                    let player = getPlayer(bot, username);
-                    let ping = ` [${player.ping}ms]`;
-                    let pingLength = player.ping.toString().length;
-                    arr.push((username + ping).padEnd(16 + (pingLength == 1 ? 2 : pingLength) + 4, ' ') + "   " + str);
+                    if (count == 3) { count = 0; str = '\n'; }
+                    arr.push(username.padEnd(16, ' ') + "   " + str);
                 });
 
                 return arr;

@@ -22,8 +22,6 @@ const botlog_color = {
     disconnect_log: 0xF71319
 }
 
-// let msgs = [];
-
 async function sendGlobalChat(bot, content, username, message) {
     let userChat = `**<${username}>** ${message}`;
     let color = livechat_color.default;
@@ -67,18 +65,6 @@ async function sendGlobalChat(bot, content, username, message) {
 
     if (color == livechat_color.whisper) log(content);
 
-    /*
-    msgs.push(embed);
-
-    let length = 5;
-
-    let players = getPlayersList(bot)
-    if (players.length < 30 && bot.data.mainServer) length = 1;
-
-    if (msgs.length >= length) {
-        sendMessage(globalChannel.livechat, { embeds: msgs });
-        msgs = [];
-    }*/
     sendMessage(globalChannel.livechat, { embeds: [embed] });
 }
 
