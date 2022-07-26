@@ -4,7 +4,7 @@ const client = require('../discord').client;
 require('dotenv').config();
 
 client.rest.on('rateLimited', data => {
-    let ignore = ['986599157068361734', '987204059838709780'];
+    let ignore = ['986599157068361734', '986807303565086781'];
     if(ignore.indexOf(data.majorParameter) > -1) return;
 
     new WebhookClient({ url: process.env.WEBHOOK_ERRORS_URL }).send({

@@ -13,6 +13,11 @@ function getPlayersList(bot) {
     return Object.values(bot.players).map(d => d.username);
 }
 
+function getPlayer(bot, username) {
+    if (!bot) return;
+    return Object.values(bot.players).map(d => d).find(obj => obj.username == username);
+}
+
 async function getCountPlayersAPI() {
     let players = 0;
     await axios.default.get('https://api.mcsrvstat.us/2/2y2c.org').then(res => {
@@ -35,5 +40,6 @@ module.exports = {
     getCoords,
     getCountPlayersAPI,
     getPlayersList,
+    getPlayer,
     solveAlotMessage
 }

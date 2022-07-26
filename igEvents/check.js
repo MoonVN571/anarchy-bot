@@ -1,7 +1,7 @@
 const { ButtonBuilder } = require("@discordjs/builders");
 const { ButtonStyle, ActionRowBuilder, Colors } = require("discord.js");
 const { sendBotLog, getUptime } = require("../functions/minecraft");
-const { getCoords, getPlayersList, getCountPlayersAPI } = require('../functions/minecraft/mcUtils');
+const { getCoords, getPlayersList, getPlayer, getCountPlayersAPI } = require('../functions/minecraft/mcUtils');
 const { getDorHMS } = require("../functions/utils");
 const { manager } = require("../set");
 const globalChannel = require("../bot").channel;
@@ -37,7 +37,7 @@ module.exports = {
                     new ButtonBuilder()
                         .setCustomId('playerlist')
                         .setLabel("Players")
-                        .setStyle(ButtonStyle.Success),
+                        .setStyle(ButtonStyle.Secondary),
                     new ButtonBuilder()
                         .setCustomId('kill')
                         .setLabel('Suicide')
@@ -50,49 +50,53 @@ module.exports = {
                 embeds: [embed],
                 components: [button]
             }).then(async msg => {
-                let collection = msg.channel.createMessageComponentCollector();
-                
+                let collection = msg.channel.createMessageComponentCollector({ dipose: true });
+
                 collection.on('collect', async interaction => {
-                    if (!bot.data.logged) return interaction.reply({ content: "Bot chưa kết nối vào server thử lại sau!", ephemeral: true });
+                    if (!bot.data.logged) return await interaction.reply({ content: "Bot chưa kết nối vào server thử lại sau!", ephemeral: true });
 
                     if (interaction.customId == 'botinfo') {
-                        let embed = await getEmbed(interaction);
+                        let embed = await getEmbed();
                         msg.edit({ embeds: [embed] });
                     }
 
                     if (interaction.customId == 'playerlist') {
-                        if (bot.data.spawnCount < 4) return interaction.reply({ content: "Bot đang ở hàng chờ thử lại sau!", ephemeral: true });
+                        let players = getPlayersList(bot);
+                        let playerData = formatList(bot, players.sort())?.join('');
 
-                        return interaction.reply({
-                            content: `\`\`\`${formatList(getPlayersList(bot).sort()).join('')}\`\`\``,
+                        if (!players || !playerData || bot.data.spawnCount < 4) return await interaction.reply({ content: "Bot đang ở hàng chờ thử lại sau!", ephemeral: true });
+
+                        return await interaction.reply({
+                            content: `\`\`\`${playerData}\`\`\``,
                             ephemeral: true
                         });
                     }
 
                     if (interaction.customId == 'kill') {
-                        if (manager.adminBot.indexOf(interaction.user.id) < 0) return interaction.reply({ content: "Mơ đi con ko xài được đâu :))", ephemeral: true });
+                        if (manager.adminBot.indexOf(interaction.user.id) < 0) return await interaction.reply({ content: "Mơ đi con ko xài được đâu :))", ephemeral: true });
 
                         bot.chat('/kill');
                     }
 
                     interaction.deferUpdate();
                 });
+
+                function formatList(bot, list) {
+                    if (!list) return;
+                    let arr = [];
+                    for (let i = 0; i < list.length; i++) {
+                        let username = list[i];
+                        if (!username) return;
+                        let player = getPlayer(bot, username);
+                        arr.push(`${i + 1 < 10 ? "0" + (i + 1) : i + 1}. ${username} [${player.ping}ms]` + "\n");
+                    }
+
+                    return arr;
+                }
+
             });
 
-            function formatList(list) {
-                let arr = [];
-                let count = 0;
-                list.forEach(username => {
-                    count++;
-                    let str = '';
-                    if (count == 3) { count = 0; str = '\n'; }
-                    arr.push(username.padEnd(16, ' ') + "   " + str);
-                });
-
-                return arr;
-            }
-
-            async function getEmbed(interaction) {
+            async function getEmbed() {
                 let coords = getCoords(bot);
                 let players = getPlayersList(bot);
 
@@ -113,7 +117,7 @@ module.exports = {
 
                 let getPlayerAPI = await getCountPlayersAPI();
                 let queue = getPlayerAPI - players.length;
-                if(queue < 0) queue = 0;
+                if (queue < 0) queue = 0;
 
                 if (server == "Main") fields.push({
                     name: 'Uptime',
@@ -142,22 +146,22 @@ module.exports = {
                     fields: fields,
                     color: Colors.Blue,
                     footer: {
-                        text: interaction ? 'Yêu cầu bởi ' + interaction.user.tag : "Bấm vào nút Update dể cập nhật thông tin!",
+                        text: "Bấm vào nút Update dể cập nhật thông tin!",
                     },
                     timestamp: new Date().toISOString()
                 };
             }
-        }
 
-        if (bot.data.spawnCount == 2) {
-            bot.data.queueStart = Date.now();
-        }
+            if (bot.data.spawnCount == 2) {
+                bot.data.queueStart = Date.now();
+            }
 
-        if (bot.data.spawnCount == 3) {
-            bot.data.uptime = Date.now();
-            sendBotLog('queue', 'Đã đợi ' + getDorHMS((Date.now() - bot.data.queueStart) / 1000, true, true) + " trước khi vào server");
-        }
+            if (bot.data.spawnCount == 3) {
+                bot.data.uptime = Date.now();
+                sendBotLog('queue', 'Đã đợi ' + getDorHMS((Date.now() - bot.data.queueStart) / 1000, true, true) + " trước khi vào server");
+            }
 
-        if (bot.data.spawnCount >= 4 || bot.player?.gamemode !== 0) bot.data.mainServer = true;
+            if (bot.data.spawnCount >= 4 || bot.player?.gamemode !== 0) bot.data.mainServer = true;
+        }
     }
 }

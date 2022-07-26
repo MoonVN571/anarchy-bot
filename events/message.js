@@ -1,4 +1,3 @@
-const { ChannelType } = require('discord.js');
 const client = require('../discord').client;
 const { notFoundPlayers, manager } = require('../set');
 const { log } = require('../functions/utils');
