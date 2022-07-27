@@ -16,7 +16,7 @@ let config = {
 
 let channel = {
     livechat: config.dev ? "987204059838709780" : "1001826269664661616",
-    server: config.dev ? "987204092113879040" : "996797600554565642"
+    server: config.dev ? "987204092113879040" : "1001838578399187055"
 }
 
 function createBot() {
