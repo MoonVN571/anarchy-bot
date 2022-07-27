@@ -1,4 +1,4 @@
-const { sendCustomMessage } = require('../functions/minecraft');
+const { sendGlobalChat } = require('../functions/minecraft');
 const seen = require('../db/seen');
 const { getPlayersList } = require('../functions/minecraft/mcUtils');
 
@@ -16,6 +16,6 @@ module.exports = {
             seenData.save();
         }
 
-        sendCustomMessage('disconnect', player.username + ' đã thoát khỏi server.');
+        // sendGlobalChat(bot, player.username + ' đã thoát khỏi server.');
     }
 }

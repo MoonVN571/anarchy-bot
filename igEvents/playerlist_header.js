@@ -24,9 +24,6 @@ module.exports = {
 
         if (!header) return;
 
-        let tps = footer[1]?.trim().split(" ")[0];
-        bot.data.tps = tps;
-
         if (bot.data.nextCheckTab) {
             setTimeout(() => bot.data.nextCheckTab = true, minutes * 60 * 1000);
             bot.data.nextCheckTab = false;
