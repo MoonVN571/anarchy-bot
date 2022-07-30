@@ -6,7 +6,7 @@ module.exports = {
     name: 'playerLeft',
 
     async execute(bot, player) {
-        if (bot.data.countPlayers <= getPlayersList(bot).length || getPlayersList(bot).indexOf(player.username) > -1) return;
+        if (bot.data.countPlayers <= getPlayersList(bot).length) return;
         if (!bot.data.mainServer) return;
 
         let seenData = await seen.findOne({ username: player.username });
