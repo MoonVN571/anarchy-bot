@@ -1,3 +1,4 @@
+const { Colors } = require('discord.js');
 const { client } = require('../discord');
 const globalChannel = require('../bot').channel;
 const stats = require('./minecraft/stats');
@@ -6,11 +7,14 @@ const { log, getDorHMS } = require('./utils');
 const livechat_color = {
     default: 0x979797,
     highlight: 0x2EA711,
-    dead: 0xDB2D2D,
     system: 0xb60000,
     whisper: 0xFD00FF,
+    queue: 0xFFC214,
+    dead: 0xDB2D2D,
+    achievement: 0x7DF9FF,
     chatbot: 0x4983e7,
-    queue: 0xFFC214
+    join: Colors.Green, // djs color
+    quit: Colors.Red
 }
 
 async function sendGlobalChat(bot, content, username, message) {
@@ -33,6 +37,15 @@ async function sendGlobalChat(bot, content, username, message) {
 
     if (content?.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
 
+    if (color == livechat_color.system && content.endsWith("đã tham gia vào server.")) color = livechat_color.join;
+    if (color == livechat_color.system && content.endsWith("đã thoát khỏi server.")) color = livechat_color.quit;
+
+    if (color == livechat_color.system &&
+        (content.includes("has made the advancement")
+        || content.includes("has complete")
+        || content.includes("has reached"))
+    ) color = livechat_color.achievement;
+
     if (!isNaN(userChat)) return;
 
     let embed = {
@@ -41,10 +54,7 @@ async function sendGlobalChat(bot, content, username, message) {
         timestamp: new Date().toISOString()
     };
 
-    if ((!content.includes("has made the advancement") && !content.includes("has complete")
-        && !content.includes("has reached") && color == livechat_color.system)
-    ) sendMessage(globalChannel.server, { embeds: [embed] })
-
+    if (color == livechat_color.achievement) sendMessage(globalChannel.server, { embeds: [embed] });
     if (color == livechat_color.whisper) log(content);
 
     sendMessage(globalChannel.livechat, { embeds: [embed] });

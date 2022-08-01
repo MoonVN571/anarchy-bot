@@ -1,12 +1,10 @@
 const { sendGlobalChat } = require('../functions/minecraft');
 const seen = require('../db/seen');
-const { getPlayersList } = require('../functions/minecraft/mcUtils');
 
 module.exports = {
     name: 'playerLeft',
 
     async execute(bot, player) {
-        if (bot.data.countPlayers <= getPlayersList(bot).length) return;
         if (!bot.data.mainServer) return;
 
         let seenData = await seen.findOne({ username: player.username });

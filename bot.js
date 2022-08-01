@@ -1,5 +1,5 @@
 const m = require('mineflayer');
-const { Collection } = require('discord.js');
+const { Collection, Colors } = require('discord.js');
 const { readdirSync } = require('fs');
 const main = require('./discord');
 const index = require('./index');
@@ -11,7 +11,8 @@ require('dotenv').config();
 let config = {
     botName: index.config.dev ? 'mo0nbot4' : 'mo0nbot3',
     dev: index.config.dev,
-    minecraftPrefix: index.config.dev ? "!!" : "!"
+    minecraftPrefix: index.config.dev ? "!!" : "!",
+    discordPrefix: "$"
 }
 
 let channel = {
@@ -62,16 +63,41 @@ function createBot() {
         if (message.channel.id == channel.livechat) {
             let content = message.content;
 
+            if (!message.author.bot && message.content.startsWith(config.discordPrefix))
+                return runCommand(message);
+
             if (message.author.username.includes("§") || content.includes("§")) return;
             if (content.split('\n').length > 1) content = content.split('\n')[0];
 
             let toServer = `[${message.author.tag}] ${content}`;
             log(toServer);
-            
+
             message.react('<a:1505_yes:797268802680258590>');
             bot.chat(`${toServer}`);
         }
     });
+}
+
+function runCommand(message) {
+    const args = message.content.slice(config.discordPrefix.length).trim().split(/ +/);
+    const cmdName = args.shift().toLowerCase();
+    const cmd = main.client.commands.get(cmdName)
+        || main.client.commands.find(cmd => cmd.aliases?.includes(cmdName));
+
+    if (!cmd) return;
+    if (cmd.disable) return;
+
+    message.sendMessage = sendMessage;
+    message.notFoundPlayers = set.notFoundPlayers;
+
+    log('AnarchyVN - ' + message.author.tag + ' used command: ' + cmdName + ' ' + args.join(" "));
+
+    function sendMessage(embed) {
+        if (typeof embed == 'object') message.reply({ embed, allowedMentions: { repliedUser: false } }).catch(err => { });
+        else message.reply({ embeds: [{ description: embed, color: Colors.NotQuiteBlack }], allowedMentions: { repliedUser: false } }).catch(err => { });
+    }
+
+    cmd.execute(main.client, message, args);
 }
 
 module.exports = { createBot, channel, config };

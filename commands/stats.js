@@ -1,28 +1,28 @@
-const { Bot } = require('mineflayer');
+const { Client, Message } = require('discord.js');
 const kd = require('../db/stats');
 
 module.exports = {
     name: 'stats',
+    description: 'Xem KD của player',
     aliases: ['kd'],
+    categories: 'players',
 
     /**
      * 
-     * @param {Bot} bot 
-     * @param {String} username 
+     * @param {Client} bot 
+     * @param {Message} message 
      * @param {String[]} args 
      */
-    async execute(bot, username, args) {
-        let name = args[0] || username;
+    async execute(bot, message, args) {
+        let name = args[0] || 'mo0nbot2';
 
         let mapData = (await kd.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let kdData = mapData[0];
-
-        if(!kdData) return bot.sendMessage('whisper', bot.notFoundPlayers);
 
         let kills = kdData?.kills || 0;
         let deaths = kdData?.deaths || 0;
         let kda = kills / deaths || 0.00;
 
-        bot.sendMessage('whisper', name + ' - K: ' + kills + " - D: " + deaths + " - K/D: " + kda.toFixed(2));
+        message.sendMessage('**' + name + '** - K: ' + kills + " - D: " + deaths + " - K/D: " + kda.toFixed(2));
     }
 }

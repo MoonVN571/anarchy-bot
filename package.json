@@ -1,6 +1,6 @@
 {
   "name": "2y2c-bot",
-  "version": "4.4.1",
+  "version": "4.5.0",
   "description": "Một project hoàn toàn mới với bot được viết lại hoàn toàn",
   "main": "index.js",
   "scripts": {
