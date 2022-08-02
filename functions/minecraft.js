@@ -54,7 +54,10 @@ async function sendGlobalChat(bot, content, username, message) {
         timestamp: new Date().toISOString()
     };
 
-    if (color == livechat_color.system) sendMessage(globalChannel.server, { embeds: [embed] });
+    if (color == livechat_color.system
+        && content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây https://minecraft-mp.com/server/307961/vote/') {
+        sendMessage(globalChannel.server, { embeds: [embed] });
+    }
     if (color == livechat_color.whisper) log(content);
 
     sendMessage(globalChannel.livechat, { embeds: [embed] });
