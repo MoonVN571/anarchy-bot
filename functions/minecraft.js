@@ -54,7 +54,7 @@ async function sendGlobalChat(bot, content, username, message) {
         timestamp: new Date().toISOString()
     };
 
-    if (color !== livechat_color.achievement) sendMessage(globalChannel.server, { embeds: [embed] });
+    if (color == livechat_color.system) sendMessage(globalChannel.server, { embeds: [embed] });
     if (color == livechat_color.whisper) log(content);
 
     sendMessage(globalChannel.livechat, { embeds: [embed] });
