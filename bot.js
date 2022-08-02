@@ -39,6 +39,7 @@ function createBot() {
         mainServer: false,
         logged: false,
         nextCheckTab: true,
+        fastReconnect: false,
         spawnCount: 0,
         countPlayers: 0,
         uptime: 0

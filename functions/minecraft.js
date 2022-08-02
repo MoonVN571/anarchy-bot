@@ -42,8 +42,8 @@ async function sendGlobalChat(bot, content, username, message) {
 
     if (color == livechat_color.system &&
         (content.includes("has made the advancement")
-        || content.includes("has complete")
-        || content.includes("has reached"))
+            || content.includes("has complete")
+            || content.includes("has reached"))
     ) color = livechat_color.achievement;
 
     if (!isNaN(userChat)) return;
@@ -54,7 +54,7 @@ async function sendGlobalChat(bot, content, username, message) {
         timestamp: new Date().toISOString()
     };
 
-    if (color == livechat_color.achievement) sendMessage(globalChannel.server, { embeds: [embed] });
+    if (color !== livechat_color.achievement) sendMessage(globalChannel.server, { embeds: [embed] });
     if (color == livechat_color.whisper) log(content);
 
     sendMessage(globalChannel.livechat, { embeds: [embed] });
@@ -69,7 +69,12 @@ function getUptime(bot) {
     return getDorHMS((Date.now() - bot.data.uptime) / 1000);
 }
 
+function callBot(tick) {
+    setTimeout(() => require('../bot').createBot(), (tick || 0));
+}
+
 module.exports = {
     sendGlobalChat,
-    getUptime
+    getUptime,
+    callBot
 }
