@@ -4,6 +4,7 @@ const kd = require('../../db/stats');
 const set = require('../../set');
 
 module.exports.isDeathMessage = (message) => {
+    message = message?.trim() || message;
     if (message.match(set.stats.deaths)
         || message.match(set.stats.killAft)
         || message.match(set.stats.killBef)
@@ -11,6 +12,7 @@ module.exports.isDeathMessage = (message) => {
 }
 
 module.exports.save = async (bot, content) => {
+    content = content?.trim() || content;
     let deathsRegex = require('../../set').stats.deaths;
     let killAfterRegex = set.stats.killAft;
     let killBeforeRegex = set.stats.killBef;
