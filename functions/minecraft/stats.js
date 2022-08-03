@@ -3,19 +3,14 @@ const { getPlayersList } = require('./mcUtils');
 const kd = require('../../db/stats');
 const set = require('../../set');
 
-module.exports.isDeathMessage = (msg) => {
-    let message = msg.replace('[DM] ', '') || msg;
-    if (!message) return;
-
+module.exports.isDeathMessage = (message) => {
     if (message.match(set.stats.deaths)
         || message.match(set.stats.killAft)
         || message.match(set.stats.killBef)
         || message.match(set.stats.noStats)) return true;
 }
 
-module.exports.save = async (bot, msg) => {
-    let content = msg?.replace('[DM] ', '') || msg;
-
+module.exports.save = async (bot, content) => {
     let deathsRegex = require('../../set').stats.deaths;
     let killAfterRegex = set.stats.killAft;
     let killBeforeRegex = set.stats.killBef;
