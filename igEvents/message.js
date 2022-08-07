@@ -1,6 +1,7 @@
 const { sendGlobalChat } = require('../functions/minecraft');
 const { solveAlotMessage } = require('../functions/minecraft/mcUtils');
 const { log } = require('../functions/utils');
+const setting = require('../setting');
 
 module.exports = {
     name: 'message',
@@ -13,7 +14,12 @@ module.exports = {
     execute(bot, msg) {
         let content = msg.toString();
 
-        if(content == " dùng lệnh/anarchyvn  để vào server.") bot.chat('/anarchyvn');
+        if (setting.authType == 'AdvancedLogin' && content == setting.joinCmdMessage) bot.chat(setting.joinCmd);
+
+        let psw = `${process.env.PIN}${process.env.PIN}`;
+        if(setting.authType == 'AuthMe' && setting.authMe.msg.register == content) bot.chat(`/register ${psw} ${psw}`);
+        if(setting.authType == 'AuthMe' && setting.authMe.msg.login == content) bot.chat(`/login ${psw}`);
+        if(setting.authType == 'AuthMe' && setting.authMe.msg.success.indexOf(content) > -1) bot.chat(setting.joinCmd);
 
         let username;
         let message;

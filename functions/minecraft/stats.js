@@ -1,21 +1,21 @@
-const { log } = require('../utils');
 const { getPlayersList } = require('./mcUtils');
 const kd = require('../../db/stats');
-const set = require('../../set');
+const set = require('../../data');
 
 module.exports.isDeathMessage = (message) => {
     message = message?.trim() || message;
     if (message.match(set.stats.deaths)
-        || message.match(set.stats.killAft)
-        || message.match(set.stats.killBef)
+        || message.match(set.stats.killAfter)
+        || message.match(set.stats.killBefore)
         || message.match(set.stats.noStats)) return true;
 }
 
 module.exports.save = async (bot, content) => {
     content = content?.trim() || content;
-    let deathsRegex = require('../../set').stats.deaths;
-    let killAfterRegex = set.stats.killAft;
-    let killBeforeRegex = set.stats.killBef;
+
+    let deathsRegex = require('../../data').stats.deaths;
+    let killAfterRegex = set.stats.killAfter;
+    let killBeforeRegex = set.stats.killBefore;
 
     if (content.match(deathsRegex)) {
         let username = content.match(deathsRegex);

@@ -3,8 +3,7 @@ const { Collection, Colors } = require('discord.js');
 const { readdirSync } = require('fs');
 const main = require('./discord');
 const index = require('./index');
-const set = require('./set');
-const { manager } = require('./set');
+const set = require('./data');
 const { log } = require('./functions/utils');
 require('dotenv').config();
 
@@ -28,7 +27,7 @@ function createBot() {
         version: '1.12.2'
     });
 
-    bot.adminName = manager.adminGame;
+    bot.adminName = set.manager.adminGame;
     bot.notFoundPlayers = set.notFoundPlayers;
 
     bot.client = main.client;

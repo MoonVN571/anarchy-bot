@@ -19,15 +19,36 @@ const livechat_color = {
 
 async function sendGlobalChat(bot, content, username, message) {
     let userChat = `**<${username}>** ${message}`;
+    let color = getColor(bot, content, username, message);
+
+    if (!username) userChat = content;
+
+    if (color == livechat_color.dead) stats.save(bot, content);
+
+    if (!isNaN(userChat)) return;
+
+    let embed = {
+        description: userChat,
+        color: color,
+        timestamp: new Date().toISOString()
+    };
+
+    if (color == livechat_color.system
+        && content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây https://minecraft-mp.com/server/307961/vote/'
+        && content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây http://topminecraftservers.org/vote/28848') {
+        sendMessage(globalChannel.server, { embeds: [embed] });
+    }
+    if (color == livechat_color.whisper) log(content);
+
+    sendMessage(globalChannel.livechat, { embeds: [embed] });
+}
+
+function getColor(bot, content, username, message) {
     let color = livechat_color.default;
 
-    if (!username) {
-        color = livechat_color.system;
-        userChat = content;
-    }
-
     if (stats.isDeathMessage(content)) color = livechat_color.dead;
-    if (color == livechat_color.dead) stats.save(bot, content);
+
+    if (!username) color = livechat_color.system;
 
     if (username == bot.config.botName) color = livechat_color.chatbot;
     if (message?.startsWith(">")) color = livechat_color.highlight;
@@ -46,21 +67,7 @@ async function sendGlobalChat(bot, content, username, message) {
             || content.includes("has reached"))
     ) color = livechat_color.achievement;
 
-    if (!isNaN(userChat)) return;
-
-    let embed = {
-        description: userChat,
-        color: color,
-        timestamp: new Date().toISOString()
-    };
-
-    if (color == livechat_color.system
-        && content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây https://minecraft-mp.com/server/307961/vote/') {
-        sendMessage(globalChannel.server, { embeds: [embed] });
-    }
-    if (color == livechat_color.whisper) log(content);
-
-    sendMessage(globalChannel.livechat, { embeds: [embed] });
+    return color;
 }
 
 function sendMessage(channelId, msg) {

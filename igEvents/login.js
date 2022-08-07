@@ -1,6 +1,6 @@
 const pt = require('../db/playtime');
 const { getPlayersList } = require('../functions/minecraft/mcUtils');
-const { messageArray } = require('../set');
+const { messageArray } = require('../data');
 
 module.exports = {
     name: 'login',
