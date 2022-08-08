@@ -4,6 +4,7 @@ const set = require('../../data');
 const { log } = require("../utils.js");
 module.exports.isDeathMessage = (msg) => {
     let message = msg?.trim() || msg;
+    log(message)
     if (message.match(set.stats.deaths)
         || message.match(set.stats.killAfter)
         || message.match(set.stats.killBefore)
