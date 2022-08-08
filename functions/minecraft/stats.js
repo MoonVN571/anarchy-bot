@@ -1,8 +1,9 @@
 const { getPlayersList } = require('./mcUtils');
 const kd = require('../../db/stats');
 const set = require('../../data');
-
+const { log } = require("../utils.js");
 module.exports.isDeathMessage = (message) => {
+    log(message);
     if (message.match(set.stats.deaths)
         || message.match(set.stats.killAfter)
         || message.match(set.stats.killBefore)
