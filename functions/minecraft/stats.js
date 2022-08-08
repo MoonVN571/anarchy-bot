@@ -2,7 +2,7 @@ const { getPlayersList } = require('./mcUtils');
 const kd = require('../../db/stats');
 const set = require('../../data');
 const { log } = require("../utils.js");
-module.exports.isDeathMessageagemsg) => {
+module.exports.isDeathMessage = (msg) => {
     let message = msg?.trim() || msg;
     if (message.match(set.stats.deaths)
         || message.match(set.stats.killAfter)
