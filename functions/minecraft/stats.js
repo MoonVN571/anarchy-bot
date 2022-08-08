@@ -2,15 +2,16 @@ const { getPlayersList } = require('./mcUtils');
 const kd = require('../../db/stats');
 const set = require('../../data');
 const { log } = require("../utils.js");
-module.exports.isDeathMessage = (message) => {
-    log(message);
+module.exports.isDeathMessageagemsg) => {
+    let message = msg?.trim() || msg;
     if (message.match(set.stats.deaths)
         || message.match(set.stats.killAfter)
         || message.match(set.stats.killBefore)
         || message.match(set.stats.noStats)) return true;
 }
 
-module.exports.save = async (bot, content) => {
+module.exports.save = async (bot, cont) => {
+    let content = cont?.trim() || cont;
     let deathsRegex = require('../../data').stats.deaths;
     let killAfterRegex = set.stats.killAfter;
     let killBeforeRegex = set.stats.killBefore;
