@@ -46,9 +46,9 @@ async function sendGlobalChat(bot, content, username, message) {
 function getColor(bot, content, username, message) {
     let color = livechat_color.default;
 
-    if (stats.isDeathMessage(content)) color = livechat_color.dead;
-
     if (!username) color = livechat_color.system;
+
+    if (stats.isDeathMessage(content)) color = livechat_color.dead;
 
     if (username == bot.config.botName) color = livechat_color.chatbot;
     if (message?.startsWith(">")) color = livechat_color.highlight;
