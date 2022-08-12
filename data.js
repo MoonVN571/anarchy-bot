@@ -16,7 +16,7 @@ module.exports = {
     notFoundPlayers: 'Không tìm thấy người chơi này.',    
     manager: {
         // Array username admin để thực thi 1 số lệnh trong server
-        adminGame: ['MoonVN'],
+        adminGame: ['MoonX'],
         adminBot: ['425599739837284362']
     }
 }
