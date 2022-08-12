@@ -1,58 +1,30 @@
-const { EmbedBuilder } = require('@discordjs/builders');
 const { Colors } = require('discord.js');
 const { client } = require('../discord');
-const { getPlayersList } = require('./minecraft/mcUtils');
 const globalChannel = require('../bot').channel;
 const stats = require('./minecraft/stats');
-const { getDorHMS, log } = require('./utils');
+const { log, getDorHMS } = require('./utils');
 
 const livechat_color = {
     default: 0x979797,
     highlight: 0x2EA711,
-    dead: 0xDB2D2D,
     system: 0xb60000,
     whisper: 0xFD00FF,
+    queue: 0xFFC214,
+    dead: 0xDB2D2D,
+    achievement: 0x7DF9FF,
     chatbot: 0x4983e7,
-    queue: 0xFFC214
+    join: Colors.Green, // djs color
+    quit: Colors.Red
 }
-
-const botlog_color = {
-    join_log: 0x15ff00,
-    queue_log: 0xeeee00,
-    disconnect_log: 0xF71319
-}
-
-// let msgs = [];
 
 async function sendGlobalChat(bot, content, username, message) {
     let userChat = `**<${username}>** ${message}`;
-    let color = livechat_color.default;
+    let color = getColor(bot, content, username, message);
 
-    // Nếu message player = ">" color là xanh
-    if (message?.startsWith(">")) color = livechat_color.highlight;
+    if (!username) userChat = content;
 
-    if (!username) {
-        color = livechat_color.system;
-        userChat = content;
-    }
-
-    // Check nếu tin nhắn là death message
-    if (stats.isDeathMessage(content)) color = livechat_color.dead;
-
-    // Lưu lại KD của player nếu không phài dev mode
     if (color == livechat_color.dead) stats.save(bot, content);
 
-    // Tin nhắn được gửi bởi bot
-    if (username == bot.config.botName) color = livechat_color.chatbot;
-
-    // Tin nhắn hàng chờ
-    if (content?.toLowerCase().startsWith('vị trí của bạn')) color = livechat_color.queue;
-    if (content?.toLowerCase().startsWith('vị trí hàng chờ')) return;
-
-    // Tin nhắn whisper của bot gửi và player nhắn cho bot
-    if (content?.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
-
-    // Ẩn spam message number
     if (!isNaN(userChat)) return;
 
     let embed = {
@@ -61,61 +33,45 @@ async function sendGlobalChat(bot, content, username, message) {
         timestamp: new Date().toISOString()
     };
 
-    if ((!content.includes("has made the advancement") && !content.includes("has complete")
-        && !content.includes("has reached") && color == livechat_color.system)
-    ) sendMessage(globalChannel.server, { embeds: [embed] })
-
+    if (color == livechat_color.system
+        && content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây https://minecraft-mp.com/server/307961/vote/'
+        && content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây http://topminecraftservers.org/vote/28848') {
+        sendMessage(globalChannel.server, { embeds: [embed] });
+    }
     if (color == livechat_color.whisper) log(content);
 
-    /*
-    msgs.push(embed);
-
-    let length = 5;
-
-    let players = getPlayersList(bot)
-    if (players.length < 30 && bot.data.mainServer) length = 1;
-
-    if (msgs.length >= length) {
-        sendMessage(globalChannel.livechat, { embeds: msgs });
-        msgs = [];
-    }*/
     sendMessage(globalChannel.livechat, { embeds: [embed] });
+}
+
+function getColor(bot, content, username, message) {
+    let color = livechat_color.default;
+
+    if (!username) color = livechat_color.system;
+
+    if (stats.isDeathMessage(content)) color = livechat_color.dead;
+
+    if (username == bot.config.botName) color = livechat_color.chatbot;
+    if (message?.startsWith(">")) color = livechat_color.highlight;
+
+    if (content?.toLowerCase().startsWith('vị trí của bạn')) color = livechat_color.queue;
+    if (content?.toLowerCase().startsWith('vị trí hàng chờ')) return;
+
+    if (content?.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
+
+    if (color == livechat_color.system && content.endsWith("đã tham gia vào server.")) color = livechat_color.join;
+    if (color == livechat_color.system && content.endsWith("đã thoát khỏi server.")) color = livechat_color.quit;
+
+    if (color == livechat_color.system &&
+        (content.includes("has made the advancement")
+            || content.includes("has complete")
+            || content.includes("has reached"))
+    ) color = livechat_color.achievement;
+
+    return color;
 }
 
 function sendMessage(channelId, msg) {
     client.channels.cache.get(channelId).send(msg).catch(err => console.log(err));
-}
-
-function sendCustomMessage(type, content) {
-    let color = livechat_color.default;
-
-    if (type == 'connect') color = Colors.Green;
-    if (type == 'disconnect') color = Colors.Red;
-
-    sendMessage(globalChannel.join, {
-        embeds: [{
-            description: content,
-            color: color,
-            timestamp: new Date().toISOString()
-        }]
-    });
-}
-
-function sendBotLog(type, content) {
-    let chat = content;
-    let color;
-
-    if (type == 'join') color = botlog_color.join_log;
-    if (type == 'queue') color = botlog_color.queue_log;
-    if (type == 'disconnect') color = botlog_color.disconnect_log;
-
-    sendMessage(globalChannel.log, {
-        embeds: [{
-            description: chat,
-            color: color,
-            timestamp: new Date().toISOString()
-        }]
-    });
 }
 
 function getUptime(bot) {
@@ -123,9 +79,12 @@ function getUptime(bot) {
     return getDorHMS((Date.now() - bot.data.uptime) / 1000);
 }
 
+function callBot(tick) {
+    setTimeout(() => require('../bot').createBot(), (tick || 0));
+}
+
 module.exports = {
-    sendCustomMessage,
     sendGlobalChat,
-    sendBotLog,
-    getUptime
+    getUptime,
+    callBot
 }

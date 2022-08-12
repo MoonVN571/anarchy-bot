@@ -1,4 +1,4 @@
-const { sendCustomMessage } = require('../functions/minecraft');
+const { sendGlobalChat } = require('../functions/minecraft');
 const seen = require('../db/seen');
 const jd = require('../db/joindate');
 const { getPlayersList } = require('../functions/minecraft/mcUtils');
@@ -21,8 +21,8 @@ module.exports = {
             seenData.save();
         }
 
-        if (bot.data.countPlayers <= getPlayersList(bot).length) return;
+        if (bot.data.countPlayers <= getPlayersList(bot).length + 3) return;
 
-        sendCustomMessage('connect', player.username + ' đã tham gia vào server.');
+        sendGlobalChat(bot, player.username + ' đã tham gia vào server.');
     }
 }

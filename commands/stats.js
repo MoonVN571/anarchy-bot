@@ -1,5 +1,5 @@
 const { Client, Message } = require('discord.js');
-const kd = require('../../db/stats');
+const kd = require('../db/stats');
 
 module.exports = {
     name: 'stats',
@@ -14,7 +14,7 @@ module.exports = {
      * @param {String[]} args 
      */
     async execute(bot, message, args) {
-        let name = args[0] || 'mo0nbot';
+        let name = args[0] || 'mo0nbot2';
 
         let mapData = (await kd.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let kdData = mapData[0];

@@ -1,10 +1,14 @@
+const mongoose = require('mongoose');
+require('dotenv').config();
+
 let config = {
-    prefix: "$",
     dev: false
 };
 
-if(config.dev) config.prefix = "dev$";
+mongoose.connect(process.env.MONGO_STRING).then(() => {
+    console.log("Đã kết nối đến MongoDB!");
 
-require('./mongoose');
+    require('./discord');
+});
 
 module.exports = { config };

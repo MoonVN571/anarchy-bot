@@ -18,7 +18,7 @@ module.exports = {
         let mapData = (await pt.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let ptData = mapData[0];
 
-        if (!ptData) return bot.sendMessage('whisper', bot.data.notFoundPlayers);
+        if (!ptData) return bot.sendMessage('whisper', bot.notFoundPlayers);
 
         bot.sendMessage('whisper', name + ' đã chơi tổng '
             + getDorHMS(ptData.time / 1000, true, true));

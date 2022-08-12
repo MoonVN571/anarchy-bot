@@ -58,7 +58,7 @@ module.exports = {
                 sendGlobalChat(bot, est);
                 setStatus('idle', 'Playing', stt);
             } else {
-                minutes = 5;
+                minutes = 10;
 
                 // log('tps: '+ tps);
                 setStatus('online', 'Playing', 'TPS: ' + tps + ' - Hàng Chờ: ' + queue);

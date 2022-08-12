@@ -18,7 +18,7 @@ module.exports = {
         let mapData = (await jd.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let jdData = mapData[0];
 
-        if (!jdData) return bot.sendMessage('whisper', bot.data.notFoundPlayers);
+        if (!jdData) return bot.sendMessage('whisper', bot.notFoundPlayers);
 
         let date = new Date(jdData.time)
 

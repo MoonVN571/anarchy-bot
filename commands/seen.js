@@ -1,7 +1,6 @@
 const { Client, Message } = require('discord.js');
-
-const seen = require('../../db/seen');
-const { getDorHMS, legitNumber } = require('../../functions/utils');
+const seen = require('../db/seen');
+const { getDorHMS, legitNumber } = require('../functions/utils');
 
 module.exports = {
     name: 'seen',
@@ -16,7 +15,7 @@ module.exports = {
      * @param {String[]} args 
      */
     async execute(client, message, args) {
-        let name = args[0] || 'mo0nbot';
+        let name = args[0] || 'mo0nbot2';
 
         let mapData = (await seen.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let seenData = mapData[0];

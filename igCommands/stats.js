@@ -17,7 +17,7 @@ module.exports = {
         let mapData = (await kd.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let kdData = mapData[0];
 
-        if(!kdData) return bot.sendMessage('whisper', bot.data.notFoundPlayers);
+        if(!kdData) return bot.sendMessage('whisper', bot.notFoundPlayers);
 
         let kills = kdData?.kills || 0;
         let deaths = kdData?.deaths || 0;

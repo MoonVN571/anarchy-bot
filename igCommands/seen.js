@@ -18,7 +18,7 @@ module.exports = {
         let mapData = (await seen.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
         let seenData = mapData[0];
 
-        if (!seenData) return bot.sendMessage('whisper', bot.data.notFoundPlayers);
+        if (!seenData) return bot.sendMessage('whisper', bot.notFoundPlayers);
 
         let date = new Date(seenData.time);
 
