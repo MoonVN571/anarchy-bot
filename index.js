@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 let config = {
-    dev: false
+    dev: true
 };
 
 mongoose.connect(process.env.MONGO_STRING).then(() => {
