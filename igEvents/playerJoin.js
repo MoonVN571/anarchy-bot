@@ -23,6 +23,6 @@ module.exports = {
 
         if (bot.data.countPlayers <= getPlayersList(bot).length + 3) return;
 
-        sendGlobalChat(bot, player.username + ' đã tham gia vào server.');
+        // sendGlobalChat(bot, player.username + ' đã tham gia vào server.');
     }
 }

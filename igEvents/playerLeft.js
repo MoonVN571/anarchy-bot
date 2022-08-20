@@ -14,6 +14,6 @@ module.exports = {
             seenData.save();
         }
 
-        sendGlobalChat(bot, player.username + ' đã thoát khỏi server.');
+        // sendGlobalChat(bot, player.username + ' đã thoát khỏi server.');
     }
 }
