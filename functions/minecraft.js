@@ -35,7 +35,8 @@ async function sendGlobalChat(bot, content, username, message) {
 
     if (color == livechat_color.system
         && content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây https://minecraft-mp.com/server/307961/vote/'
-        && content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây http://topminecraftservers.org/vote/28848') {
+        && content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây http://topminecraftservers.org/vote/28848'
+        && !content.endsWith('players sleeping')) {
         sendMessage(globalChannel.server, { embeds: [embed] });
     }
     if (color == livechat_color.whisper) log(content);
