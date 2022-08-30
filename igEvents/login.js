@@ -3,7 +3,7 @@ const { getPlayersList } = require('../functions/minecraft/mcUtils');
 const { messageArray } = require('../data');
 
 module.exports = {
-    name: 'login',
+    name: 'spawn',
     once: true,
 
     execute(bot) {
