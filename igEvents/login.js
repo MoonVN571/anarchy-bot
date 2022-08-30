@@ -4,7 +4,7 @@ const { messageArray } = require('../data');
 const { setStatus } = require('../functions/botFunc');
 
 module.exports = {
-    name: 'login',
+    name: 'spawn',
     once: true,
 
     execute(bot) {
