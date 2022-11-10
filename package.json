@@ -1,6 +1,6 @@
 {
-  "name": "2y2c-bot",
-  "version": "4.5.0",
+  "name": "5a5b-bot",
+  "version": "5.0.0",
   "description": "Một project hoàn toàn mới với bot được viết lại hoàn toàn",
   "main": "index.js",
   "scripts": {
@@ -10,10 +10,10 @@
   "author": "Moon",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.27.2",
-    "discord.js": "^14.0.3",
-    "dotenv": "16.0.1",
-    "mineflayer": "^4.3.0",
-    "mongoose": "6.5.2"
+    "axios": "^1.1.3",
+    "discord.js": "^14.6.0",
+    "dotenv": "^16.0.3",
+    "mineflayer": "^4.5.1",
+    "mongoose": "^6.7.2"
   }
 }

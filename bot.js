@@ -1,38 +1,31 @@
-const m = require('mineflayer');
-const { Collection, Colors } = require('discord.js');
+const mineflayer = require('mineflayer');
+const { Colors } = require('discord.js');
 const { readdirSync } = require('fs');
-const main = require('./discord');
-const index = require('./index');
-const set = require('./data');
+const client = require('./index');
+const settings = require('./data');
 const { log } = require('./functions/utils');
 require('dotenv').config();
-
 let config = {
-    botName: index.config.dev ? 'mo0nbot4' : 'mo0nbot3',
-    dev: index.config.dev,
-    minecraftPrefix: index.config.dev ? "!!" : "!",
-    discordPrefix: "$"
+    serverIp: '5a5b.ddns.net',
+    serverName: '5A5B',
+    serverVerion: '1.16.5',
+    username: client.config.dev ? 'mo0nbot5' : 'mo0nbot2',
+    emoji: '<a:1505_yes:797268802680258590>'
 }
-
 let channel = {
-    livechat: config.dev ? "987204059838709780" : "986599157068361734",
-    server: config.dev ? "987204092113879040" : "986807303565086781"
+    livechat: config.dev ? "987204059838709780" : "1040238922367782923",
+    server: config.dev ? "987204092113879040" : "1040238994593693696"
 }
-
 function createBot() {
-    const bot = m.createBot({
-        host: '2y2c.org',
+    const bot = mineflayer.createBot({
+        host: config.serverIp,
         port: 25565,
-        username: config.botName,
-        version: '1.18.2'
+        username: config.username,
+        version: config.serverVerion
     });
-
-    bot.adminName = set.manager.adminGame;
-    bot.notFoundPlayers = set.notFoundPlayers;
-
-    bot.client = main.client;
+    bot.adminName = settings.manager.adminGame;
+    bot.notFoundPlayers = settings.notFoundPlayers;
     bot.config = config;
-
     bot.data = {
         arrayMessages: [],
         mainServer: false,
@@ -43,61 +36,48 @@ function createBot() {
         countPlayers: 0,
         uptime: 0
     }
-
-    bot.commands = new Collection();
-    readdirSync('./igCommands').forEach(cmdName => {
-        bot.commands.set(cmdName.split(".")[0], require('./igCommands/' + cmdName));
-    });
-
-    readdirSync('./igEvents').forEach(eventName => {
-        let event = require('./igEvents/' + eventName);
-
+    readdirSync('./events').forEach(eventName => {
+        let event = require('./events/' + eventName);
         if (event.other && event.once) bot._client.once(event.name, (...args) => event.execute(bot, ...args));
         if (event.other && !event.once) bot._client.on(event.name, (...args) => event.execute(bot, ...args));
         if (!event.other && event.once) bot.once(event.name, (...args) => event.execute(bot, ...args));
         if (!event.other && !event.once) bot.on(event.name, (...args) => event.execute(bot, ...args));
     });
-
-    main.client.on('messageCreate', message => {
+    client.on('messageCreate', message => {
         if (!bot.data.logged || message.author.bot) return;
         if (message.channel.id == channel.livechat) {
             let content = message.content;
-
             if (!message.author.bot && message.content.startsWith(config.discordPrefix))
                 return runCommand(message);
-
-            if (message.author.username.includes("§") || content.includes("§")) return;
             if (content.split('\n').length > 1) content = content.split('\n')[0];
-
-            let toServer = `[${message.author.tag}] ${content}`;
+            let toServer = `[${config.serverName}] [${message.author.tag}] ${content}`;
             log(toServer);
-
-            message.react('<a:1505_yes:797268802680258590>');
+            message.react(config.emoji);
             bot.chat(`${toServer}`);
         }
     });
 }
-
 function runCommand(message) {
     const args = message.content.slice(config.discordPrefix.length).trim().split(/ +/);
     const cmdName = args.shift().toLowerCase();
     const cmd = main.client.commands.get(cmdName)
         || main.client.commands.find(cmd => cmd.aliases?.includes(cmdName));
-
     if (!cmd) return;
-    if (cmd.disable) return;
-
     message.sendMessage = sendMessage;
-    message.notFoundPlayers = set.notFoundPlayers;
-
-    log('2Y2C - ' + message.author.tag + ' used command: ' + cmdName + ' ' + args.join(" "));
-
+    message.notFoundPlayers = settings.notFoundPlayers;
+    message.config = config;
+    log('[' + config.serverName + '] - ' + message.author.tag + ' used command: ' + message.content);
     function sendMessage(embed) {
-        if (typeof embed == 'object') message.reply({ embed, allowedMentions: { repliedUser: false } }).catch(err => { });
-        else message.reply({ embeds: [{ description: embed, color: Colors.NotQuiteBlack }], allowedMentions: { repliedUser: false } }).catch(err => { });
+        if (typeof embed == 'object') message.reply({
+            embed,
+            allowedMentions: { repliedUser: false }
+        });
+        else message.reply({
+            embeds: [{
+                description: embed, color: Colors.NotQuiteBlack
+            }], allowedMentions: { repliedUser: false }
+        });
     }
-
     cmd.execute(main.client, message, args);
 }
-
 module.exports = { createBot, channel, config };

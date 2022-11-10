@@ -1,28 +1,24 @@
-const { client } = require('../discord');
-require('dotenv').config();
-
-function legitNumber(value, length) {
+const { client } = require('../index');
+module.exports.legitNumber = (value, length) => {
     return `${value}`.padStart(length, 0);
 }
-
-function getDorHMS(temp, fulltime) {
+module.exports.getDorHMS = (temp, onlyDays) => {
     let days = parseInt(temp / 86400),
         hours = parseInt(((temp - days * 86400) / 3600)),
         minutes = parseInt(((temp - days * 86400 - hours * 3600)) / 60),
         seconds = parseInt(temp % 60);
-
-    let format = '';
-    let str = [' giờ', ' phút', ' giây', ' ngày'];
-    if (hours > 0) format = hours + str[0] + " ";
-    if (minutes > 0) format = format + minutes + str[1] + " ";
-    if (seconds > 0) format = format + seconds + str[2];
-
-    if (fulltime && days > 0) format = days + str[3] + " " + format;
-    if (!fulltime & days > 0) return days + str[3];
-    return format.trim();
+    timeArray = [days, hours, minutes, seconds];
+    if (!format) format = ['d ', 'h ', 'm ', 's '];
+    let str = "";
+    for (let i = 0; i < 4; i++) {
+        let def = `${timeArray[i]}${format[i]}`;
+        if (better && timeArray[i] > 0) str += def
+        else if (!better) str += def;
+    }
+    if (onlyDays && days > 0) str = `${days}${format[0]}`;
+    return str.trim();
 }
-
-function log(...string) {
+module.exports.log = (...string) => {
     let timeFormat =
         '['
         + new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })
@@ -33,14 +29,6 @@ function log(...string) {
     console.log(timeFormat + " " + string.join(" "));
     client.channels.cache.get('995305343456382976').send(timeFormat + " " + string.join(' '));
 }
-
-function sleep(ms) {
+module.exports.sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-module.exports = {
-    legitNumber,
-    getDorHMS,
-    sleep,
-    log
 }

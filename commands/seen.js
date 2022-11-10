@@ -1,31 +1,15 @@
-const { Client, Message } = require('discord.js');
-const seen = require('../db/seen');
+const players = require('../databases/players');
 const { getDorHMS, legitNumber } = require('../functions/utils');
-
 module.exports = {
     name: 'seen',
-    description: 'Xem lần cuối nhìn thấy player',
     aliases: ['see', 'lastseen', 'ls'],
-    categories: 'players',
-
-    /**
-     * 
-     * @param {Client} client 
-     * @param {Message} message 
-     * @param {String[]} args 
-     */
-    async execute(client, message, args) {
-        let name = args[0] || 'mo0nbot2';
-
-        let mapData = (await seen.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
-        let seenData = mapData[0];
-
-        if (!seenData) return message.sendMessage(message.notFoundPlayers);
-
-        let date = new Date(seenData.time);
-
-        message.sendMessage('Bot đã thấy **' + name + '** vào '
-            + legitNumber(date.getDate(), 2) + '.' + legitNumber(date.getMonth() + 1, 2) + '.' + date.getFullYear()
-            + ' (' + legitNumber(getDorHMS((Date.now() - seenData.time) / 1000, true)) + ' trước)');
+    async executeIngame(bot, username, args) {
+        let name = args[0] || username;
+        let data = (await players.find()).find(data => data.username.toLowerCase() == name.toLowerCase());
+        if (!data) return bot.sendMessage('whisper', bot.notFoundPlayers);
+        let date = new Date(data.lastseen);
+        let days = getDorHMS((Date.now() - data.lastseen) / 1000, true);
+        bot.sendMessage('whisper', name + ' lastseen at '
+            + date.toLocaleTimeString() + ' ' + date.toLocaleDateString() + ' (' + days + ' days ago)');
     }
 }

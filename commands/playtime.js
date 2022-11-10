@@ -1,27 +1,13 @@
-const { Client, Message } = require('discord.js');
-const pt = require('../db/playtime');
+const players = require('../databases/players');
 const { getDorHMS } = require('../functions/utils');
-
 module.exports = {
     name: 'playtime',
-    description: 'Xem thời gian chơi của player',
     aliases: ['pt'],
-    categories: 'players',
-
-    /**
-     * 
-     * @param {Client} client 
-     * @param {Message} message 
-     * @param {String[]} args 
-     */
-    async execute(client, message, args) {
-        let name = args[0] || 'mo0nbot2';
-
-        let mapData = (await pt.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
-        let ptData = mapData[0];
-
-        if (!ptData) return message.sendMessage(message.notFoundPlayers);
-
-        message.sendMessage('**' + name + '** đã chơi ' + getDorHMS(ptData.time / 1000, true, true));
+    async executeIngame(bot, username, args) {
+        let name = args[0] || username;
+        let data = (await players.find()).find(data => data.username.toLowerCase() == name.toLowerCase());
+        if (!data) return bot.sendMessage('whisper', bot.notFoundPlayers);
+        let time = getDorHMS((data.playtime || 0) / 1000, true, false);
+        bot.sendMessage('whisper', name + ' : ' + time);
     }
 }
