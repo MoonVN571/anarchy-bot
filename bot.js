@@ -10,11 +10,12 @@ let config = {
     serverName: '5A5B',
     serverVerion: '1.16.5',
     username: client.config.dev ? 'mo0nbot5' : 'mo0nbot2',
-    emoji: '<a:1505_yes:797268802680258590>'
+    emoji: '<a:1505_yes:797268802680258590>',
+    dev: client.config.dev
 }
 let channel = {
-    livechat: config.dev ? "987204059838709780" : "1040238922367782923",
-    server: config.dev ? "987204092113879040" : "1040238994593693696"
+    livechat: client.config.dev ? "987204059838709780" : "1040238922367782923",
+    server: client.config.dev ? "987204092113879040" : "1040238994593693696"
 }
 function createBot() {
     const bot = mineflayer.createBot({
@@ -48,20 +49,20 @@ function createBot() {
         if (message.channel.id == channel.livechat) {
             let content = message.content;
             if (!message.author.bot && message.content.startsWith(config.discordPrefix))
-                return runCommand(message);
+                return; //runCommand(message);
             if (content.split('\n').length > 1) content = content.split('\n')[0];
-            let toServer = `[${config.serverName}] [${message.author.tag}] ${content}`;
-            log(toServer);
-            message.react(config.emoji);
+            let toServer = `[${message.author.tag}] ${content}`;
+            log(`[${config.serverName}] ${toServer}`);
             bot.chat(`${toServer}`);
+            message.react(config.emoji);
         }
     });
 }
 function runCommand(message) {
     const args = message.content.slice(config.discordPrefix.length).trim().split(/ +/);
     const cmdName = args.shift().toLowerCase();
-    const cmd = main.client.commands.get(cmdName)
-        || main.client.commands.find(cmd => cmd.aliases?.includes(cmdName));
+    const cmd = client.commands.get(cmdName)
+        || client.commands.find(cmd => cmd.aliases?.includes(cmdName));
     if (!cmd) return;
     message.sendMessage = sendMessage;
     message.notFoundPlayers = settings.notFoundPlayers;
@@ -78,6 +79,6 @@ function runCommand(message) {
             }], allowedMentions: { repliedUser: false }
         });
     }
-    cmd.execute(main.client, message, args);
+    cmd.execute(client, message, args);
 }
 module.exports = { createBot, channel, config };

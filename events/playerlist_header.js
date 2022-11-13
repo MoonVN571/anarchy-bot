@@ -1,5 +1,6 @@
-const { getUptime, sendGlobalChat } = require("../functions/minecraft");
+const { getUptime } = require("../functions/minecraft");
 const { setStatus } = require('../functions/botFunc');
+const client = require('../index');
 let minutes = 1;
 module.exports = {
     name: 'playerlist_header',
@@ -22,13 +23,10 @@ module.exports = {
         if (bot.data.nextCheckTab) {
             setTimeout(() => bot.data.nextCheckTab = true, minutes * 60 * 1000);
             bot.data.nextCheckTab = false;
-            // BOT STATUS MAIN SERVER TAB
             let completeStr = footer[1] +
                 "\n- Đã vào server từ " + getUptime(bot) +
                 " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
-            if (bot.data.mainServer) bot.client.channels.cache.get(require("../bot").channel.livechat).setTopic(completeStr);
-
-
+            if (bot.data.mainServer) client.channels.cache.get(require("../bot").channel.livechat).setTopic(completeStr);
             if (!bot.data.mainServer) {
                 setStatus('idle', 'Playing', 'In queue.');
             } else {

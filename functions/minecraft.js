@@ -20,9 +20,9 @@ async function sendGlobalChat(bot, content, username, message) {
     let color = getColor(bot, content, username, message);
     if (!username) userChat = content;
     if (color == livechat_color.dead) await stats.save(bot, content);
-    if (!isNaN(userChat)) return;
+    if (!isNaN(userChat) && !username) return;
     let embed = {
-        description: userChat,
+        description: `${userChat}`,
         color: color,
         timestamp: new Date().toISOString()
     };
@@ -37,7 +37,7 @@ function getColor(bot, content, username, message) {
     let color = livechat_color.default;
     if (!username) color = livechat_color.system;
     if (stats.isDeathMessage(content)) color = livechat_color.dead;
-    if (username == bot.config.botName) color = livechat_color.chatbot;
+    if (username == bot.config.username) color = livechat_color.chatbot;
     if (message?.startsWith(">")) color = livechat_color.highlight;
     if (content?.toLowerCase().startsWith('vị trí của bạn')) color = livechat_color.queue;
     if (content?.toLowerCase().startsWith('vị trí hàng chờ')) return;

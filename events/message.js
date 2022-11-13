@@ -7,11 +7,14 @@ module.exports = {
     execute(bot, msg) {
         let content = msg.toString();
         if (!content) return;
-        if (setting.authType == 'AdvancedLogin' && content == setting.joinCmdMessage) bot.chat(setting.joinCmd);
+        if (setting.authType == 'AdvancedLogin'
+            && content == setting.joinCmdMessage) bot.chat(setting.joinCmd);
         let psw = `${process.env.PIN}${process.env.PIN}`;
-        if (setting.authType == 'AuthMe' && setting.authMe.msg.register == content) bot.chat(`/register ${psw} ${psw}`);
-        if (setting.authType == 'AuthMe' && setting.authMe.msg.login == content) bot.chat(`/login ${psw}`);
-        if (setting.authType == 'AuthMe' && setting.authMe.msg.success.indexOf(content) > -1) bot.chat(setting.joinCmd);
+        if (setting.authType == 'AuthMe') {
+            if (setting.authMe.msg.register == content) bot.chat(`/register ${psw} ${psw}`);
+            if (setting.authMe.msg.login == content) bot.chat(`/login ${psw}`);
+            if (setting.authMe.msg.success.indexOf(content) > -1) bot.chat(setting.joinCmd);
+        }
         let username;
         let message;
         if (content.startsWith('<')) {

@@ -5,8 +5,8 @@ module.exports = {
     async execute(bot, player) {
         if (!bot.data.mainServer) return;
         let data = await players.findOne({ username: player.username });
-        if (!data) data = await data.create({ username: player.username });
-        data.time = Date.now();
+        if (!data) data = await players.create({ username: player.username });
+        if (!bot.config.dev) await data.save();
         data.save();
         sendGlobalChat(bot, player.username + ' đã thoát khỏi server.');
     }

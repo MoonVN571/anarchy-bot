@@ -1,8 +1,8 @@
 module.exports = {
     stats: {
-        deaths: /^([^ ]*) (?:fell from a high place)(.*)$/,
+        deaths: /^([^ ]*) (?:đã bị té gãy chân)(.*)$/,
         killBefore: /^([^ ]*) (?:killed) ([^ ]*)(.*)$/,
-        killAfter: /^([^ ]*) (?:was slain by) ([^ ]*)(.*)$/,
+        killAfter: /^([^ ]*) (?:đã bị thông|đã bị giết bởi) ([^ ]*)(.*)$/,
         noStats: /^([^ ]*) (?:murdered a dog using) ([^ ]*)(.*)$/
     },
     notFoundPlayers: 'Player not found',

@@ -1,4 +1,4 @@
-const { client } = require('../index');
+const client = require('../index');
 module.exports.legitNumber = (value, length) => {
     return `${value}`.padStart(length, 0);
 }
@@ -8,12 +8,11 @@ module.exports.getDorHMS = (temp, onlyDays) => {
         minutes = parseInt(((temp - days * 86400 - hours * 3600)) / 60),
         seconds = parseInt(temp % 60);
     timeArray = [days, hours, minutes, seconds];
-    if (!format) format = ['d ', 'h ', 'm ', 's '];
+    let format = ['d ', 'h ', 'm ', 's '];
     let str = "";
     for (let i = 0; i < 4; i++) {
         let def = `${timeArray[i]}${format[i]}`;
-        if (better && timeArray[i] > 0) str += def
-        else if (!better) str += def;
+        str += def;
     }
     if (onlyDays && days > 0) str = `${days}${format[0]}`;
     return str.trim();

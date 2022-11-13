@@ -9,10 +9,10 @@ module.exports = {
         if (bot.config.dev) return;
         setInterval(async () => {
             if (!bot.data.logged && !bot.data.mainServer) return;
-            let players = getPlayersList(bot);
-            players.forEach(async username => {
-                let data = await pt.findOne({ username: username });
-                if (!data) data = await pt.create({ username: username });
+            let playerList = getPlayersList(bot);
+            playerList.forEach(async username => {
+                let data = await players.findOne({ username: username });
+                if (!data) data = await players.create({ username: username });
                 data.playtime += 2 * 60 * 1000;
                 data.save();
             });

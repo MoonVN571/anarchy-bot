@@ -3,7 +3,7 @@ module.exports = {
 
     slotInvClick: 63,
     slotClick: 10,
-    joinCmdMessage: 'dùng lệnh /5a5b để vào server.',
+    joinCmdMessage: 'dùng lệnh /5a5b để vào server',
     joinCmd: '/5a5b',
 
     authMe: {
