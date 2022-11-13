@@ -9,7 +9,7 @@ let config = {
     serverIp: '5a5b.ddns.net',
     serverName: '5A5B',
     serverVerion: '1.16.5',
-    username: client.config.dev ? 'mo0nbot5' : 'mo0nbot2',
+    username: client.config.dev ? 'mo0nbot6' : 'mo0nbot2',
     emoji: '<a:1505_yes:797268802680258590>',
     dev: client.config.dev
 }
