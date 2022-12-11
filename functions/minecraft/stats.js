@@ -11,7 +11,7 @@ module.exports.isDeathMessage = (msg) => {
 }
 
 module.exports.save = async (bot, cont) => {
-    let content = msg.split("[DM] ").slice(1).join(" ");
+    let content = cont.split("[DM] ").slice(1).join(" ");
     let deathsRegex = require('../../data').stats.deaths;
     let killAfterRegex = set.stats.killAfter;
     let killBeforeRegex = set.stats.killBefore;
