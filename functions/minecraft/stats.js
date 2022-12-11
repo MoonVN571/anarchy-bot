@@ -3,7 +3,7 @@ const kd = require('../../db/stats');
 const set = require('../../data');
 const { log } = require("../utils.js");
 module.exports.isDeathMessage = (msg) => {
-    let message = msg?.trim() || msg;
+    let message = msg.split("[DM]").slice(1).join(" ");
     if (message.match(set.stats.deaths)
         || message.match(set.stats.killAfter)
         || message.match(set.stats.killBefore)
@@ -11,7 +11,7 @@ module.exports.isDeathMessage = (msg) => {
 }
 
 module.exports.save = async (bot, cont) => {
-    let content = cont?.trim() || cont;
+    let content = msg.split("[DM]").slice(1).join(" ");
     let deathsRegex = require('../../data').stats.deaths;
     let killAfterRegex = set.stats.killAfter;
     let killBeforeRegex = set.stats.killBefore;
