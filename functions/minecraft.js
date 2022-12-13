@@ -34,10 +34,13 @@ async function sendGlobalChat(bot, content, username, message) {
     };
 
     if (color == livechat_color.system &&
-        (content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây https://minecraft-mp.com/server/307961/vote/'
-            || content !== 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây http://topminecraftservers.org/vote/28848'
-            || !content.endsWith(" left the game")
-            || !content.endsWith(" joined the game")
+        !(content == 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây https://minecraft-mp.com/server/307961/vote/'
+            || content == 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây http://topminecraftservers.org/vote/28848'
+            || content == 'Please log-in in order to use the chat or any commands!'
+            || content == 'The main server is down. We will be back soon!'
+            || content == 'CS: You are using too many caps!'
+            || !content.endsWith("left the game")
+            || !content.endsWith("joined the game")
         )) {
         sendMessage(globalChannel.server, { embeds: [embed] });
     }
