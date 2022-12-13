@@ -19,6 +19,8 @@ let channel = {
     server: config.dev ? "987204092113879040" : "1001838578399187055"
 }
 
+let called = false;
+
 function createBot() {
     const bot = m.createBot({
         host: 'anarchyvn.net',
@@ -42,6 +44,19 @@ function createBot() {
         spawnCount: 0,
         countPlayers: 0,
         uptime: 0
+    }
+    if (!called) {
+        called = true;
+        setInterval(async () => {
+            if (!bot.data.logged && !bot.data.mainServer) return;
+            let players = getPlayersList(bot);
+            players.forEach(async username => {
+                let ptData = await pt.findOne({ username: username });
+                if (!ptData) return pt.create({ username: username, time: 2 * 60 * 1000 });
+                ptData.time += 2 * 60 * 1000;
+                ptData.save();
+            });
+        }, 2 * 60 * 1000);
     }
 
     bot.commands = new Collection();
