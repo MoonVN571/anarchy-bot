@@ -34,11 +34,9 @@ module.exports = {
             }
         }
         if (bot.data.nextCheckTab) {
-            setTimeout(() => bot.data.nextCheckTab = true, minutes * 60 * 1000);
+            setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
             bot.data.nextCheckTab = false;
-            const completeStr = footer[1] +
-                "\n- Đã vào server từ " + getUptime(bot) +
-                " trước" + "\n" + header.join("\n") + " \n" + footer.join("\n");
+            const completeStr = footer[1] + header.join("\n") + " \n" + footer.join("\n");
             if (bot.data.mainServer)
                 bot.client.channels.cache.get(require("../bot").channel.livechat).setTopic(completeStr);
         }
