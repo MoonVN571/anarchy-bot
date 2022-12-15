@@ -2,31 +2,28 @@ const { sendGlobalChat } = require('../functions/minecraft');
 const { solveAlotMessage } = require('../functions/minecraft/mcUtils');
 const { log } = require('../functions/utils');
 const setting = require('../setting');
-
 module.exports = {
     name: 'message',
-
-    /**
-     * 
-     * @param {} bot 
-     * @param {String} msg 
-     */
     execute(bot, msg) {
-        let content = msg.toString();
+        let content = msg.toString()?.trim();
+        log(content);
 
-        if (setting.authType == 'AdvancedLogin' && content == setting.joinCmdMessage) bot.chat(setting.joinCmd);
+        if (setting.authType == 'AdvancedLogin' && content == setting.joinCmdMessage)
+            bot.chat(setting.joinCmd);
 
-        let psw = `${process.env.PIN}${process.env.PIN}`;
-        if(setting.authType == 'AuthMe' && setting.authMe.msg.register == content) bot.chat(`/register ${psw} ${psw}`);
-        if(setting.authType == 'AuthMe' && setting.authMe.msg.login == content) bot.chat(`/login ${psw}`);
-        if(setting.authType == 'AuthMe' && setting.authMe.msg.success.indexOf(content) > -1) bot.chat(setting.joinCmd);
+        const psw = `${process.env.PIN}${process.env.PIN}`;
+        if (setting.authType == 'AuthMe') {
+            if (setting.authMe.msg.register == content) bot.chat(`/register ${psw} ${psw}`);
+            if (setting.authMe.msg.login == content) bot.chat(`/login ${psw}`);
+            if (setting.authMe.msg.success.indexOf(content) > -1) bot.chat(setting.joinCmd);
+        }
 
         let username;
         let message;
 
         if (content.startsWith('<')) {
             let parse = content;
-            if (content.startsWith("<[")) parse = content.replace("[Donator]", "")
+            if (content.startsWith("<[")) parse = content.split(" ")[0]?.split("]")[1] + content.split(' ').slice(1).join(' ');
             if (parse.split(">")[0]?.includes("~")) parse = parse.replace("~", "");
             parse = parse.replace("<", "").replace('>', '');
             username = parse.split(' ')[0];

@@ -7,19 +7,17 @@ const set = require('./data');
 const { log } = require('./functions/utils');
 require('dotenv').config();
 
-let config = {
-    botName: index.config.dev ? 'mo0nbot4' : 'mo0nbot3',
+const config = {
+    botName: index.config.dev ? 'mo0nbot5' : 'mo0nbot3',
     dev: index.config.dev,
     minecraftPrefix: index.config.dev ? "!!" : "!",
     discordPrefix: "$"
 }
 
-let channel = {
+const channel = {
     livechat: config.dev ? "987204059838709780" : "1001826269664661616",
     server: config.dev ? "987204092113879040" : "1001838578399187055"
 }
-
-let called = false;
 
 function createBot() {
     const bot = m.createBot({
@@ -40,23 +38,11 @@ function createBot() {
         mainServer: false,
         logged: false,
         nextCheckTab: true,
+        checkPlaytime: true,
         fastReconnect: false,
         spawnCount: 0,
         countPlayers: 0,
         uptime: 0
-    }
-    if (!called) {
-        called = true;
-        setInterval(async () => {
-            if (!bot.data.logged && !bot.data.mainServer) return;
-            let players = getPlayersList(bot);
-            players.forEach(async username => {
-                let ptData = await pt.findOne({ username: username });
-                if (!ptData) return pt.create({ username: username, time: 2 * 60 * 1000 });
-                ptData.time += 2 * 60 * 1000;
-                ptData.save();
-            });
-        }, 2 * 60 * 1000);
     }
 
     bot.commands = new Collection();
