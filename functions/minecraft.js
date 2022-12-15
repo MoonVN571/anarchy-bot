@@ -39,8 +39,8 @@ async function sendGlobalChat(bot, content, username, message) {
             || content == 'Please log-in in order to use the chat or any commands!'
             || content == 'The main server is down. We will be back soon!'
             || content == 'CS: You are using too many caps!'
-            || !content.endsWith("left the game")
-            || !content.endsWith("joined the game")
+            || content.endsWith("left the game")
+            || content.endsWith("joined the game")
         )) {
         sendMessage(globalChannel.server, { embeds: [embed] });
     }
