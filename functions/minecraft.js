@@ -39,8 +39,8 @@ async function sendGlobalChat(bot, content, username, message) {
             || content == 'Please log-in in order to use the chat or any commands!'
             || content == 'The main server is down. We will be back soon!'
             || content == 'CS: You are using too many caps!'
-            || content.endsWith("left the game")
-            || content.endsWith("joined the game")
+            || !content.endsWith("left the game")
+            || !content.endsWith("joined the game")
         )) {
         sendMessage(globalChannel.server, { embeds: [embed] });
     }
@@ -51,28 +51,19 @@ async function sendGlobalChat(bot, content, username, message) {
 
 function getColor(bot, content, username, message) {
     let color = livechat_color.default;
-
     if (!username) color = livechat_color.system;
-
     if (stats.isDeathMessage(content)) color = livechat_color.dead;
-
     if (username == bot.config.botName) color = livechat_color.chatbot;
     if (message?.startsWith(">")) color = livechat_color.highlight;
-
-    if (content?.toLowerCase().startsWith('vị trí của bạn')) color = livechat_color.queue;
-    if (content?.toLowerCase().startsWith('vị trí hàng chờ')) return;
-
+    if (content?.toLowerCase().startsWith('vị trí hàng chờ')) color = livechat_color.queue;
     if (content?.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
-
     if (color == livechat_color.system && content.endsWith("đã tham gia vào server.")) color = livechat_color.join;
     if (color == livechat_color.system && content.endsWith("đã thoát khỏi server.")) color = livechat_color.quit;
-
     if (color == livechat_color.system &&
         (content.includes("has made the advancement")
             || content.includes("has complete")
             || content.includes("has reached"))
     ) color = livechat_color.achievement;
-
     return color;
 }
 
