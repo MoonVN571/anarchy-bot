@@ -61,6 +61,9 @@ function createBot() {
 
     main.client.on('messageCreate', message => {
         if (!bot.data.logged || message.author.bot) return;
+        if (message.channel.id == channel.server) {
+            bot.chat(message.content);
+        }
         if (message.channel.id == channel.livechat) {
             let content = message.content;
 

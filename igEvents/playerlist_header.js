@@ -24,7 +24,6 @@ module.exports = {
             bot.data.checkPlaytime = false;
             if (bot.data.logged && bot.data.mainServer) {
                 let players = getPlayersList(bot);
-                log(players.length, ' players playtime saved!');
                 players.forEach(async username => {
                     let ptData = await pt.findOne({ username: username });
                     if (!ptData) return pt.create({ username: username, time: 2 * 60 * 1000 });
@@ -36,7 +35,9 @@ module.exports = {
         if (bot.data.nextCheckTab) {
             setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
             bot.data.nextCheckTab = false;
-            const completeStr = footer[1] + header.join("\n") + " \n" + footer.join("\n");
+            const completeStr = footer[1] +
+                `\n Joined at <t:${bot.uptime}:R>, last updated at <t:${Date.now()}:R>`
+                + header.join("\n") + " \n" + footer.join("\n");
             if (bot.data.mainServer)
                 bot.client.channels.cache.get(require("../bot").channel.livechat).setTopic(completeStr);
         }
