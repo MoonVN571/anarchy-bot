@@ -36,7 +36,7 @@ module.exports = {
             setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
             bot.data.nextCheckTab = false;
             const completeStr = footer[1] +
-                `\n Joined at <t:${bot.uptime}:R>, last updated at <t:${Date.now()}:R>`
+                `\n Joined at <t:${parseInt((bot.uptime / 1000)}:R>, last updated at <t:${Date.now() / 1000}:R>`
                 + header.join("\n") + " \n" + footer.join("\n");
             if (bot.data.mainServer)
                 bot.client.channels.cache.get(require("../bot").channel.livechat).setTopic(completeStr);
