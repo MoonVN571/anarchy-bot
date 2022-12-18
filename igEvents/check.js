@@ -10,7 +10,7 @@ module.exports = {
         }
         if (bot.data.spawnCount >= 4 || bot.player?.gamemode == 0) bot.data.mainServer = true;
         if (bot.data.mainServer) {
-            bot.data.uptime = Date.now();
+            if (bot.data.uptime == 0) bot.data.uptime = Date.now();
             log(getPlayersList(bot).length, 'players');
         }
     }
