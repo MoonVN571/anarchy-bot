@@ -1,15 +1,17 @@
 const express = require('express');
+const requestIp = require('request-ip');
 const app = express();
-const { config } = require('.');
 const joindate = require('./db/joindate');
 const seen = require('./db/seen');
 const playtime = require('./db/playtime');
 const stats = require('./db/stats');
 const { log } = require('./functions/utils');
 const supportData = ['joindate', 'playtime', 'stats', 'seen'];
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 80;
+app.set('trust proxy', true);
+app.use(requestIp.mw());
 app.get('/', (req, res) => {
-    if (!config.dev) log(`${req.ip} requested ${req.hostname}`);
+    log(`${requestIp.getClientIp(req)} requested ${req.hostname}`);
     if (!req.hostname.startsWith('api.')) return;
     //GET /data/anarchyvn/joindate/mo0nbot
     const arr = supportData.map(data => `GET /data/anarchyvn/${data}/mo0nbot3`);
@@ -20,7 +22,7 @@ app.get('/', (req, res) => {
         <br><br>`);
 });
 app.get('/data/anarchyvn/:data/:username', async (req, res) => {
-    if (!config.dev) log(`${req.ip} requested ${req.host}`);
+    log(`${requestIp.getClientIp(req)} requested ${req.hostname}`);
     if (!req.hostname.startsWith('api.')) return;
     const username = req.params?.username;
     const data = req.params?.data;
@@ -35,4 +37,4 @@ app.get('/data/anarchyvn/:data/:username', async (req, res) => {
         return res.send({ statusCode: 404, msg: `Username '${username}' not found on server!` });
     res.send(db[0]);
 });
-app.listen(process.env.PORT || 80, () => console.log('Listening on port', port));
+app.listen(port, () => console.log('Listening on port', port));

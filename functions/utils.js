@@ -23,6 +23,7 @@ function getDorHMS(temp, fulltime) {
 }
 
 function log(...string) {
+    if (client.dev) return;
     let timeFormat =
         '['
         + new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })
