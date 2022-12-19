@@ -12,7 +12,7 @@ module.exports = {
         let seenData = await seen.findOne({ username: player.username });
         if (!seenData) await seen.create({ username: player.username, time: Date.now() });
         else {
-            seenData.time = Date.now();
+            seenData['time'] = Date.now();
             seenData.save();
         }
         if (bot.data.countPlayers <= getPlayersList(bot).length + 1) return;
