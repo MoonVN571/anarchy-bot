@@ -15,7 +15,7 @@ module.exports = {
             seenData.time = Date.now();
             seenData.save();
         }
-        if (bot.data.countPlayers <= getPlayersList(bot).length + 3) return;
+        if (bot.data.countPlayers <= getPlayersList(bot).length + 1) return;
         sendGlobalChat(bot, player.username + ' đã tham gia vào server.');
     }
 }
