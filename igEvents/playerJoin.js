@@ -6,7 +6,7 @@ module.exports = {
     name: 'playerJoined',
     async execute(bot, player) {
         bot.data.countPlayers++;
-        if (!bot.data.mainServer) return;
+        if (!bot.data.mainServer && player.username !== bot.username) return;
         let jdData = await jd.findOne({ username: player.username });
         if (!jdData) await jd.create({ username: player.username, time: Date.now() });
         let seenData = await seen.findOne({ username: player.username });

@@ -3,7 +3,7 @@ const seen = require('../db/seen');
 module.exports = {
     name: 'playerLeft',
     async execute(bot, player) {
-        if (!bot.data.mainServer) return;
+        if (!bot.data.mainServer && player.username !== bot.username) return;
         let seenData = await seen.findOne({ username: player.username });
         if (!seenData) await seen.create({ username: player.username, time: Date.now() });
         else {
