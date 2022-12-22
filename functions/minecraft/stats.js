@@ -3,7 +3,7 @@ const kd = require('../../db/stats');
 const set = require('../../data');
 const { log } = require("../utils.js");
 module.exports.isDeathMessage = (msg) => {
-    let message = msg.split("[DM] ").slice(1).join(" ");
+    let message = msg.split("[ANARCHYVN]").slice(1).join(" ");
     if (message.match(set.stats.deaths)
         || message.match(set.stats.killAfter)
         || message.match(set.stats.killBefore)
