@@ -1,9 +1,10 @@
-const { sendGlobalChat } = require('../functions/minecraft');
+const { sendGlobalChat } = require('../functions/minecraft/chat');
 const seen = require('../db/seen');
 module.exports = {
     name: 'playerLeft',
     async execute(bot, player) {
-        if (!bot.data.mainServer && player.username !== bot.username) return;
+        if ((!bot.data.mainServer && player.username !== bot.username)
+            || bot.data.deathList.indexOf(player.username) > -1) return;
         let seenData = await seen.findOne({ username: player.username });
         if (!seenData) await seen.create({ username: player.username, time: Date.now() });
         else {

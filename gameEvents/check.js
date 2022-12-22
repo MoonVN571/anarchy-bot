@@ -1,4 +1,3 @@
-const { getPlayersList } = require("../functions/minecraft/mcUtils");
 const { log } = require("../functions/utils");
 module.exports = {
     name: 'spawn',
@@ -11,7 +10,6 @@ module.exports = {
         if (bot.data.spawnCount >= 4 || bot.player?.gamemode == 0) bot.data.mainServer = true;
         if (bot.data.mainServer) {
             if (bot.data.uptime == 0) bot.data.uptime = Date.now();
-            log(getPlayersList(bot).length, 'players');
         }
     }
 }

@@ -1,38 +1,25 @@
-const m = require('mineflayer');
-const { Collection, Colors } = require('discord.js');
+const mineflayer = require('mineflayer');
+const { Colors } = require('discord.js');
 const { readdirSync } = require('fs');
-const main = require('./discord');
-const index = require('./index');
-const set = require('./data');
+const client = require('./index').discord;
+const setting = require('./setting');
 const { log } = require('./functions/utils');
 require('dotenv').config();
-
-const config = {
-    botName: index.config.dev ? 'mo0nbot5' : 'mo0nbot3',
-    dev: index.config.dev,
-    minecraftPrefix: index.config.dev ? "!!" : "!",
-    discordPrefix: "$"
-}
-
 const channel = {
-    livechat: config.dev ? "987204059838709780" : "1001826269664661616",
-    server: config.dev ? "987204092113879040" : "1001838578399187055"
-}
-
+    livechat: setting.channel.livechat[!client.dev ? 'main' : 'dev'],
+    server: setting.channel.server[!client.dev ? 'main' : 'dev']
+};
 function createBot() {
-    const bot = m.createBot({
+    const bot = mineflayer.createBot({
         host: 'anarchyvn.net',
         port: 25565,
-        username: config.botName,
-        version: '1.12.2'
+        username: setting.botName[!client.dev ? 'main' : 'dev'],
+        version: '1.16.5'
     });
-
-    bot.adminName = set.manager.adminGame;
-    bot.notFoundPlayers = set.notFoundPlayers;
-
-    bot.client = main.client;
-    bot.config = config;
-
+    bot.notFoundPlayers = setting.notFoundPlayers;
+    bot.client = client;
+    bot.dev = client.dev;
+    bot.setting = setting;
     bot.data = {
         arrayMessages: [],
         mainServer: false,
@@ -42,66 +29,51 @@ function createBot() {
         fastReconnect: false,
         spawnCount: 0,
         countPlayers: 0,
-        uptime: 0
-    }
-
-    bot.commands = new Collection();
-    readdirSync('./igCommands').forEach(cmdName => {
-        bot.commands.set(cmdName.split(".")[0], require('./igCommands/' + cmdName));
-    });
-
-    readdirSync('./igEvents').forEach(eventName => {
-        let event = require('./igEvents/' + eventName);
-
+        uptime: 0,
+        deathList: []
+    };
+    readdirSync('./gameEvents').forEach(eventName => {
+        const event = require('./gameEvents/' + eventName);
         if (event.other && event.once) bot._client.once(event.name, (...args) => event.execute(bot, ...args));
         if (event.other && !event.once) bot._client.on(event.name, (...args) => event.execute(bot, ...args));
         if (!event.other && event.once) bot.once(event.name, (...args) => event.execute(bot, ...args));
         if (!event.other && !event.once) bot.on(event.name, (...args) => event.execute(bot, ...args));
     });
-
-    main.client.on('messageCreate', message => {
+    client.on('messageCreate', message => {
         if (!bot.data.logged || message.author.bot) return;
-        if (message.channel.id == channel.server) {
-            bot.chat(message.content);
-        }
+        if (message.channel.id == channel.server) bot.chat(message.content);
         if (message.channel.id == channel.livechat) {
             let content = message.content;
-
-            if (!message.author.bot && message.content.startsWith(config.discordPrefix))
+            if (!message.author.bot && message.content.startsWith(setting.botPrefix))
                 return runCommand(message);
-
-            if (message.author.username.includes("§") || content.includes("§")) return;
+            if (message.author.username.includes('§') || content.includes('§')) return;
             if (content.split('\n').length > 1) content = content.split('\n')[0];
-
-            let toServer = `[${message.author.tag}] ${content}`;
+            let toServer = `[${message.author.tag}] ${content} | (https://mo0nbot ga/invite)`;
             log(toServer);
-
             message.react('<a:1505_yes:797268802680258590>');
             bot.chat(`${toServer}`);
         }
     });
 }
-
 function runCommand(message) {
     const args = message.content.slice(config.discordPrefix.length).trim().split(/ +/);
     const cmdName = args.shift().toLowerCase();
-    const cmd = main.client.commands.get(cmdName)
-        || main.client.commands.find(cmd => cmd.aliases?.includes(cmdName));
-
+    const cmd = client.commands.get(cmdName)
+        || client.commands.find(cmd => cmd.aliases?.includes(cmdName));
     if (!cmd) return;
-    if (cmd.disable) return;
-
-    message.sendMessage = sendMessage;
-    message.notFoundPlayers = set.notFoundPlayers;
-
-    log('AnarchyVN - ' + message.author.tag + ' used command: ' + cmdName + ' ' + args.join(" "));
-
-    function sendMessage(embed) {
-        if (typeof embed == 'object') message.reply({ embed, allowedMentions: { repliedUser: false } }).catch(err => { });
-        else message.reply({ embeds: [{ description: embed, color: Colors.NotQuiteBlack }], allowedMentions: { repliedUser: false } }).catch(err => { });
+    client.sendMessage = (_, msg) => {
+        message.channel.send({
+            embeds: [{
+                description: msg,
+                color: Colors.Orange
+            }], allowedMentions: { repliedUser: false }
+        });
     }
-
-    cmd.execute(main.client, message, args);
+    client.notFoundPlayers = setting.notFoundPlayers;
+    log(`[ANARCHYVN-DISCORD] ${message.author.tag} : ${message.content}`);
+    cmd.execute(client, message, args);
 }
-
-module.exports = { createBot, channel, config };
+function callBot(tick) {
+    setTimeout(() => createBot(), tick || 1);
+}
+module.exports = { callBot, channel };

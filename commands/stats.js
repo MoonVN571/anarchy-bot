@@ -1,28 +1,19 @@
-const { Client, Message } = require('discord.js');
-const kd = require('../db/stats');
-
+const stats = require('../db/stats');
 module.exports = {
     name: 'stats',
-    description: 'Xem KD của player',
     aliases: ['kd'],
-    categories: 'players',
-
-    /**
-     * 
-     * @param {Client} bot 
-     * @param {Message} message 
-     * @param {String[]} args 
-     */
-    async execute(bot, message, args) {
-        let name = args[0] || 'mo0nbot2';
-
-        let mapData = (await kd.find()).filter(data => data.username.toLowerCase() == name.toLowerCase());
-        let kdData = mapData[0];
-
-        let kills = kdData?.kills || 0;
-        let deaths = kdData?.deaths || 0;
-        let kda = kills / deaths || 0.00;
-
-        message.sendMessage('**' + name + '** - K: ' + kills + " - D: " + deaths + " - K/D: " + kda.toFixed(2));
+    async execute(bot, username, args) {
+        if (username.content) username = 'mo0nbot3';
+        const name = args[0] || username;
+        const data = (await stats.find({
+            username: {
+                $regex: new RegExp(`^${name}$`), $options: 'i'
+            }
+        }))[0];
+        if (!data) return bot.sendMessage('whisper', bot.notFoundPlayers);
+        const kills = data.kills || 0;
+        const deaths = data.deaths || 0;
+        const kda = kills / deaths || 0.00;
+        bot.sendMessage('whisper', `${name} - K: ${kills} - D: ${deaths} - K/D: ${kda.toFixed(2)}`);
     }
 }

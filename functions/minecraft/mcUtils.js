@@ -1,46 +1,20 @@
-const axios = require('axios');
 const { log } = require('../utils.js');
-
-function getCoords(bot) {
-    return {
-        x: parseInt(bot.entity.position.x),
-        y: parseInt(bot.entity.position.y),
-        z: parseInt(bot.entity.position.z)
-    }
-}
-
 function getPlayersList(bot) {
     if (!bot?.players) return [];
-    let players = Object.values(bot.players).map(d => d.username);
+    const players = Object.values(bot.players).map(d => d.username);
     return players;
 }
-
 function getPlayer(bot, username) {
-    if (!bot) return;
-    return Object.values(bot.players).map(d => d).find(obj => obj.username == username);
+    return Object.values(bot.players).map(d => d).find(data => data.username == username);
 }
-
-async function getCountPlayersAPI() {
-    let players = 0;
-    await axios.default.get('https://api.mcsrvstat.us/2/2b2c.org').then(res => {
-        players = res.data.players?.online;
-    });
-    if (isNaN(players)) players = 0;
-
-    return players;
-}
-
 function solveAlotMessage(bot) {
-    if (bot.data.arrayMessages.length <= 0) return;
+    if (bot.data.arrayMessages.length == 0) return;
     log('Thực thi lệnh: ' + bot.data.arrayMessages[0]);
     bot.chat(bot.data.arrayMessages[0]);
     bot.data.arrayMessages.shift();
     setTimeout(() => solveAlotMessage(bot), 5 * 1000);
 }
-
 module.exports = {
-    getCoords,
-    getCountPlayersAPI,
     getPlayersList,
     getPlayer,
     solveAlotMessage

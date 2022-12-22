@@ -1,17 +1,40 @@
 module.exports = {
+    botPrefix: '$',
+    gamePrefix: '!',
+    botName: {
+        main: 'mo0nbot3',
+        dev: 'mo0nbot5'
+    },
+    channel: {
+        livechat: {
+            main: '1001826269664661616',
+            dev: '987204059838709780'
+        },
+        server: {
+            main: '1001838578399187055',
+            dev: '987204092113879040'
+        }
+    },
     authType: 'AdvancedLogin', // AuthMe, AdvancedLogin
-
-    slotInvClick: 63,
-    slotClick: 13,
-    // bỏ cách message đầu dòng
-    joinCmdMessage: 'dùng lệnh/anarchyvn  để vào server.',
-    joinCmd: '/anarchyvn',
-
+    advancedLogin: {
+        title: ': Enter Pin',
+        slotInvClick: 63,
+        slotClick: 13,
+        joinCmdMessage: ' dùng lệnh/anarchyvn  để vào server.',
+        joinCmd: '/anarchyvn',
+    },
     authMe: {
         msg: {
             register: '',
             login: '',
             success: ['']
         }
-    }
+    },
+    stats: {
+        deaths: /^([^ ]*) (?:tried using the respawn anchor in the over-world!|blew up! They were playing around with an end-crystal!|thought lava was a hot tub|withered away|killed themselves|was playing with poison|was playing with tnt|tried sleeping in the nether :kappa:|was playing on a magma block too long|was pricked to death|flew into a wall|blew up|ran out of food, and died|thought standing in fire was a good idea|died to a wither skull|was playing with magic|thought they could swim forever|was squished to death|shot themselves|fell into the void|died in a unique way|fell from a high place|was burnt to a crisp)(.*)$/,
+        killBefore: /^([^ ]*) (?:killed) ([^ ]*)(.*)$/,
+        killAfter: /^([^ ]*) (?:was pushed into the void by|was pushed into lava by|tried playing with|stood too close to|was spat on by a|was ganed up on by some|tried climbing to greater heights and fell off|was ganged up on by some|was pushed off a high place by|was shot by|was blown up by a|was slain by) ([^ ]*)(.*)$/,
+        noStats: /^([^ ]*) (?:murdered a dog using) ([^ ]*)(.*)$/
+    },
+    notFoundPlayers: 'Không tìm thấy người chơi này.'
 }

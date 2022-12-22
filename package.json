@@ -1,6 +1,6 @@
 {
   "name": "2y2c-bot",
-  "version": "4.5.0",
+  "version": "5.0.0",
   "description": "Một project hoàn toàn mới với bot được viết lại hoàn toàn",
   "main": "index.js",
   "scripts": {
@@ -10,12 +10,19 @@
   "author": "Moon",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.27.2",
-    "discord.js": "^14.0.3",
-    "dotenv": "16.0.1",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "mineflayer": "^4.3.0",
-    "mongoose": "6.5.2",
+    "mineflayer": "^4.0.0",
+    "mongoose": "^6.5.2",
     "request-ip": "^3.3.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoonVN571/anarchy-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MoonVN571/anarchy-bot/issues"
+  },
+  "homepage": "https://github.com/MoonVN571/anarchy-bot#readme"
 }

@@ -1,9 +1,8 @@
 const { Colors } = require('discord.js');
-const { client } = require('../discord');
-const globalChannel = require('../bot').channel;
-const stats = require('./minecraft/stats');
-const { log, getDorHMS } = require('./utils');
-
+const client = require('../../index').discord;
+const globalChannel = require('../../bot').channel;
+const stats = require('./stats');
+const { log } = require('../utils');
 const livechat_color = {
     default: 0x979797,
     highlight: 0x2EA711,
@@ -16,28 +15,26 @@ const livechat_color = {
     join: Colors.Green, // djs color
     quit: Colors.Red
 }
-
-async function sendGlobalChat(bot, content, username, message) {
+let messages = [];
+let countMsgs = 0;
+let flagged = false;
+module.exports.sendGlobalChat = async (bot, content, username, message) => {
     let userChat = `**<${username}>** ${message}`;
     let color = getColor(bot, content, username, message);
-
     if (!username) userChat = content;
-
     if (color == livechat_color.dead) stats.save(bot, content);
-
     if (!isNaN(userChat)) return;
-
-    let embed = {
+    const embed = {
         description: userChat,
         color: color,
         timestamp: new Date().toISOString()
     };
-
     if (color == livechat_color.system &&
-        !(content == 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây https://minecraft-mp.com/server/307961/vote/'
-            || content == 'Nếu bạn yêu thích server anarchyvn.net thì đừng quên vote tại đây http://topminecraftservers.org/vote/28848'
-            || content == 'Please log-in in order to use the chat or any commands!'
+        !(content == 'Hãy donate để giúp server duy trì bạn nhé!'
+            || content == 'Click vào đây để donate'
+            || content == 'Click vào đây để tham gia server discord AnarchyVN'
             || content == 'The main server is down. We will be back soon!'
+            || content == 'Already connecting to this server!'
             || content == 'CS: You are using too many caps!'
             || content.endsWith("left the game")
             || content.endsWith("joined the game")
@@ -45,18 +42,25 @@ async function sendGlobalChat(bot, content, username, message) {
         sendMessage(globalChannel.server, { embeds: [embed] });
     }
     if (color == livechat_color.whisper) log(content);
-
-    sendMessage(globalChannel.livechat, { embeds: [embed] });
+    countMsgs++;
+    setTimeout(() => countMsgs--, 1000);
+    messages.push(embed);
+    if (countMsgs > 3) {
+        flagged = true;
+        if (!flagged) setTimeout(() => flagged = false, 1 * 60 * 1000);
+    }
+    if (flagged && messages.length < 10) return;
+    sendMessage(globalChannel.livechat, { embeds: messages });
+    messages = [];
 }
-
 function getColor(bot, content, username, message) {
     let color = livechat_color.default;
     if (!username) color = livechat_color.system;
-    if (stats.isDeathMessage(content)) color = livechat_color.dead;
-    if (username == bot.config.botName) color = livechat_color.chatbot;
+    if (stats.isDeathMsgs(bot, content)) color = livechat_color.dead;
+    if (username == bot.username) color = livechat_color.chatbot;
     if (message?.startsWith(">")) color = livechat_color.highlight;
-    if (content?.toLowerCase().startsWith('vị trí hàng chờ')) color = livechat_color.queue;
-    if (content?.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
+    if (content.toLowerCase().startsWith('vị trí hàng chờ')) color = livechat_color.queue;
+    if (content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
     if (color == livechat_color.system && content.endsWith("đã tham gia vào server.")) color = livechat_color.join;
     if (color == livechat_color.system && content.endsWith("đã thoát khỏi server.")) color = livechat_color.quit;
     if (color == livechat_color.system &&
@@ -66,22 +70,8 @@ function getColor(bot, content, username, message) {
     ) color = livechat_color.achievement;
     return color;
 }
-
 function sendMessage(channelId, msg) {
-    client.channels.cache.get(channelId).send(msg).catch(err => console.log(err));
-}
-
-function getUptime(bot) {
-    if (!bot.data.uptime) return '';
-    return getDorHMS((Date.now() - bot.data.uptime) / 1000);
-}
-
-function callBot(tick) {
-    setTimeout(() => require('../bot').createBot(), (tick || 0));
-}
-
-module.exports = {
-    sendGlobalChat,
-    getUptime,
-    callBot
+    client.channels.cache.get(channelId).send(msg).then(msg => {
+        // console.log(Date.now() - msg.createdAt, 'ms');
+    }).catch(err => console.log(err));
 }

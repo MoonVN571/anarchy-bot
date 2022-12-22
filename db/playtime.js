@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const schema = mongoose.Schema({
-    username: { type: String, default: undefined },
-    time: { type: Number, default: null }
+    username: String,
+    time: Number
 });
 module.exports = mongoose.model("playtime", schema);

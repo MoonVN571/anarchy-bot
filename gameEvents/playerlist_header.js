@@ -1,11 +1,8 @@
-const { getUptime } = require("../functions/minecraft");
 const { getPlayersList } = require("../functions/minecraft/mcUtils");
-const pt = require('../db/playtime');
-const { log } = require("../functions/utils");
+const playtime = require('../db/playtime');
 module.exports = {
     name: 'playerlist_header',
     other: true,
-
     async execute(bot, data) {
         const parsedHeader = JSON.parse(data.header);
         const parsedFooter = JSON.parse(data.footer);
@@ -25,8 +22,8 @@ module.exports = {
             if (bot.data.logged && bot.data.mainServer) {
                 let players = getPlayersList(bot);
                 players.forEach(async username => {
-                    let ptData = await pt.findOne({ username: username });
-                    if (!ptData) return pt.create({ username: username, time: 2 * 60 * 1000 });
+                    let ptData = await playtime.findOne({ username: username });
+                    if (!ptData) return playtime.create({ username: username, time: 2 * 60 * 1000 });
                     ptData.time += 2 * 60 * 1000;
                     ptData.save();
                 });
@@ -36,10 +33,10 @@ module.exports = {
             setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
             bot.data.nextCheckTab = false;
             const completeStr = footer[1] +
-                `\n Joined at <t:${parseInt(bot.data.uptime / 1000)}:R>, last updated at <t:${parseInt(Date.now() / 1000)}:R>`
+                `\nJoined <t:${parseInt(bot.data.uptime / 1000)}:R>, last updated <t:${parseInt(Date.now() / 1000)}:R>`
                 + header.join("\n") + " \n" + footer.join("\n");
             if (bot.data.mainServer)
                 bot.client.channels.cache.get(require("../bot").channel.livechat).setTopic(completeStr);
-        } 
+        }
     }
 }
