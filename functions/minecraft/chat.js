@@ -46,8 +46,8 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
     setTimeout(() => countMsgs--, 1000);
     messages.push(embed);
     if (countMsgs > 3) {
-        flagged = true;
         if (!flagged) setTimeout(() => flagged = false, 1 * 60 * 1000);
+        flagged = true;
     }
     if (flagged && messages.length < 10) return;
     sendMessage(globalChannel.livechat, { embeds: messages });
