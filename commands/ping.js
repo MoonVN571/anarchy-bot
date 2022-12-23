@@ -5,9 +5,9 @@ module.exports = {
         if (username.content) username = 'mo0nbot3';
         let name = args[0] || username;
         let data = getPlayer(bot, name);
-        if (!data) return bot.sendMessage('whisper', bot.data.notFoundPlayers);
+        if (!data) return bot.sendMessage('whisper', bot.notFoundPlayers);
         let ping = data.ping;
         if (ping == 0) bot.sendMessage('whisper', "Server chưa ping người chơi này.");
-        else bot.sendMessage('whisper', name + ' : ' + find[0].ping + 'ms.');
+        else bot.sendMessage('whisper', name + ' : ' + ping + 'ms.');
     }
 }
