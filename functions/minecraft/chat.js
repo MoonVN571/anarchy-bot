@@ -57,7 +57,7 @@ function getColor(bot, content, username, message) {
     let color = livechat_color.default;
     if (!username) color = livechat_color.system;
     if (stats.isDeathMsgs(bot, content)) color = livechat_color.dead;
-    if (username == bot.username) color = livechat_color.chatbot;
+    if (bot.username && username == bot.username) color = livechat_color.chatbot;
     if (message?.startsWith(">")) color = livechat_color.highlight;
     if (content.toLowerCase().startsWith('vị trí hàng chờ')) color = livechat_color.queue;
     if (content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
