@@ -56,7 +56,7 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
     messages = [];
 }
 function format(content) {
-    content = content?.replace(/\*/g, '\\*').replace(/\_/g, '\\_');
+    content = content?.replace(/\*/g, '\\*').replace(/\_/g, '\\_').replace(/\|/g, '\\|');
     return content;
 }
 function getColor(bot, content, username, message) {
