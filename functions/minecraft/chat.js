@@ -33,6 +33,7 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
         !(content == 'Hãy donate để giúp server duy trì bạn nhé!'
             || content == 'Click vào đây để donate'
             || content == 'Click vào đây để tham gia server discord AnarchyVN'
+            || content == 'Click vào đây để vote cho server AnarchyVN'
             || content == 'Donate bằng thẻ cào để duy trì server, dùng lệnh /napthe và lệnh /muarank'
             || content == 'The main server is down. We will be back soon!'
             || content == 'Already connecting to this server!'
