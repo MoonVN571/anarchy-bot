@@ -48,7 +48,7 @@ function createBot() {
                 return runCommand(message);
             if (message.author.username.includes('§') || content.includes('§')) return;
             if (content.split('\n').length > 1) content = content.split('\n')[0];
-            let toServer = `[${message.author.tag}] ${content} | (https://mo0nbot ga/invite)`;
+            let toServer = `[${message.author.tag}] ${content} | https://mo0nbot ga/invite`;
             log(toServer);
             message.react('<a:1505_yes:797268802680258590>');
             bot.chat(`${toServer}`);

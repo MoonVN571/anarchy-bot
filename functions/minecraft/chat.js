@@ -1,4 +1,4 @@
-const { Colors } = require('discord.js');
+const { Colors, Utils } = require('discord.js');
 const client = require('../../index').discord;
 const globalChannel = require('../../bot').channel;
 const stats = require('./stats');
@@ -19,9 +19,9 @@ let messages = [];
 let countMsgs = 0;
 let flagged = false;
 module.exports.sendGlobalChat = async (bot, content, username, message) => {
-    let userChat = `**<${username}>** ${message}`;
+    let userChat = `**<${format(username)}>** ${format(message)}`;
     let color = getColor(bot, content, username, message);
-    if (!username) userChat = content;
+    if (!username) userChat = format(content);
     if (color == livechat_color.dead) stats.save(bot, content);
     if (!isNaN(userChat)) return;
     const embed = {
@@ -33,6 +33,7 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
         !(content == 'Hãy donate để giúp server duy trì bạn nhé!'
             || content == 'Click vào đây để donate'
             || content == 'Click vào đây để tham gia server discord AnarchyVN'
+            || content == 'Donate bằng thẻ cào để duy trì server, dùng lệnh /napthe và lệnh /muarank'
             || content == 'The main server is down. We will be back soon!'
             || content == 'Already connecting to this server!'
             || content == 'CS: You are using too many caps!'
@@ -52,6 +53,10 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
     if (flagged && messages.length < 10) return;
     sendMessage(globalChannel.livechat, { embeds: messages });
     messages = [];
+}
+function format(content) {
+    content = content?.replace(/\*/g, '\\*').replace(/\_/g, '\\_');
+    return content;
 }
 function getColor(bot, content, username, message) {
     let color = livechat_color.default;
