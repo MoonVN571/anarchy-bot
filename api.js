@@ -40,4 +40,4 @@ app.get('/data/anarchyvn/:data/:username', async (req, res, next) => {
         return res.send({ statusCode: 404, msg: `Username '${username}' not found on server!` });
     res.send(db[0]);
 });
-app.listen(port, () => console.log('Listening on port ' + port + '!'));
+// app.listen(port, () => console.log('Listening on port ' + port + '!'));
