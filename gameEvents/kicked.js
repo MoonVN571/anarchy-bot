@@ -6,6 +6,13 @@ module.exports = {
         if (reason.toString().includes("Kết nối lại 1")) bot.data.fastReconnect = true;
         if (reason.toString().includes("As this is your first time playing")) bot.data.fastReconnect = true;
         console.log(reason, loggedIn);
-        sendGlobalChat(bot, reason);
+        let msg = '';
+        try {
+            msg = JSON.parse(reason);
+            msg = msg.text;
+        } catch {
+            msg = reason;
+        }
+        sendGlobalChat(bot, msg);
     }
 }

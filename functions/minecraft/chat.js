@@ -40,9 +40,7 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
             || content == 'CS: You are using too many caps!'
             || content.endsWith("left the game")
             || content.endsWith("joined the game")
-        )) {
-        sendMessage(globalChannel.server, { embeds: [embed] });
-    }
+        )) sendMessage(globalChannel.server, { embeds: [embed] });
     if (color == livechat_color.whisper) log(content);
     countMsgs++;
     setTimeout(() => countMsgs--, 1000);
@@ -77,7 +75,12 @@ function getColor(bot, content, username, message) {
     return color;
 }
 function sendMessage(channelId, msg) {
-    client.channels.cache.get(channelId).send(msg).then(msg => {
-        // console.log(Date.now() - msg.createdAt, 'ms');
-    }).catch(err => console.log(err));
+    const channel = client.channels.cache.get(channelId);
+    channel.messages.fetch().then(msgs => {
+        const message = msgs[0];
+        if (message.content == msg) return;
+        channel.send(msg).then(msg => {
+            // console.log(Date.now() - msg.createdAt, 'ms');
+        }).catch(err => console.log(err));
+    });
 }
