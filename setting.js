@@ -13,7 +13,8 @@ module.exports = {
         server: {
             main: '1001838578399187055',
             dev: '987204092113879040'
-        }
+        },
+        error: '993499095694057484'
     },
     authType: 'AdvancedLogin', // AuthMe, AdvancedLogin
     advancedLogin: {
