@@ -56,7 +56,7 @@ function createBot() {
     });
 }
 function runCommand(message) {
-    const args = message.content.slice(config.discordPrefix.length).trim().split(/ +/);
+    const args = message.content.slice(setting.botPrefix.length).trim().split(/ +/);
     const cmdName = args.shift().toLowerCase();
     const cmd = client.commands.get(cmdName)
         || client.commands.find(cmd => cmd.aliases?.includes(cmdName));
