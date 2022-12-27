@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
         ${arr.join('<br>')}
         <br><br>`);
 });
-app.get('/data/anarchyvn/:data/:username/apikey', async (req, res) => {
+app.get('/data/anarchyvn/:data/:username/:apikey', async (req, res) => {
     if (!req.hostname.startsWith('api.')) return;
     const username = req.params?.username;
     const data = req.params?.data;
