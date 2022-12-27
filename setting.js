@@ -1,6 +1,7 @@
 module.exports = {
     botPrefix: '$',
     gamePrefix: '!',
+    botOwner: '497768011118280716',
     botName: {
         main: 'mo0nbot3',
         dev: 'mo0nbot5'

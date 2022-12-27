@@ -61,6 +61,7 @@ function runCommand(message) {
     const cmd = client.commands.get(cmdName)
         || client.commands.find(cmd => cmd.aliases?.includes(cmdName));
     if (!cmd) return;
+    if (cmd.dev && message.author.id !== setting.botOwner) return;
     client.sendMessage = (_, msg) => {
         message.channel.send({
             embeds: [{
