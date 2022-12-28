@@ -40,6 +40,6 @@ process.on('uncaughtException', (error) => {
         }];
     } else msgObj['content'] = `\`\`\`${message}\`\`\``;
     if (client.dev) return process.exit();
-    client.channels.cache.get(require('./setting').channel.error).send(msgObj);
+    client.channels.cache.get(require('./setting').channel.error)?.send(msgObj);
 });
 client.on('error', console.error);
