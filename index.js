@@ -13,7 +13,7 @@ const client = new Client({
 module.exports = {
     discord: client
 };
-client.dev = true;
+client.dev = false;
 const { log } = require('./functions/utils');
 client.once('ready', () => {
     log(`${client.user.tag} is online!`);
