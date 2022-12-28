@@ -6,7 +6,6 @@ playtime = require('../../databases/playtime');
 stats = require('../../databases/stats');
 const apiKey = require('../../databases/apiKey');
 module.exports = async (req, res) => {
-    console.log(req.params, req.body)
     const username = req.params?.username;
     const data = req.params?.data;
     const key = req.query?.apikey || req.query.key;
