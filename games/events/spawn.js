@@ -1,4 +1,4 @@
-const { log } = require("../functions/utils");
+const { log } = require("../../functions/utils");
 module.exports = {
     name: 'spawn',
     async execute(bot) {

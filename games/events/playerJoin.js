@@ -1,7 +1,7 @@
-const { sendGlobalChat } = require('../functions/minecraft/chat');
-const seen = require('../db/seen');
-const jd = require('../db/joindate');
-const { getPlayersList } = require('../functions/minecraft/mcUtils');
+const { sendGlobalChat } = require('../../functions/minecraft/chat');
+const seen = require('../../databases/seen');
+const jd = require('../../databases/joindate');
+const { getPlayersList } = require('../../functions/minecraft/mcUtils');
 module.exports = {
     name: 'playerJoined',
     async execute(bot, player) {

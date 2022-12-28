@@ -1,6 +1,6 @@
-const { callBot } = require('../bot.js');
-const { sendGlobalChat } = require('../functions/minecraft/chat.js');
-const { log } = require('../functions/utils.js');
+const { callBot } = require('../index.js');
+const { sendGlobalChat } = require('../../functions/minecraft/chat.js');
+const { log } = require('../../functions/utils.js');
 module.exports = {
     name: 'end',
     async execute(bot, reason) {

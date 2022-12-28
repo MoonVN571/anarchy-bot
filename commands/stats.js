@@ -1,4 +1,4 @@
-const stats = require('../db/stats');
+const stats = require('../databases/stats');
 module.exports = {
     name: 'stats',
     aliases: ['kd'],

@@ -1,5 +1,5 @@
 const { getPlayersList } = require('./mcUtils');
-const stats = require('../../db/stats');
+const stats = require('../../databases/stats');
 module.exports.isDeathMsgs = (bot, msg) => {
     const message = msg.split(bot.setting.stats.prefix).slice(1).join(" ");
     const settings = bot.setting.stats;

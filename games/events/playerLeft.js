@@ -1,5 +1,5 @@
-const { sendGlobalChat } = require('../functions/minecraft/chat');
-const seen = require('../db/seen');
+const { sendGlobalChat } = require('../../functions/minecraft/chat');
+const seen = require('../../databases/seen');
 module.exports = {
     name: 'playerLeft',
     async execute(bot, player) {

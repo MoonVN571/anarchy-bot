@@ -1,6 +1,6 @@
-const { sendGlobalChat } = require('../functions/minecraft/chat');
-const { solveAlotMessage } = require('../functions/minecraft/mcUtils');
-const { log } = require('../functions/utils');
+const { sendGlobalChat } = require('../../functions/minecraft/chat');
+const { solveAlotMessage } = require('../../functions/minecraft/mcUtils');
+const { log } = require('../../functions/utils');
 module.exports = {
     name: 'message',
     execute(bot, msg) {

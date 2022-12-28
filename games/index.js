@@ -1,9 +1,9 @@
 const mineflayer = require('mineflayer');
 const { Colors } = require('discord.js');
 const { readdirSync } = require('fs');
-const client = require('./index').discord;
-const setting = require('./setting');
-const { log } = require('./functions/utils');
+const client = require('../index').discord;
+const setting = require('../setting');
+const { log } = require('../functions/utils');
 require('dotenv').config();
 const channel = {
     livechat: setting.channel.livechat[!client.dev ? 'main' : 'dev'],
@@ -32,8 +32,8 @@ function createBot() {
         uptime: 0,
         deathList: []
     };
-    readdirSync('./gameEvents').forEach(eventName => {
-        const event = require('./gameEvents/' + eventName);
+    readdirSync('./games/events').forEach(eventName => {
+        const event = require('./events/' + eventName);
         if (event.other) bot._client[event.once ? 'once' : 'on'](event.name, (...args) => event.execute(bot, ...args));
         else bot[event.once ? 'once' : 'on'](event.name, (...args) => event.execute(bot, ...args));
     });

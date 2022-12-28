@@ -1,11 +1,10 @@
-const { getPlayersList } = require("../functions/minecraft/mcUtils");
-const playtime = require('../db/playtime');
+const { getPlayersList } = require("../../functions/minecraft/mcUtils");
+const playtime = require('../../databases/playtime');
 module.exports = {
     name: 'playerlist_header',
     other: true,
     async execute(bot, data) {
         const cleanArray = (str) => {
-            if (!str) return;
             str = str.replace(/\u00A7[0-9A-FK-OR]|-/ig, '')
                 .split("\n")
                 .filter(str => str || str.trim() || str !== "\n");
@@ -32,7 +31,7 @@ module.exports = {
                 `\nJoined <t:${parseInt(bot.data.uptime / 1000)}:R>, last updated <t:${parseInt(Date.now() / 1000)}:R>`
                 + '\n' + header.join("\n") + " \n" + footer.join("\n");
             if (bot.data.mainServer)
-                bot.client.channels.cache.get(require("../bot").channel.livechat).setTopic(completeStr);
+                bot.client.channels.cache.get(require("..").channel.livechat).setTopic(completeStr);
         }
     }
 }

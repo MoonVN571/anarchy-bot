@@ -1,4 +1,4 @@
-const joindate = require('../db/joindate');
+const joindate = require('../databases/joindate');
 const { getDorHMS } = require('../functions/utils');
 module.exports = {
     name: 'joindate',

@@ -1,6 +1,6 @@
 const { Colors } = require('discord.js');
 const client = require('../../index').discord;
-const globalChannel = require('../../bot').channel;
+const globalChannel = require('../../games/index').channel;
 const stats = require('./stats');
 const livechat_color = {
     default: 0x979797,

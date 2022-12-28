@@ -1,4 +1,4 @@
-const seen = require('../db/seen');
+const seen = require('../databases/seen');
 const { getDorHMS, } = require('../functions/utils');
 module.exports = {
     name: 'seen',

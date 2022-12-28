@@ -6,8 +6,7 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildPresences
+        GatewayIntentBits.MessageContent
     ]
 });
 module.exports = {
@@ -17,7 +16,7 @@ client.dev = false;
 const { log } = require('./functions/utils');
 client.once('ready', () => {
     log(`${client.user.tag} is online!`);
-    require('./bot').callBot();
+    require('./games').callBot();
 });
 client.rest.on('rateLimited', (info, data) => {
     if (client.dev) console.log(info, data);
@@ -29,7 +28,7 @@ readdirSync('./commands').forEach(cmdName =>
 mongoose.connect(process.env.MONGO_STRING).then(() => {
     console.log("Connected to MongoDB!");
     client.login(process.env.TOKEN, console.error);
-    require('./api');
+    require('./express/index');
 });
 process.on('uncaughtException', (error) => {
     console.log(error);

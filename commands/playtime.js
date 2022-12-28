@@ -1,4 +1,4 @@
-const playtime = require('../db/playtime');
+const playtime = require('../databases/playtime');
 const { getDorHMS } = require('../functions/utils');
 module.exports = {
     name: 'playtime',
