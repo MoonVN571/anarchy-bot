@@ -1,8 +1,7 @@
-const { Colors, Utils } = require('discord.js');
+const { Colors } = require('discord.js');
 const client = require('../../index').discord;
 const globalChannel = require('../../bot').channel;
 const stats = require('./stats');
-const { log } = require('../utils');
 const livechat_color = {
     default: 0x979797,
     highlight: 0x2EA711,
@@ -19,9 +18,9 @@ let messages = [];
 let countMsgs = 0;
 let flagged = false;
 module.exports.sendGlobalChat = async (bot, content, username, message) => {
-    let userChat = `**<${format(username)}>** ${format(message)}`;
+    let userChat = `**<${escapeFormat(username)}>** ${escapeFormat(message)}`;
     let color = getColor(bot, content, username, message);
-    if (!username) userChat = format(content);
+    if (!username) userChat = escapeFormat(content);
     if (color == livechat_color.dead) stats.save(bot, content);
     if (!isNaN(userChat)) return;
     const embed = {
@@ -41,7 +40,6 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
             || content.endsWith("left the game")
             || content.endsWith("joined the game")
         )) sendMessage(globalChannel.server, { embeds: [embed] });
-    if (color == livechat_color.whisper) log(content);
     countMsgs++;
     setTimeout(() => countMsgs--, 1000);
     messages.push(embed);
@@ -53,7 +51,7 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
     sendMessage(globalChannel.livechat, { embeds: messages });
     messages = [];
 }
-function format(content) {
+function escapeFormat(content) {
     content = content?.replace(/\*/g, '\\*').replace(/\_/g, '\\_').replace(/\|/g, '\\|');
     return content;
 }
@@ -65,8 +63,10 @@ function getColor(bot, content, username, message) {
     if (message?.startsWith(">")) color = livechat_color.highlight;
     if (content.toLowerCase().startsWith('vị trí hàng chờ')) color = livechat_color.queue;
     if (content.startsWith('nhắn cho') || content.includes('nhắn:')) color = livechat_color.whisper;
-    if (color == livechat_color.system && content.endsWith("đã tham gia vào server.")) color = livechat_color.join;
-    if (color == livechat_color.system && content.endsWith("đã thoát khỏi server.")) color = livechat_color.quit;
+    if (color == livechat_color.system && content.endsWith("đã tham gia vào server."))
+        color = livechat_color.join;
+    if (color == livechat_color.system && content.endsWith("đã thoát khỏi server."))
+        color = livechat_color.quit;
     if (color == livechat_color.system &&
         (content.includes("has made the advancement")
             || content.includes("has complete")

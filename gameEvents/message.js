@@ -35,7 +35,7 @@ module.exports = {
         const cmdName = args.shift();
         const cmd = bot.client.commands.get(cmdName)
             || bot.client.commands.find(cmd => cmd.aliases?.indexOf(cmdName) > -1);
-        if (!cmd || cmd.discord) return;
+        if (!cmd || cmd.discordOnly) return;
         log(`[ANARCHYVN-INGAME] ${username} : ${message}`);
         bot.sendMessage = (type, message) => {
             if (type == 'whisper') {

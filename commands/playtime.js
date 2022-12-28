@@ -12,6 +12,6 @@ module.exports = {
             }
         }))[0];
         if (!data) return bot.sendMessage('whisper', bot.notFoundPlayers);
-        bot.sendMessage('whisper', name + ' : ' + getDorHMS(data.time / 1000, true));
+        bot.sendMessage('whisper', `${name} : ${getDorHMS(data.time / 1000, true)}`);
     }
 }

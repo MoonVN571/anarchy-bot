@@ -10,10 +10,10 @@ const stats = require('./db/stats');
 const apiKey = require('./db/apiKey');
 app.get('/', (req, res) => {
     if (!req.hostname.startsWith('api.')) return;
-    const arr = supportData.map(data => `GET /data/anarchyvn/${data}/mo0nbot3/<api-key>`);
+    const arr = supportData.map(data => `GET /data/anarchyvn/${data}/mo0nbot3/api-key`);
     res.send(
         `<title>Anarchy Bot - API</title>
-        \u300b Endpoint:<br>
+        Endpoint:<br>
         ${arr.join('<br>')}
         <br><br>`);
 });
@@ -26,15 +26,20 @@ app.get('/data/anarchyvn/:data/:username/:apikey', async (req, res) => {
     if (!api) return res.send({
         statusCode: 404, msg: 'Invalid api key!'
     });
+    log(`${key}: ${req.url}`);
     if (supportData.indexOf(data) == -1)
         return res.send({ statusCode: 404, msg: `Data '${data}' not found on server!` });
     const db = await eval(`${data}`).find({
         username: {
             $regex: new RegExp(`^${username}$`), $options: 'i'
         }
-    });
-    if (!username || !db || !db[0])
+    })[0];
+    if (!username || !db)
         return res.send({ statusCode: 404, msg: `Username '${username}' not found on server!` });
-    res.send(db[0]);
+    res.send({
+        statusCode: 200,
+        msg: 'Success',
+        data: db[0]
+    });
 });
-app.listen(port, () => console.log('Listening on port ' + port + '!'));
+app.listen(port, () => log(`Listening on port ${port}!`));

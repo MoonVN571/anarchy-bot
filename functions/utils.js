@@ -16,15 +16,11 @@ function getDorHMS(temp, fulltime) {
     return format.trim();
 }
 function log(...string) {
-    if (client.dev) return;
     let timeFormat =
-        '['
-        + new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })
-        + ' '
-        + new Date().toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' }) +
-        ']';
-    console.log(timeFormat + " " + string.join(" "));
-    client.channels.cache.get('995305343456382976').send(timeFormat + " " + string.join(' '));
+        `[${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })}]`;
+    const msg = `${timeFormat} ${string.join(' ')}`;
+    console.log(msg);
+    if (!client.dev) client.channels.cache.get('995305343456382976').send(msg);
 }
 module.exports = {
     getDorHMS,

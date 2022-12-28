@@ -34,10 +34,8 @@ function createBot() {
     };
     readdirSync('./gameEvents').forEach(eventName => {
         const event = require('./gameEvents/' + eventName);
-        if (event.other && event.once) bot._client.once(event.name, (...args) => event.execute(bot, ...args));
-        if (event.other && !event.once) bot._client.on(event.name, (...args) => event.execute(bot, ...args));
-        if (!event.other && event.once) bot.once(event.name, (...args) => event.execute(bot, ...args));
-        if (!event.other && !event.once) bot.on(event.name, (...args) => event.execute(bot, ...args));
+        if (event.other) bot._client[event.once ? 'once' : 'on'](event.name, (...args) => event.execute(bot, ...args));
+        else bot[event.once ? 'once' : 'on'](event.name, (...args) => event.execute(bot, ...args));
     });
     client.on('messageCreate', message => {
         if (!bot.data.logged || message.author.bot) return;
@@ -48,7 +46,7 @@ function createBot() {
                 return runCommand(message);
             if (message.author.username.includes('§') || content.includes('§')) return;
             if (content.split('\n').length > 1) content = content.split('\n')[0];
-            let toServer = `[${message.author.tag}] ${content} | https://mo0nbot ga/invite`;
+            let toServer = `[${message.author.tag}] ${content} | https://discord mo0nbot ga/`;
             log(toServer);
             message.react('<a:1505_yes:797268802680258590>');
             bot.chat(`${toServer}`);
@@ -60,8 +58,9 @@ function runCommand(message) {
     const cmdName = args.shift().toLowerCase();
     const cmd = client.commands.get(cmdName)
         || client.commands.find(cmd => cmd.aliases?.includes(cmdName));
-    if (!cmd) return;
-    if (cmd.dev && message.author.id !== setting.botOwner) return;
+    if (!cmd
+        || cmd.dev && message.author.id !== setting.botOwner
+        || cmd.gameOnly) return;
     client.sendMessage = (_, msg) => {
         message.channel.send({
             embeds: [{

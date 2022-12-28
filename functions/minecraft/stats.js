@@ -1,7 +1,7 @@
 const { getPlayersList } = require('./mcUtils');
 const stats = require('../../db/stats');
 module.exports.isDeathMsgs = (bot, msg) => {
-    const message = msg.split("[ANARCHYVN]").slice(1).join(" ");
+    const message = msg.split(bot.setting.stats.prefix).slice(1).join(" ");
     const settings = bot.setting.stats;
     if (message.match(settings.deaths)
         || message.match(settings.killAfter)

@@ -1,6 +1,7 @@
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { readdirSync } = require('fs');
 const mongoose = require('mongoose');
+const { log } = require('./functions/utils');
 require('dotenv').config();
 const client = new Client({
     intents: [
@@ -13,14 +14,14 @@ const client = new Client({
 module.exports = {
     discord: client
 };
+client.dev = false;
 client.once('ready', () => {
-    console.log(client.user.tag + ' is online!');
+    log(`${client.user.tag} is online!`);
     require('./bot').callBot();
 });
 client.rest.on('rateLimited', (info, data) => {
-    console.log(info, data);
-})
-client.dev = false;
+    if (client.dev) console.log(info, data);
+});
 client.commands = new Collection();
 readdirSync('./commands').forEach(cmdName =>
     client.commands.set(cmdName.split(".")[0], require('./commands/' + cmdName))

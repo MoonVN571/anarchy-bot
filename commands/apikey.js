@@ -2,7 +2,7 @@ const apikey = require('../db/apiKey');
 module.exports = {
     name: 'apikey',
     dev: true,
-    discord: true,
+    discordOnly: true,
     async execute(client, message, args) {
         const key = await getKey();
         async function getKey() {

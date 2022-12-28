@@ -5,7 +5,7 @@ module.exports = {
         bot.data.spawnCount++;
         if (bot.data.spawnCount == 1) {
             bot.data.logged = true;
-            log('Bot đã vào server!');
+            log('Bot joined to the server!');
         }
         if (bot.data.spawnCount >= 4 || bot.player?.gamemode == 0) bot.data.mainServer = true;
         if (bot.data.mainServer) {
