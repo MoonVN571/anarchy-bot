@@ -4,9 +4,11 @@ const { log } = require('../functions/utils');
 const data_route = require('./routes/data.route');
 const supportData = ['joindate', 'playtime', 'stats', 'seen'];
 const port = process.env.PORT || 80;
+app.all('*', (req, res, next) => {
+    if (req.hostname.startsWith('api.')) next();
+});
 app.get('/', (req, res) => {
-    if (!req.hostname.startsWith('api.')) return;
-    const arr = supportData.map(data => `GET /data/anarchyvn/${data}/mo0nbot3/api-key`);
+    const arr = supportData.map(data => `GET /data/anarchyvn/${data}/mo0nbot3?key=api-key`);
     res.send(
         `<title>Anarchy Bot - API</title>
         Endpoint:<br>

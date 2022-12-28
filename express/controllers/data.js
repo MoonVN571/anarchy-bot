@@ -6,10 +6,10 @@ playtime = require('../../databases/playtime');
 stats = require('../../databases/stats');
 const apiKey = require('../../databases/apiKey');
 module.exports = async (req, res) => {
-    if (!req.hostname.startsWith('api.')) return;
+    console.log(req.params, req.body)
     const username = req.params?.username;
     const data = req.params?.data;
-    const key = req.params?.apikey;
+    const key = req.query?.apikey || req.query.key;
     const api = await apiKey.findOne({ key: key });
     if (!api) return res.send({
         statusCode: 404, msg: 'Invalid api key!'

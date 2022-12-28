@@ -34,7 +34,7 @@ module.exports.save = async (bot, msg) => {
     async function saveDeaths(username) {
         if (getPlayersList(bot).indexOf(username) < 0) return;
         bot.data.deathList.push(username);
-        setTimeout(() => bot.data.deathList = bot.data.deathList.filter(name => username !== name), 1000);
+        setTimeout(() => bot.data.deathList = bot.data.deathList.filter(name => username !== name), 2000);
         const kdData = await stats.find({
             username: {
                 $regex: new RegExp(`^${username}$`), $options: 'i'
