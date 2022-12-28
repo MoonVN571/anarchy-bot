@@ -1,7 +1,6 @@
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { readdirSync } = require('fs');
 const mongoose = require('mongoose');
-const { log } = require('./functions/utils');
 require('dotenv').config();
 const client = new Client({
     intents: [
@@ -14,7 +13,8 @@ const client = new Client({
 module.exports = {
     discord: client
 };
-client.dev = false;
+client.dev = true;
+const { log } = require('./functions/utils');
 client.once('ready', () => {
     log(`${client.user.tag} is online!`);
     require('./bot').callBot();
