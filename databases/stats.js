@@ -4,4 +4,4 @@ const schema = mongoose.Schema({
     kills: Number,
     deaths: Number
 });
-module.exports = mongoose.model("stats", schema);
+module.exports = mongoose.model("stats2", schema);

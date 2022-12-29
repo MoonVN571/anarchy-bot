@@ -1,5 +1,6 @@
 const { getPlayersList } = require('./mcUtils');
 const stats = require('../../databases/stats');
+const { log } = require('../../functions/utils');
 module.exports.isDeathMsgs = (bot, msg) => {
     const message = msg.split(bot.setting.stats.prefix).slice(1).join(" ");
     const settings = bot.setting.stats;
@@ -35,25 +36,25 @@ module.exports.save = async (bot, msg) => {
         if (getPlayersList(bot).indexOf(username) < 0) return;
         bot.data.deathList.push(username);
         setTimeout(() => bot.data.deathList = bot.data.deathList.filter(name => username !== name), 2000);
-        const kdData = await stats.find({
+        const kdData = await stats.findOne({
             username: {
                 $regex: new RegExp(`^${username}$`), $options: 'i'
             }
-        })[0];
+        });
+        if (bot.dev) console.log('deaths ' + username, kdData);
         if (!kdData) return stats.create({ username: username, deaths: 1, kills: 0 });
-        if (bot.dev) return;
         kdData.deaths += 1;
         kdData.save();
     }
     async function saveKills(username) {
         if (getPlayersList(bot).indexOf(username) < 0) return;
-        const kdData = await stats.find({
+        const kdData = await stats.findOne({
             username: {
                 $regex: new RegExp(`^${username}$`), $options: 'i'
             }
-        })[0];
+        });
+        if (bot.dev) console.log('kills ' + username, kdData);
         if (!kdData) return stats.create({ username: username, deaths: 0, kills: 1 });
-        if (bot.dev) return;
         kdData.kills += 1;
         kdData.save();
     }
