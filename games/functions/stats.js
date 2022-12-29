@@ -9,7 +9,7 @@ module.exports.isDeathMsgs = (bot, msg) => {
         || message.match(settings.noStats)) return true;
 }
 module.exports.save = async (bot, msg) => {
-    const message = msg.split("[ANARCHYVN]").slice(1).join(" ");
+    const message = msg.split(bot.setting.stats.prefix).slice(1).join(" ");
     const settings = bot.setting;
     let deathsRegex = settings.stats.deaths;
     let killAfterRegex = settings.stats.killAfter;

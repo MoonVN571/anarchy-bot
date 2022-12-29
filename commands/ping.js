@@ -1,4 +1,4 @@
-const { getPlayersDataList } = require("../functions/minecraft/mcUtils");
+const { getPlayersDataList } = require("../games/functions/mcUtils");
 module.exports = {
     name: 'ping',
     gameOnly: true,

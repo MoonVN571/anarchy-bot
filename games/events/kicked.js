@@ -1,4 +1,4 @@
-const { sendGlobalChat } = require("../../functions/minecraft/chat");
+const { sendGlobalChat } = require("../functions/chat");
 const { log } = require("../../functions/utils");
 module.exports = {
     name: 'kicked',

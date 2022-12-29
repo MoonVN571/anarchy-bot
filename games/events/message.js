@@ -1,5 +1,5 @@
-const { sendGlobalChat } = require('../../functions/minecraft/chat');
-const { solveAlotMessage } = require('../../functions/minecraft/mcUtils');
+const { sendGlobalChat } = require('../functions/chat');
+const { solveAlotMessage } = require('../functions/mcUtils');
 const { log } = require('../../functions/utils');
 module.exports = {
     name: 'message',

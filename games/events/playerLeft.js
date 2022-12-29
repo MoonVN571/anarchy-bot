@@ -1,4 +1,4 @@
-const { sendGlobalChat } = require('../../functions/minecraft/chat');
+const { sendGlobalChat } = require('../functions/chat');
 const seen = require('../../databases/seen');
 module.exports = {
     name: 'playerLeft',

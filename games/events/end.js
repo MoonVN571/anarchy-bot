@@ -1,5 +1,5 @@
 const { callBot } = require('../index.js');
-const { sendGlobalChat } = require('../../functions/minecraft/chat.js');
+const { sendGlobalChat } = require('../functions/chat.js');
 const { log } = require('../../functions/utils.js');
 module.exports = {
     name: 'end',

@@ -1,4 +1,4 @@
-const apikey = require('../databases/apiKey');
+const apikey = require('../databases/apikey');
 module.exports = {
     name: 'apikey',
     dev: true,

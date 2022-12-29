@@ -1,4 +1,4 @@
-const { log } = require("../utils");
+const { log } = require("../../functions/utils");
 function getPlayersList(bot) {
     if (!bot?.players) return [];
     const players = Object.values(bot.players).map(d => d.username);

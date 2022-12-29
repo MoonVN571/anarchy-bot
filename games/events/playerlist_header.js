@@ -1,4 +1,4 @@
-const { getPlayersList } = require("../../functions/minecraft/mcUtils");
+const { getPlayersList } = require("../functions/mcUtils");
 const playtime = require('../../databases/playtime');
 module.exports = {
     name: 'playerlist_header',

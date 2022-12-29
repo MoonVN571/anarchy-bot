@@ -4,7 +4,7 @@ joindate = require('../../databases/joindate');
 seen = require('../../databases/seen');
 playtime = require('../../databases/playtime');
 stats = require('../../databases/stats');
-const apiKey = require('../../databases/apiKey');
+const apiKey = require('../../databases/apikey');
 module.exports = async (req, res) => {
     const username = req.params?.username;
     const data = req.params?.data;
