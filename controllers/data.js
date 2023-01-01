@@ -9,6 +9,7 @@ module.exports = async (req, res) => {
     if (!api) return res.send({
         statusCode: 404, msg: 'Invalid api key!'
     });
+    console.log('[', new Date().toLocaleString(), `] ${key} | ${server} - ${stat} - ${username}`);
     if (servers.indexOf(server) == -1)
         return res.send({ statusCode: 404, msg: `Server '${server}' not found on server!` });
     if (stats.indexOf(stat) == -1)
