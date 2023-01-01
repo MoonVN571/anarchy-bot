@@ -1,3 +1,4 @@
+const setting = require('../setting');
 const client = require('../index').discord;
 require('dotenv').config();
 function getDorHMS(temp, fulltime) {
@@ -20,7 +21,7 @@ function log(...string) {
         `[${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })}]`;
     const msg = `${timeFormat} ${string.join(' ')}`;
     console.log(msg);
-    if (!client.dev) client.channels.cache.get(client.config.channel.logs).send(msg);
+    if (!client.dev) client.channels.cache.get(setting.channel.logs).send(msg);
 }
 module.exports = {
     getDorHMS,
