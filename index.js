@@ -28,7 +28,6 @@ readdirSync('./commands').forEach(cmdName =>
 mongoose.connect(process.env.MONGO_STRING).then(() => {
     console.log("Connected to MongoDB!");
     client.login(process.env.TOKEN, console.error);
-    require('./express/index');
 });
 process.on('uncaughtException', (error) => {
     console.log(error);
