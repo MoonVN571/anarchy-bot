@@ -70,7 +70,7 @@ function runCommand(message) {
         });
     }
     client.notFoundPlayers = setting.notFoundPlayers;
-    log(`[ANARCHYVN-DISCORD] ${message.author.tag} : ${message.content}`);
+    log(`${message.author.tag} : ${message.content}`);
     cmd.execute(client, message, args);
 }
 function callBot(tick) {

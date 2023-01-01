@@ -20,7 +20,7 @@ function log(...string) {
         `[${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })}]`;
     const msg = `${timeFormat} ${string.join(' ')}`;
     console.log(msg);
-    if (!client.dev) client.channels.cache.get('995305343456382976').send(msg);
+    if (!client.dev) client.channels.cache.get(client.config.channel.logs).send(msg);
 }
 module.exports = {
     getDorHMS,
