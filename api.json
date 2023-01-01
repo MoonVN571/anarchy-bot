@@ -1,0 +1,16 @@
+{
+    "title": "MoonBot API",
+    "servers": [
+        "anarchyvn",
+        "2b2c"
+    ],
+    "stats": [
+        "seen",
+        "stats",
+        "joindate",
+        "playtime"
+    ],
+    "usage": "/data/<server>/<stats>/<username>?apikey=key",
+    "example": "/data/anarchyvn/seen/mo0nbot3?apikey=key",
+    "requestAPI": "Contact: dieujdotothon?#0001"
+}
