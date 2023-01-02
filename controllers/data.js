@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
         return res.send({ statusCode: 404, msg: `Server '${server}' not found on server!` });
     if (stats.indexOf(stat) == -1)
         return res.send({ statusCode: 404, msg: `Data '${stat}' not found on server!` });
-    const db = await dbList.find(db => db.name == server).collection(stat + 's')
+    const db = await dbList.find(db => db.name == server).collection(stat == 'stats' ? 'stats2' : stat + 's')
         .findOne({
             username: {
                 $regex: new RegExp(`^${username}$`), $options: 'i'
