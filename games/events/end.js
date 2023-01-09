@@ -5,7 +5,6 @@ module.exports = {
     name: 'end',
     async execute(bot, reason) {
         log(reason);
-        sendGlobalChat(bot, reason);
         log("Bot disconnected!");
         if (reason == 'force') callBot();
         else if (bot.data.fastReconnect) callBot(3 * 1000);

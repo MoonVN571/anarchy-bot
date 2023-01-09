@@ -78,7 +78,9 @@ function sendMessage(channelId, msg) {
     const channel = client.channels.cache.get(channelId);
     channel.messages.fetch().then(msgs => {
         const message = msgs.first();
-        if (message?.embeds[0]?.description == msg) return;
+        const thisMsg = msg.embeds[0]?.description?.split('\n')[0];
+        const checkMsg = message.embeds[0]?.description?.split('\n')[0];
+        if (thisMsg && checkMsg && thisMsg == checkMsg) return;
         channel.send(msg).then(msg => {
             // console.log(Date.now() - msg.createdAt, 'ms');
         }).catch(err => console.log(err));
