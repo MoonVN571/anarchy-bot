@@ -52,7 +52,10 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
     messages = [];
 }
 function escapeFormat(content) {
-    content = content?.replace(/\*/g, '\\*').replace(/\_/g, '\\_').replace(/\|/g, '\\|');
+    if (content) content = content.replace(/\*/g, '\\*')
+        .replace(/\_/g, '\\_')
+        .replace(/\|/g, '\\|')
+        .replace(/\//g, '\\/');
     return content;
 }
 function getColor(bot, content, username, message) {
