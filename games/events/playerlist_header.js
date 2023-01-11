@@ -26,7 +26,7 @@ module.exports = {
             });
         }
         if (bot.data.nextCheckTab) {
-            // setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
+            setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
             bot.data.nextCheckTab = false;
             let content = footer[1].trim();
             let tps = +content.split(' tps')[0];
@@ -43,7 +43,6 @@ module.exports = {
                 data['ping'] = ping;
                 data.save();
             }
-            return;
             const completeStr = footer[1] +
                 `\nJoined <t:${parseInt(bot.data.uptime / 1000)}:R>, last updated <t:${parseInt(Date.now() / 1000)}:R>`
                 + '\n' + header.join("\n") + " \n" + footer.join("\n");
