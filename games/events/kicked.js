@@ -8,7 +8,7 @@ module.exports = {
         let msg = '';
         try {
             msg = JSON.parse(reason);
-            msg = msg.extra.map(r => r.text).join('');
+            msg = msg.extra?.map(r => r.text).join('') || msg.text.toString(); // catch error
         } catch {
             msg = reason;
         }

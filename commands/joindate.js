@@ -5,7 +5,7 @@ module.exports = {
     aliases: ['jd', 'date'],
     async execute(bot, username, args) {
         const name = args[0] || username;
-        const data = await joindate.find({
+        const data = await joindate.findOne({
             username: {
                 $regex: new RegExp(`^${name}$`), $options: 'i'
             }

@@ -46,7 +46,7 @@ function createBot() {
                 return runCommand(message);
             if (message.author.username.includes('§') || content.includes('§')) return;
             if (content.split('\n').length > 1) content = content.split('\n')[0];
-            let toServer = `[${message.author.tag}] ${content} | https://discord mo0nbot ga/`;
+            let toServer = `[${message.author.tag}] ${content} | https://discord.mo0nbot.ga/`;
             log(toServer);
             message.react('<a:1505_yes:797268802680258590>');
             bot.chat(`${toServer}`);
@@ -73,7 +73,7 @@ function runCommand(message) {
     log(`${message.author.tag} : ${message.content}`);
     cmd.execute(client, message, args);
 }
-function callBot(tick) {
-    setTimeout(() => createBot(), tick || 1);
+function destroyBot(time) {
+    setTimeout(() => process.exit(), time || 0);
 }
-module.exports = { callBot, channel };
+module.exports = { createBot, destroyBot, channel };

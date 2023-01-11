@@ -1,5 +1,6 @@
 const { getPlayersList } = require("../functions/mcUtils");
 const playtime = require('../../databases/playtime');
+const server = require("../../databases/server");
 module.exports = {
     name: 'playerlist_header',
     other: true,
@@ -27,6 +28,18 @@ module.exports = {
         if (bot.data.nextCheckTab) {
             setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
             bot.data.nextCheckTab = false;
+            let content = footer[1].trim();
+            let tps = content.split(' tps')[0];
+            let players = content.split(' players')[0].split('    ')[1];
+            let ping = content.split(' ping')[0].split('    ')[1];
+            let data = await server.findOne({});
+            if (!data) await server.create({ last_updated: Date.now(), tps: tps, players: players, ping: ping });
+            data['last_updated'] = Date.now();
+            data['tps'] = tps;
+            data['players'] = players;
+            data['ping'] = ping;
+            data.save();
+            if (tps == 'Perfect') tps = 20;
             const completeStr = footer[1] +
                 `\nJoined <t:${parseInt(bot.data.uptime / 1000)}:R>, last updated <t:${parseInt(Date.now() / 1000)}:R>`
                 + '\n' + header.join("\n") + " \n" + footer.join("\n");

@@ -16,7 +16,7 @@ client.dev = false;
 const { log } = require('./functions/utils');
 client.once('ready', () => {
     log(`${client.user.tag} is online!`);
-    require('./games').callBot();
+    require('./games').createBot();
 });
 client.rest.on('rateLimited', (info, data) => {
     if (client.dev) console.log(info, data);
@@ -25,7 +25,8 @@ client.commands = new Collection();
 readdirSync('./commands').forEach(cmdName =>
     client.commands.set(cmdName.split(".")[0], require('./commands/' + cmdName))
 );
-mongoose.connect(process.env.MONGO_STRING).then(() => {
+mongoose.set('strictQuery', true);
+mongoose.connect(process.env.MONGO_STRING, {}).then(() => {
     console.log("Connected to MongoDB!");
     client.login(process.env.TOKEN, console.error);
 });

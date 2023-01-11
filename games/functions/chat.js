@@ -41,7 +41,7 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
             || content.endsWith("joined the game")
         )) sendMessage(globalChannel.server, { embeds: [embed] });
     countMsgs++;
-    setTimeout(() => countMsgs--, 1000);
+    setTimeout(() => countMsgs--, 1500);
     messages.push(embed);
     if (countMsgs > 3) {
         if (!flagged) setTimeout(() => flagged = false, 1 * 60 * 1000);

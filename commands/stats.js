@@ -5,11 +5,11 @@ module.exports = {
     async execute(bot, username, args) {
         if (username.content) username = 'mo0nbot3';
         const name = args[0] || username;
-        const data = (await stats.find({
+        const data = await stats.findOne({
             username: {
                 $regex: new RegExp(`^${name}$`), $options: 'i'
             }
-        }))[0];
+        });
         if (!data) return bot.sendMessage('whisper', bot.notFoundPlayers);
         const kills = data.kills || 0;
         const deaths = data.deaths || 0;

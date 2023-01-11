@@ -1,6 +1,7 @@
 const { sendGlobalChat } = require('../functions/chat');
 const { solveAlotMessage } = require('../functions/mcUtils');
 const { log } = require('../../functions/utils');
+const msgs = require('../../databases/msgs');
 module.exports = {
     name: 'message',
     execute(bot, msg) {
@@ -30,6 +31,7 @@ module.exports = {
         }
         sendGlobalChat(bot, content, username, message);
         if (!username || !message) return;
+        saveMessage(username, message);
         if (!message.startsWith(bot.setting.gamePrefix)) return;
         let args = message.trim().slice(bot.setting.gamePrefix.length).split(/ +/g);
         const cmdName = args.shift();
@@ -39,10 +41,29 @@ module.exports = {
         log(`${username} : ${message}`);
         bot.sendMessage = (type, message) => {
             if (type == 'whisper') {
-                bot.data.arrayMessages.push(`/msg ${username} ${message}`);
+                bot.data.arrayMessages.push(`/msg ${username} ${message.trim()}`);
                 solveAlotMessage(bot);
             }
         }
         cmd.execute(bot, username, args);
     }
+}
+
+async function saveMessage(username, message) {
+    if (!username || !message) return;
+    db = await msgs.findOne({
+        username: {
+            $regex: new RegExp(`^${username}$`), $options: 'i'
+        }
+    });
+    if (!db) db = await msgs.create({ username: username });
+    if (!db.first_messages?.msg) db['first_messages'] = {
+        msg: message,
+        time: Date.now()
+    };
+    db['last_messages'] = {
+        msg: message,
+        time: Date.now()
+    }
+    await db.save();
 }
