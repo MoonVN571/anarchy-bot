@@ -2,7 +2,7 @@ const { servers, type } = require('../api.json');
 const dbList = require('../index');
 module.exports = async (req, res) => {
     const username = req.params?.username;
-    const stats = req.params?.stats;
+    let stats = req.params?.stats;
     const server = req.params?.server;
     const key = req.query?.apikey || req.query?.key;
     const api = await dbList.find(db => db.name == 'anarchyvn').collection('apikeys').findOne({ key: key });
@@ -14,7 +14,9 @@ module.exports = async (req, res) => {
         return res.send({ statusCode: 404, msg: `Server '${server}' not found on server!` });
     if (type.indexOf(stats) == -1)
         return res.send({ statusCode: 404, msg: `Data '${stats}' not found on server!` });
-    const db = await dbList.find(db => db.name == server).collection(stats == 'stats' ? 'stats2' : stats + 's').findOne({
+    if (stats == 'stats') stats = 'stats2';
+    if (!stats.endsWith('s')) stats = stats + 's';
+    const db = await dbList.find(db => db.name == server).collection(stats).findOne({
         username: {
             $regex: new RegExp(`^${username}$`), $options: 'i'
         },
