@@ -25,7 +25,7 @@ module.exports.save = async (bot, msg) => {
         if (uname.includes('\'')) uname = uname.split('\'')[0];
         if (uname?.split(" ").length > 1) uname = uname.split(' ')[0];
         saveDeaths(bot, usernameList[1], message);
-        saveKills(uname);
+        saveKills(bot, uname, message);
     }
     if (message.match(killBeforeRegex)) {
         let usernameList = message.match(killBeforeRegex);
@@ -71,7 +71,7 @@ async function saveDeaths(bot, username, message) {
     if (getPlayersList(bot).indexOf(username) < 0) return;
     bot.data.deathList.push(username);
     setTimeout(() => bot.data.deathList = bot.data.deathList.filter(name => username !== name), 2000);
-    saveDeathMsgs(username);
+    saveDeathMsgs(username, message);
     const kdData = await stats.findOne({
         username: {
             $regex: new RegExp(`^${username}$`), $options: 'i'
@@ -82,9 +82,9 @@ async function saveDeaths(bot, username, message) {
     kdData.deaths += 1;
     kdData.save();
 }
-async function saveKills(username, message) {
+async function saveKills(bot, username, message) {
     if (getPlayersList(bot).indexOf(username) < 0) return;
-    saveKillMsgs(username);
+    saveKillMsgs(username, message);
     const kdData = await stats.findOne({
         username: {
             $regex: new RegExp(`^${username}$`), $options: 'i'

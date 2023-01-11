@@ -26,20 +26,24 @@ module.exports = {
             });
         }
         if (bot.data.nextCheckTab) {
-            setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
+            // setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
             bot.data.nextCheckTab = false;
             let content = footer[1].trim();
-            let tps = content.split(' tps')[0];
-            let players = content.split(' players')[0].split('    ')[1];
-            let ping = content.split(' ping')[0].split('    ')[1];
-            let data = await server.findOne({});
-            if (!data) await server.create({ last_updated: Date.now(), tps: tps, players: players, ping: ping });
-            data['last_updated'] = Date.now();
-            data['tps'] = tps;
-            data['players'] = players;
-            data['ping'] = ping;
-            data.save();
+            let tps = +content.split(' tps')[0];
+            let players = +content.split(' players')[0].split('    ')[1];
+            let ping = +content.split(' ping')[0].split('    ')[2];
             if (tps == 'Perfect') tps = 20;
+            let data = await server.findOne({});
+            if (!data) {
+                await server.create({ last_updated: Date.now(), tps: tps, players: players, ping: ping });
+            } else {
+                data['last_updated'] = Date.now();
+                data['tps'] = tps;
+                data['players'] = players;
+                data['ping'] = ping;
+                data.save();
+            }
+            return;
             const completeStr = footer[1] +
                 `\nJoined <t:${parseInt(bot.data.uptime / 1000)}:R>, last updated <t:${parseInt(Date.now() / 1000)}:R>`
                 + '\n' + header.join("\n") + " \n" + footer.join("\n");
