@@ -70,7 +70,7 @@ async function saveDeathMsgs(username, message) {
 async function saveDeaths(bot, username, message) {
     if (getPlayersList(bot).indexOf(username) < 0) return;
     bot.data.deathList.push(username);
-    setTimeout(() => bot.data.deathList = bot.data.deathList.filter(name => username !== name), 2000);
+    setTimeout(() => bot.data.deathList = bot.data.deathList.filter(name => username !== name), 5000);
     saveDeathMsgs(username, message);
     const kdData = await stats.findOne({
         username: {
