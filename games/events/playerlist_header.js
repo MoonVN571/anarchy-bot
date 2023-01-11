@@ -34,9 +34,9 @@ module.exports = {
             let ping = +content.split(' ping')[0].split('    ')[2];
             if (tps == 'Perfect') tps = 20;
             let data = await server.findOne({});
-            if (!data) {
+            if (!data && tps) {
                 await server.create({ last_updated: Date.now(), tps: tps, players: players, ping: ping });
-            } else {
+            } else if (tps) {
                 data['last_updated'] = Date.now();
                 data['tps'] = tps;
                 data['players'] = players;
