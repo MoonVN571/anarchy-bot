@@ -29,10 +29,11 @@ module.exports = {
             setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
             bot.data.nextCheckTab = false;
             let content = footer[1].trim();
-            let tps = +content.split(' tps')[0];
+            let tps = content.split(' tps')[0];
             let players = +content.split(' players')[0].split('    ')[1];
             let ping = +content.split(' ping')[0].split('    ')[2];
             if (tps == 'Perfect') tps = 20;
+            else if (tps) tps = +tps;
             let data = await server.findOne({});
             if (!data && tps) {
                 await server.create({ last_updated: Date.now(), tps: tps, players: players, ping: ping });
