@@ -9,11 +9,11 @@
         "stats",
         "joindate",
         "playtime",
-        "msgs",
-        "server"
+        "msgs"
     ],
-    "usage": "/data/<server>/<type>/<username>?apikey=key",
-    "example": "/data/anarchyvn/seen/mo0nbot3?apikey=key",
+    "server_data": "/data/<server>?apikey=<key>",
+    "usage": "/data/<server>/<type>/<username>?apikey=<key>",
+    "example": "/data/anarchyvn/seen/mo0nbot3?apikey=<key>",
     "news": [
         "Add join_count, left_count (seen data)",
         "Add first_kill, last_kill (msgs data)",

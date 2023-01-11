@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
         statusCode: 404, msg: 'Invalid api key!'
     });
     console.log(`[${new Date().toLocaleString()}] ${key} | ${server} - data`);
-    const db = await dbList.find(db => db.name == server).collection('server').findOne({});
+    const db = await dbList.find(db => db.name == server).collection('servers').findOne({});
     let data = {};
     for (let key in db) {
         if (key !== '__v' && key !== '_id') data[key] = db[key];
