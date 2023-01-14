@@ -22,11 +22,11 @@ module.exports = {
         if (!seenData) seenData = await seen.create({ username: player.username, time: Date.now() });
         else {
             seenData['time'] = Date.now();
-            if (bot.data.countPlayers > getPlayersList(bot).length + 1) {
-                sendGlobalChat(bot, player.username + ' đã tham gia vào server.');
-                seenData['join_count'] = (seenData['join_count'] || 0) + 1;
-            }
-            await seenData.save();
         }
+        if (bot.data.countPlayers > getPlayersList(bot).length + 1) {
+             sendGlobalChat(bot, player.username + ' đã tham gia vào server.');
+             seenData['join_count'] = (seenData['join_count'] || 0) + 1;
+        }
+        await seenData.save();
     }
 }
