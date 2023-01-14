@@ -15,11 +15,9 @@
     "usage": "/data/<server>/<type>/<username>?apikey=<key>",
     "example": "/data/anarchyvn/seen/mo0nbot3?apikey=<key>",
     "news": [
-        "Add join_count, left_count (seen data)",
-        "Add first_kill, last_kill (msgs data)",
-        "Add first_death, last_death (msgs data)",
-        "Add first_messages, last_messages (msgs data)",
-        "Add server data (tps, players, ping)"
+        "join_count, left_count (seen data)",
+        "first_kill, last_kill, first_death, last_death, first_messages, last_messages (msgs data)",
+        "Add server data (tab info, queue)"
     ],
     "requestAPI": "Contact: dieujdotothon?#0001"
 }
