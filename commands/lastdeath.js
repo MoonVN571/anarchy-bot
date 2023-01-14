@@ -1,8 +1,8 @@
 const msgs = require("../databases/msgs");
 const { getDorHMS } = require("../functions/utils");
 module.exports = {
-    name: 'firstkill',
-    aliases: ['fk'],
+    name: 'lastdeath',
+    aliases: ['ld'],
     async execute(bot, username, args) {
         const name = args[0] || username;
         const data = await msgs.findOne({

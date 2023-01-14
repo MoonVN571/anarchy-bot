@@ -1,4 +1,4 @@
-const { getPlayersList } = require("../functions/mcUtils");
+const { getPlayersList, getQueue } = require("../functions/mcUtils");
 const playtime = require('../../databases/playtime');
 const server = require("../../databases/server");
 module.exports = {
@@ -14,24 +14,25 @@ module.exports = {
         const header = cleanArray(JSON.parse(data.header)?.text);
         const footer = cleanArray(JSON.parse(data.footer)?.text);
         if (!bot.data.mainServer || !header) return;
-        if (bot.data.checkPlaytime) {
-            setTimeout(() => bot.data.checkPlaytime = true, 2 * 60 * 1000);
-            bot.data.checkPlaytime = false;
+        if (!bot.data.checkPlaytime) {
+            setTimeout(() => bot.data.checkPlaytime = false, 2 * 60 * 1000);
+            bot.data.checkPlaytime = true;
             let players = getPlayersList(bot);
             players.forEach(async username => {
                 let ptData = await playtime.findOne({ username: username });
                 if (!ptData) return playtime.create({ username: username, time: 2 * 60 * 1000 });
                 ptData.time += 2 * 60 * 1000;
-                ptData.save();
+                await ptData.save();
             });
         }
-        if (bot.data.nextCheckTab) {
-            setTimeout(() => bot.data.nextCheckTab = true, 10 * 60 * 1000);
-            bot.data.nextCheckTab = false;
+        if (!bot.data.checkInfo) {
+            setTimeout(() => bot.data.checkInfo = true, 1 * 60 * 1000);
+            bot.data.checkInfo = false;
             let content = footer[1].trim();
             let tps = content.split(' tps')[0];
             let players = +content.split(' players')[0].split('    ')[1];
             let ping = +content.split(' ping')[0].split('    ')[2];
+            let queue = await getQueue();
             if (tps == 'Perfect') tps = 20;
             else if (tps) tps = +tps;
             let data = await server.findOne({});
@@ -42,8 +43,13 @@ module.exports = {
                 data['tps'] = tps;
                 data['players'] = players;
                 data['ping'] = ping;
+                data['queue'] = queue;
                 data.save();
             }
+        }
+        if (!bot.data.nextCheckTab) {
+            setTimeout(() => bot.data.nextCheckTab = false, 10 * 60 * 1000);
+            bot.data.nextCheckTab = true;
             const completeStr = footer[1] +
                 `\nJoined <t:${parseInt(bot.data.uptime / 1000)}:R>, last updated <t:${parseInt(Date.now() / 1000)}:R>`
                 + '\n' + header.join("\n") + " \n" + footer.join("\n");

@@ -25,7 +25,7 @@ module.exports = {
             // replace rank
             if (firstMsg.startsWith("<[")) lastMsg = content.split(" ")[0].split("]")[1] + msgArr.slice(1).join(' ');
             // replace <>
-            lastMsg = lastMsg.replace(/\<|\>|\~/g, '');
+            lastMsg = lastMsg.replace(/\<|\>|\~|\:/g, '');
             username = lastMsg.split(' ')[0];
             message = lastMsg.split(' ').slice(1).join(" ");
         }

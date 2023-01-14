@@ -22,11 +22,6 @@ function createBot() {
     bot.setting = setting;
     bot.data = {
         arrayMessages: [],
-        mainServer: false,
-        logged: false,
-        nextCheckTab: true,
-        checkPlaytime: true,
-        fastReconnect: false,
         spawnCount: 0,
         countPlayers: 0,
         uptime: 0,
