@@ -24,5 +24,5 @@ module.exports.solveAlotMessage = (bot) => {
         else bot.chat(bot.data.arrayMessages[0]);
         bot.data.arrayMessages.shift();
     }
-    setTimeout(() => solveAlotMessage(bot), 5 * 1000);
+    setTimeout(() => this.solveAlotMessage(bot), 5 * 1000);
 }
