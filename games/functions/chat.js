@@ -2,6 +2,7 @@ const { Colors } = require('discord.js');
 const client = require('../../index').discord;
 const globalChannel = require('../../games/index').channel;
 const stats = require('./stats');
+const { log } = require('../../functions/utils');
 const livechat_color = {
     default: 0x979797,
     highlight: 0x2EA711,
@@ -40,6 +41,7 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
             || content.endsWith("left the game")
             || content.endsWith("joined the game")
         )) sendMessage(globalChannel.server, { embeds: [embed] });
+    if (color == livechat_color.whisper) log(content);
     countMsgs++;
     setTimeout(() => countMsgs--, 1500);
     messages.push(embed);

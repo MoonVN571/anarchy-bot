@@ -1,5 +1,4 @@
 const server = require('../databases/server');
-const { getDorHMS } = require('../functions/utils');
 module.exports = {
     name: 'tps',
     async execute(bot, username, args) {
