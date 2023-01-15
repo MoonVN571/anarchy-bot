@@ -9,13 +9,16 @@ module.exports.getPlayersDataList = (bot) => {
     return players;
 }
 module.exports.getQueue = async () => {
-    await require('axios').default.get('https://api.mcsrvstat.us/2/anarchyvn.net').then(res => {
-        let data = res.data?.info?.clean;
-        if (!data) return;
-        let queue = data[1].split('chờ: ')[1];
-        return +queue;
-    }).catch(err => {
-        log(err.message);
+    return await new Promise((res, _) => {
+        require('axios').default.get('https://api.mcsrvstat.us/2/anarchyvn.net').then(response => {
+            const data = response.data?.info?.clean;
+            if (!data) return res(-1);
+            const queue = data[1].split('chờ: ')[1];
+            res(+queue);
+        }).catch(err => {
+            log(err.message);
+            res(-1);
+        });
     });
 }
 module.exports.solveAlotMessage = (bot) => {
