@@ -22,10 +22,11 @@ module.exports.getQueue = async () => {
     });
 }
 module.exports.solveAlotMessage = (bot) => {
-    if (bot.data.arrayMessages.length > 0) {
+    const msgs = bot.data.arrayMessages.length;
+    if (msgs > 0) {
         if (bot.dev) log('[DEV]: ' + bot.data.arrayMessages[0]);
         else bot.chat(bot.data.arrayMessages[0]);
         bot.data.arrayMessages.shift();
+        if (msgs > 1) setTimeout(() => this.solveAlotMessage(bot), 5000);
     }
-    setTimeout(() => this.solveAlotMessage(bot), 5 * 1000);
 }

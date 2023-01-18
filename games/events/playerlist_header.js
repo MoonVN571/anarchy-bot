@@ -28,14 +28,9 @@ module.exports = {
         if (!bot.data.checkInfo) {
             setTimeout(() => bot.data.checkInfo = true, 1 * 60 * 1000);
             bot.data.checkInfo = false;
-            let content = footer[1].trim();
-            let tps = content.split(' tps')[0];
-            let players = +content.split(' players')[0].split('    ')[1];
-            let ping = +content.split(' ping')[0].split('    ')[2];
-            let queue = await getQueue();
-            if (tps == 'Perfect') tps = 20;
-            else if (tps) tps = +tps;
-            let data = await server.findOne({});
+            const { tps, players, ping } = await getInfo();
+            const queue = await getQueue();
+            const data = await server.findOne({});
             if (!data && tps) {
                 await server.create({ last_updated: Date.now(), tps: tps, players: players, ping: ping });
             } else if (tps) {
@@ -47,6 +42,21 @@ module.exports = {
                 data.save();
             }
         }
+        let serverData = await getInfo();
+        bot.data.tps = serverData.tps;
+        async function getInfo() {
+            let content = footer[1].trim();
+            let tps = content.split(' tps')[0];
+            let players = +content.split(' players')[0].split('    ')[1];
+            let ping = +content.split(' ping')[0].split('    ')[2];
+            if (tps == 'Perfect') tps = 20;
+            else if (tps) tps = +tps;
+            return {
+                tps: tps,
+                players: players,
+                ping: ping
+            }
+        }
         if (!bot.data.nextCheckTab) {
             setTimeout(() => bot.data.nextCheckTab = false, 10 * 60 * 1000);
             bot.data.nextCheckTab = true;
@@ -54,7 +64,7 @@ module.exports = {
                 `\nJoined <t:${parseInt(bot.data.uptime / 1000)}:R>, last updated <t:${parseInt(Date.now() / 1000)}:R>`
                 + '\n' + header.join("\n") + " \n" + footer.join("\n");
             if (bot.data.mainServer)
-                bot.client.channels.cache.get(require("..").channel.livechat).setTopic(completeStr);
+                bot.client.channels.cache.get(bot.channel.livechat).setTopic(completeStr);
         }
     }
 }

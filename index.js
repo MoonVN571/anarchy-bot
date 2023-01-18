@@ -14,22 +14,28 @@ module.exports = {
 };
 client.dev = false;
 const { log } = require('./functions/utils');
+// Events
 client.once('ready', () => {
     log(`${client.user.tag} is online!`);
-    require('./games').createBot();
+    const Game = require('./games');
+    const bot = new Game();
+    bot.create();
 });
 client.rest.on('rateLimited', (info, data) => {
     if (client.dev) console.log(info, data);
 });
+// Command handler
 client.commands = new Collection();
 readdirSync('./commands').forEach(cmdName =>
     client.commands.set(cmdName.split(".")[0], require('./commands/' + cmdName))
 );
+// MongoDB
 mongoose.set('strictQuery', true);
 mongoose.connect(process.env.MONGO_STRING, {}).then(() => {
     console.log("Connected to MongoDB!");
     client.login(process.env.TOKEN, console.error);
 });
+// Catch errors
 process.on('uncaughtException', (error) => {
     console.log(error);
     let message = error.stack;

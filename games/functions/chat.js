@@ -1,6 +1,5 @@
 const { Colors } = require('discord.js');
 const client = require('../../index').discord;
-const globalChannel = require('../../games/index').channel;
 const stats = require('./stats');
 const { log } = require('../../functions/utils');
 const livechat_color = {
@@ -40,7 +39,7 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
             || content == 'CS: You are using too many caps!'
             || content.endsWith("left the game")
             || content.endsWith("joined the game")
-        )) sendMessage(globalChannel.server, { embeds: [embed] });
+        )) sendMessage(bot.channel.server, { embeds: [embed] });
     if (color == livechat_color.whisper) log(content);
     countMsgs++;
     setTimeout(() => countMsgs--, 1500);
@@ -50,7 +49,7 @@ module.exports.sendGlobalChat = async (bot, content, username, message) => {
         flagged = true;
     }
     if (flagged && messages.length < 10) return;
-    sendMessage(globalChannel.livechat, { embeds: messages });
+    sendMessage(bot.channel.livechat, { embeds: messages });
     messages = [];
 }
 function escapeFormat(content) {
