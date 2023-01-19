@@ -4,7 +4,7 @@ module.exports.getPlayersList = (bot) => {
     return players;
 }
 module.exports.isOnline = (bot, username) => {
-    if (this.getPlayersList(bot).find(username)) return true;
+    if (this.getPlayersList(bot).find(u=> u == username)) return true;
     else return false;
 }
 module.exports.getPlayersDataList = (bot) => {
