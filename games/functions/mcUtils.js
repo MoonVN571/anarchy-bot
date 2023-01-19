@@ -3,6 +3,10 @@ module.exports.getPlayersList = (bot) => {
     const players = Object.values(bot.players).map(d => d.username);
     return players;
 }
+module.exports.isOnline = (bot, username) => {
+    if (this.getPlayersList(bot).find(username)) return true;
+    else return false;
+}
 module.exports.getPlayersDataList = (bot) => {
     if (!bot?.players) return [];
     const players = Object.values(bot.players).map(d => d);

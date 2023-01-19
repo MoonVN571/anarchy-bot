@@ -36,8 +36,9 @@ class Bot {
         // Game events
         readdirSync('./games/events').forEach(eventName => {
             const event = require('./events/' + eventName);
-            if (event.other) bot._client[event.once ? 'once' : 'on'](event.name, (...args) => event.execute(bot, ...args));
-            else bot[event.once ? 'once' : 'on'](event.name, (...args) => event.execute(bot, ...args));
+            let call = bot;
+            if (event.other) call = bot._client;
+            call[event.once ? 'once' : 'on'](event.name, (...args) => event.execute(bot, ...args));
         });
         // Djs events
         client.on('messageCreate', message => {
@@ -58,6 +59,7 @@ class Bot {
         });
     }
 }
+// Livechat commands
 function runCommand(message) {
     const args = message.content.slice(setting.botPrefix.length).trim().split(/ +/);
     const cmdName = args.shift().toLowerCase();

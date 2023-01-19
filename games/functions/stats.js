@@ -1,4 +1,4 @@
-const { getPlayersList } = require('./mcUtils');
+const { getPlayersList, isOnline } = require('./mcUtils');
 const stats = require('../../databases/stats');
 const msgs = require('../../databases/msgs');
 module.exports.isDeathMsgs = (bot, msg) => {
@@ -68,7 +68,7 @@ async function saveDeathMsgs(username, message) {
     await db.save();
 }
 async function saveDeaths(bot, username, message) {
-    if (getPlayersList(bot).indexOf(username) < 0) return;
+    if (!isOnline(bot, username)) return;
     bot.data.deathList.push(username);
     setTimeout(() => bot.data.deathList = bot.data.deathList.filter(name => username !== name), 5000);
     saveDeathMsgs(username, message);
@@ -83,7 +83,7 @@ async function saveDeaths(bot, username, message) {
     kdData.save();
 }
 async function saveKills(bot, username, message) {
-    if (getPlayersList(bot).indexOf(username) < 0) return;
+    if (!isOnline(bot, username)) return;
     saveKillMsgs(username, message);
     const kdData = await stats.findOne({
         username: {

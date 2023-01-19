@@ -1,5 +1,5 @@
 const { sendGlobalChat } = require('../functions/chat');
-const { solveAlotMessage } = require('../functions/mcUtils');
+const { solveAlotMessage, isOnline } = require('../functions/mcUtils');
 const { log } = require('../../functions/utils');
 const msgs = require('../../databases/msgs');
 module.exports = {
@@ -25,13 +25,12 @@ module.exports = {
             // replace rank
             if (firstMsg.startsWith("<[")) lastMsg = content.split(" ")[0].split("]")[1] + msgArr.slice(1).join(' ');
             // replace <>
-            lastMsg = lastMsg.replace(/\<|\>|\~|\:/g, '');
-            username = lastMsg.split(' ')[0];
+            username = lastMsg.split(' ')[0]?.replace(/\<|\>|\~|\:/g, '');
             message = lastMsg.split(' ').slice(1).join(" ");
         }
         sendGlobalChat(bot, content, username, message);
         if (!username || !message) return;
-        saveMessage(username, message);
+        saveMessage(bot, username, message);
         if (!message.startsWith(bot.setting.gamePrefix)) return;
         let args = message.trim().slice(bot.setting.gamePrefix.length).split(/ +/g);
         const cmdName = args.shift();
@@ -49,8 +48,9 @@ module.exports = {
     }
 }
 
-async function saveMessage(username, message) {
+async function saveMessage(bot, username, message) {
     if (!username || !message) return;
+    if (!isOnline(bot, username)) return;
     db = await msgs.findOne({
         username: {
             $regex: new RegExp(`^${username}$`), $options: 'i'
