@@ -18,7 +18,7 @@ module.exports = {
         },
         error: '993499095694057484',
         logs: '995305343456382976'
-    },
+    }, 
     authType: 'AdvancedLogin', // AuthMe, AdvancedLogin
     advancedLogin: {
         title: ': Enter Pin',
