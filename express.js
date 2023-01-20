@@ -6,12 +6,12 @@ app.all('*', (req, res, next) => {
     if (req.hostname.startsWith('api.')) next();
 });
 app.get('/', (req, res) => {
-    console.log('[', new Date().toLocaleString(), `] Request success`);
+    console.log(`[${new Date().toLocaleString()}] Request success`);
     res.send(require('./api.json'));
 });
 app.use(data_route);
 app.all('*', (req, res) => {
-    console.log('[', new Date().toLocaleString(), `] Invalid request`);
+    console.log(`[${new Date().toLocaleString()}] Invalid request`);
     res.send({
         statusCode: 404,
         msg: 'Invalid arguments!'
