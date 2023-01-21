@@ -28,8 +28,8 @@ module.exports = {
         if (!bot.data.checkInfo) {
             setTimeout(() => bot.data.checkInfo = true, 1 * 60 * 1000);
             bot.data.checkInfo = false;
-            const { tps, players, ping } = await getInfo();
-            const queue = getQueue();
+            const { tps, players, ping } = getInfo();
+            const queue = await getQueue();
             const data = await server.findOne({});
             if (!data && tps) {
                 await server.create({ last_updated: Date.now(), tps: tps, players: players, ping: ping });
