@@ -40,11 +40,11 @@ async function saveKillMsgs(username, message) {
         }
     });
     if (!db) db = await msgs.create({ username: username });
-    if (!db.first_kills) db['first_kills'] = {
+    if (!db.first_kills) db['first_kill'] = {
         msg: message,
         time: Date.now()
     };
-    db['last_kills'] = {
+    db['last_kill'] = {
         msg: message,
         time: Date.now()
     };
