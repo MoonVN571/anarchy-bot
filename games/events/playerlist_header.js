@@ -29,7 +29,7 @@ module.exports = {
             setTimeout(() => bot.data.checkInfo = true, 1 * 60 * 1000);
             bot.data.checkInfo = false;
             const { tps, players, ping } = await getInfo();
-            const queue = await getQueue();
+            const queue = getQueue();
             const data = await server.findOne({});
             if (!data && tps) {
                 await server.create({ last_updated: Date.now(), tps: tps, players: players, ping: ping });
@@ -42,10 +42,11 @@ module.exports = {
                 data.save();
             }
         }
-        let serverData = await getInfo();
+        let serverData = getInfo();
         bot.data.tps = serverData.tps;
-        async function getInfo() {
-            let content = footer[1].trim();
+        function getInfo() {
+            let content = footer[1]?.trim();
+            if (!content) return { tps: 0, ping: 0, players: 1 };
             let tps = content.split(' tps')[0];
             let players = +content.split(' players')[0].split('    ')[1];
             let ping = +content.split(' ping')[0].split('    ')[2];
