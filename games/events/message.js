@@ -7,6 +7,7 @@ module.exports = {
     execute(bot, msg) {
         const content = msg.toString();
         if (!content) return;
+        // console.log(`[${content}]`);
         const setting = bot.setting;
         if (setting.authType == 'AdvancedLogin' && content == setting.advancedLogin.joinCmdMessage)
             bot.chat(setting.advancedLogin.joinCmd);

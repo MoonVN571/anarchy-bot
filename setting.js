@@ -21,7 +21,6 @@ module.exports = {
     },
     authType: 'AdvancedLogin', // AuthMe, AdvancedLogin
     advancedLogin: {
-        title: ': Enter Pin',
         slotInvClick: 63,
         slotClick: 13,
         joinCmdMessage: ' dùng lệnh/anarchyvn  để vào server.',
