@@ -19,6 +19,7 @@ module.exports.getDorHMS = (temp, fulltime) => {
 module.exports.log = (...string) => {
     let timeFormat =
         `[${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_minh' })}]`;
+    if (string.find(str => str == 'AvocadoBot')) return;
     const msg = `${timeFormat} ${string.join(' ')}`;
     console.log(msg);
     if (!client.dev) client.channels.cache.get(setting.channel.logs).send(msg);
