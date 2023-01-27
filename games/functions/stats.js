@@ -1,16 +1,14 @@
 const { getPlayersList, isOnline } = require('./mcUtils');
 const stats = require('../../databases/stats');
 const msgs = require('../../databases/msgs');
-module.exports.isDeathMsgs = (bot, msg) => {
-    const message = msg.split(bot.setting.stats.prefix).slice(1).join(" ");
+module.exports.isDeathMsgs = (bot, message) => {
     const settings = bot.setting.stats;
     if (message.match(settings.deaths)
         || message.match(settings.killAfter)
         || message.match(settings.killBefore)
         || message.match(settings.noStats)) return true;
 }
-module.exports.save = async (bot, msg) => {
-    const message = msg.split(bot.setting.stats.prefix).slice(1).join(" ");
+module.exports.save = async (bot, message) => {
     const settings = bot.setting;
     let deathsRegex = settings.stats.deaths;
     let killAfterRegex = settings.stats.killAfter;
