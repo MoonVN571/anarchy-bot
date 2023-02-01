@@ -3,7 +3,7 @@ const seen = require('../../databases/seen');
 module.exports = {
     name: 'playerLeft',
     async execute(bot, player) {
-        if ((!bot.data.mainServer && player.username !== bot.username)
+        if (!bot.data.mainServer
             || bot.data.deathList.indexOf(player.username) > -1) return;
         sendGlobalChat(bot, player.username + ' đã thoát khỏi server.');
         let seenData = await seen.findOne({
