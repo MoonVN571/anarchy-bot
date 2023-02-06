@@ -1,5 +1,4 @@
 module.exports = {
-    // our bot setting on main bot
     botPrefix: '$',
     gamePrefix: '!',
     botOwner: '497768011118280716',
