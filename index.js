@@ -1,6 +1,8 @@
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { readdirSync } = require('fs');
 const mongoose = require('mongoose');
+const express = require('express');
+const app = express();
 require('dotenv').config();
 const client = new Client({
     intents: [
@@ -35,6 +37,11 @@ mongoose.connect(process.env.MONGO_STRING, {}).then(() => {
     console.log("Connected to MongoDB!");
     client.login(process.env.TOKEN, console.error);
 });
+// Express
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+})
+app.listen(process.env.PORT || 3000, () => console.log('Listening'));
 // Catch errors
 process.on('uncaughtException', (error) => {
     console.log(error);
