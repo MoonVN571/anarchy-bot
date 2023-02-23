@@ -16,7 +16,7 @@ class Bot {
             host: 'anarchyvn.net',
             port: 25565,
             username: setting.botName[!client.dev ? 'main' : 'dev'],
-            version: '1.12.2'
+            version: '1.16.5'
         });
         bot.destroy = (time) => {
             setTimeout(() => process.exit(), time || 0);
