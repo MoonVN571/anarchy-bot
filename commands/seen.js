@@ -14,7 +14,7 @@ module.exports = {
         if (!data) return bot.sendMessage('whisper', bot.notFoundPlayers);
         const date = new Date(data.time);
         bot.sendMessage('whisper', `Nhìn thấy ${name} lần cuối lúc `
-            + `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
+            + `${date.toLocaleString()}`
             + ` (${getDorHMS((Date.now() - data.time) / 1000, false)} trước)`);
     }
 }
