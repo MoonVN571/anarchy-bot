@@ -42,7 +42,7 @@ export class Minecraft {
 			autoMessage: {
 				enabled: true,
 				msgs: [
-					"Xem livechat tại: bit.ly/mo0nbot",
+					"Xem livechat tại discord: bit.ly/mo0nbot2",
 				],
 				interval: 5 * 60 * 1000,
 			},
