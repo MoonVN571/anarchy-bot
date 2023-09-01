@@ -1,27 +1,40 @@
 {
-  "name": "2y2c-bot",
-  "version": "5.0.0",
-  "description": "Một project hoàn toàn mới với bot được viết lại hoàn toàn",
-  "main": "index.js",
+  "name": "anarchy-bot",
+  "version": "2.0.0",
+  "description": "Bot anarchy server Minecraft",
+  "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run build && node ./dist/index.js",
+    "build": "tsc --project tsconfig.json",
+    "lint": "eslint . --ext .ts --fix"
   },
   "keywords": [],
   "author": "Moon",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.2.2",
-    "discord.js": "^14.7.1",
+    "axios": "^1.4.0",
+    "discord.js": "^14.13.0",
     "dotenv": "^16.0.3",
-    "mineflayer": "^4.0.0",
-    "mongoose": "^6.8.2"
+    "mineflayer": "^4.13.0",
+    "mineflayer-pathfinder": "^2.4.4",
+    "prismarine-chat": "^1.8.0",
+    "signale": "^1.4.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MoonVN571/anarchy-bot.git"
+  "devDependencies": {
+    "@types/signale": "^1.4.4",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "eslint": "^8.39.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
   },
-  "bugs": {
-    "url": "https://github.com/MoonVN571/anarchy-bot/issues"
-  },
-  "homepage": "https://github.com/MoonVN571/anarchy-bot#readme"
+  "signale": {
+    "displayScope": true,
+    "displayBadge": true,
+    "displayDate": true,
+    "displayLabel": true,
+    "displayTimestamp": true,
+    "underlineLabel": true
+  }
 }
