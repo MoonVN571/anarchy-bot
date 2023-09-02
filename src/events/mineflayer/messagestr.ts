@@ -61,8 +61,10 @@ function livechat(main: Minecraft, serverMsg: string) {
 		if (isWhisperMsg(serverMsg)) msgType = MessageType.Whisper;
 		if (isAchievementMsg(serverMsg)) msgType = MessageType.Achievement;
 		if (username === main.bot.username) msgType = MessageType.BotChat;
-		if (serverMsg.endsWith("joined the game.") || serverMsg.endsWith("đã tham gia")) msgType = MessageType.Join;
-		if (serverMsg.endsWith("left the game.")) msgType = MessageType.Quit;
+		if (serverMsg.endsWith("joined the game.") || serverMsg.endsWith("đã tham gia")
+			|| serverMsg.startsWith("+ ")) msgType = MessageType.Join;
+		if (serverMsg.endsWith("left the game.")
+			|| serverMsg.startsWith("- ")) msgType = MessageType.Quit;
 	} else {
 		// livechat style
 		let prefix = `**<${username}>**`;
@@ -72,7 +74,7 @@ function livechat(main: Minecraft, serverMsg: string) {
 		if (message.startsWith(">")) msgType = MessageType.HighlightChat;
 	}
 
-	messages.push({ type: msgType, msg,server: main.config.serverInfo.ip });
+	messages.push({ type: msgType, msg, server: main.config.serverInfo.ip });
 
 	// ratelimit
 	const { rateLimitFlags } = main.config.livechat;
@@ -173,7 +175,7 @@ function extractAllText(formattedText: object) {
 
 function escapeDiscordFormat(text: string): string {
 	// Các format cần thêm "\"
-	const formats = ["*", "_", "~", "`"];
+	const formats = ["*", "_", "~", "`", "-", "#"];
 
 	// Sử dụng biểu thức chính quy để tìm và thay thế các format
 	const regex = new RegExp(`(${formats.map(format => `\\${format}`).join("|")})`, "g");
@@ -181,22 +183,20 @@ function escapeDiscordFormat(text: string): string {
 }
 
 function parseUserMessage(input: string) {
-	const regex = /^<(\w*)>\s*(.*)$|(\w*)\s*>>\s*(.*)$|\*(\w*)\s*>>\s*(.*)$|^<\[([^\]]+)\](\w*)>\s*(.*)$|^<\[([^\]]+)\](\w*)>\s*(.*)$/;
+	const regex = /(?:^<(\w+)>\s*(.*)$)|(?:^(MEMBER|Donator\+?)\s*(\*\w+)\s*➡\s*(.*))|(?:^<\[([^\]]+)\](\w+)>\s*(.*))|(?:^<\[([^\]]+)\](\w+)>\s*(.*))/;
 	const matches = input.match(regex);
 
 	if (matches) {
-		const [, username1, message1, username2, message2, username3, message3, rank1, username4, message4, rank2, username5, message5] = matches;
+		const [, username1, message1, rank2, username2, message2, rank3, username3, message3, rank4, username4, message4] = matches;
 
 		if (username1) {
 			return { username: username1, message: message1 };
-		} else if (username2) {
-			return { username: username2, message: message2 };
-		} else if (username3) {
-			return { username: `*${username3}`, message: message3 };
-		} else if (rank1 && username4) {
-			return { rank: rank1, username: username4, message: message4 };
-		} else if (rank2 && username5) {
-			return { rank: rank2, username: username5, message: message5 };
+		} else if (rank2 && username2) {
+			return { rank: rank2, username: username2, message: message2 };
+		} else if (rank3 && username3) {
+			return { rank: rank3, username: username3, message: message3 };
+		} else if (rank4 && username4) {
+			return { rank: rank4, username: username4, message: message4 };
 		}
 	}
 
