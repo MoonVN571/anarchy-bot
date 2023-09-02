@@ -7,6 +7,6 @@ export class Express {
         this.express.all("/", (req,res) => {
             res.status(200).send("Hello world");
         });
-        this.express.listen(process.env.PORT || 80);
+        this.express.listen(8080);
     }
 }
