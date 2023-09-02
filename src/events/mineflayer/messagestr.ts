@@ -140,6 +140,17 @@ function login(main: Minecraft, serverMsg: string) {
 		main.bot.chat("/anarchyvn");
 	}
 
+	if (serverMsg === "+ MEMBER " + main.bot.username) {
+		main.currentServer = Server.Queue;
+		main.bot.pathfinder.setGoal(new goals.GoalNear(3, 202, 25, 1));
+		const click = () => {
+			if (main.currentServer === Server.Main) return;
+			main.bot.activateEntity(main.bot.nearestEntity());
+			setTimeout(click, 5 * 1000);
+		};
+		click();
+	}
+
 	if (serverMsg === "(!) Đăng nhập thành công!") {
 		main.currentServer = Server.Queue;
 		const entityData = Object.values(main.bot.entities);
@@ -183,24 +194,29 @@ function escapeDiscordFormat(text: string): string {
 }
 
 function parseUserMessage(input: string) {
-	const regex = /(?:^<(\w+)>\s*(.*)$)|(?:^(MEMBER|Donator\+?)\s*(\*\w+)\s*➡\s*(.*))|(?:^<\[([^\]]+)\](\w+)>\s*(.*))|(?:^<\[([^\]]+)\](\w+)>\s*(.*))/;
+	const regex = /^<(\w+)>\s+(.*)$|^MEMBER\s+(\w+)\s+➡\s+(.*)$|^MEMBER\s+\*(\w+)\s+➡\s+(.*)$|^(\w+)\s+>>\s+(.*)$|^\*(\w+)\s+>>\s+(.*)$|^<\[([^\]]+)\](\w+)>\s+(.*)$|^<\[([^\]]+)\](\w+)>\s+(.*)$/;
 	const matches = input.match(regex);
 
 	if (matches) {
-		const [, username1, message1, rank2, username2, message2, rank3, username3, message3, rank4, username4, message4] = matches;
+		const [, username1, message1, username2, message2, username3, message3, username4, message4, username5, message5, rank1, username6, message6, rank2, username7, message7] = matches;
 
 		if (username1) {
-			return { username: username1, message: message1 };
-		} else if (rank2 && username2) {
-			return { rank: rank2, username: username2, message: message2 };
-		} else if (rank3 && username3) {
-			return { rank: rank3, username: username3, message: message3 };
-		} else if (rank4 && username4) {
-			return { rank: rank4, username: username4, message: message4 };
+			return { rank: null, username: username1, message: message1 };
+		} else if (username2) {
+			return { username: username2, message: message2 };
+		} else if (username3) {
+			return { username: username3, message: message3 };
+		} else if (username4) {
+			return { rank: null, username: username4, message: message4 };
+		} else if (username5) {
+			return { rank: null, username: username5, message: message5 };
+		} else if (rank1) {
+			return { rank: rank1, username: username6, message: message6 };
+		} else if (rank2) {
+			return { rank: rank2, username: username7, message: message7 };
 		}
 	}
-
-	return { username: null, message: input };
+	return { rank: null, username: null, message: input };
 }
 
 function isWhisperMsg(inputString: string) {
