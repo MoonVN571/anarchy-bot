@@ -1,5 +1,5 @@
 import { ActivityType, GatewayIntentBits, Partials } from "discord.js";
-import { Discord, Minecraft } from "./structures";
+import { Discord, Express, Minecraft } from "./structures";
 import { ServerIp } from "./types";
 
 const client = new Discord({
@@ -15,6 +15,8 @@ const client = new Discord({
 	},
 	partials: [Partials.Message, Partials.Message, Partials.GuildMember, Partials.User],
 });
+
+new Express();
 
 client.on("ready", () => {
 	// new Minecraft(client, {
