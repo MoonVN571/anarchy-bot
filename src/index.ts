@@ -27,6 +27,7 @@ client.on("ready", () => {
 
 	new Minecraft(client, {
 		ip: ServerIp.anarchyVN,
+		auth: "offline",
 		version: "1.19.4",
 		livechat: client.dev ? "987204059838709780" : "1001826269664661616",
 	});
@@ -34,6 +35,7 @@ client.on("ready", () => {
 	new Minecraft(client, {
 		ip: ServerIp.viAnarchy,
 		version: "1.20.1",
+		auth: "microsoft",
 		livechat: client.dev ? "987204059838709780" : "1146392891552432158",
 	});
 });

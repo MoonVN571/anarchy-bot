@@ -22,6 +22,7 @@ export interface DefaultOptions {
 
 export interface ServerInfo {
     ip: ServerIp;
+    auth: 'microsoft' | 'offline';
     version: string;
     livechat: string;
 }

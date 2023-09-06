@@ -55,6 +55,9 @@ export class Minecraft {
 		this.config.serverInfo = serverInfo;
 		this.config.livechat.channelId = serverInfo.livechat;
 
+		if (this.config.serverInfo.auth == 'offline')
+			this.config.username = process.env.USERNAME;
+
 		this.client.on("messageCreate", message => {
 			if (message.author.bot || !this.joined || this.currentServer !== Server.Main) return;
 			if (message.channel?.id === this.config.livechat.channelId) {
@@ -75,7 +78,7 @@ export class Minecraft {
 			host: this.config.serverInfo.ip,
 			username: this.config.username,
 			version: this.config.serverInfo.version,
-			auth: this.config.auth
+			auth: this.config.serverInfo.auth,
 		});
 		this.bot.loadPlugin(pathfinder);
 
