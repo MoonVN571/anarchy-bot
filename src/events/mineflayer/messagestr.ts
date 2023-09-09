@@ -131,9 +131,7 @@ function login(main: Minecraft, serverMsg: string) {
 		|| serverMsg === "[⚠] Sử dụng: /register <mật khẩu> <nhập lại mật khẩu>.")
 		main.bot.chat(`/reg ${password} ${password}`);
 
-	if (serverMsg === "[✔] Bạn đã đăng nhập thành công."
-		|| serverMsg === "[✔] Bạn đã đăng kí thành công."
-		|| serverMsg === "đang vào AnarchyVN...") {
+	if (serverMsg === "đang vào AnarchyVN...") {
 		main.currentServer = Server.Main;
 	}
 
@@ -141,7 +139,8 @@ function login(main: Minecraft, serverMsg: string) {
 		main.bot.chat("/anarchyvn");
 	}
 
-	if (serverMsg === "+ MEMBER " + main.bot.username) {
+	if (serverMsg === "[✔] Bạn đã đăng nhập thành công."
+		|| serverMsg === "[✔] Bạn đã đăng kí thành công.") {
 		main.currentServer = Server.Queue;
 		main.bot.pathfinder.setGoal(new goals.GoalNear(3, 202, 25, 1));
 		const click = () => {
