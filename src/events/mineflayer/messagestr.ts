@@ -131,7 +131,8 @@ function login(main: Minecraft, serverMsg: string) {
 		|| serverMsg === "[⚠] Sử dụng: /register <mật khẩu> <nhập lại mật khẩu>.")
 		main.bot.chat(`/reg ${password} ${password}`);
 
-	if (serverMsg === "Bạn đã được tự động đăng nhập vì sử dụng tài khoản premium."
+	if (serverMsg === "[✔] Bạn đã đăng nhập thành công."
+		|| serverMsg === "[✔] Bạn đã đăng kí thành công."
 		|| serverMsg === "đang vào AnarchyVN...") {
 		main.currentServer = Server.Main;
 	}
