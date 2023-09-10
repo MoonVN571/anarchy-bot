@@ -127,7 +127,7 @@ function login(main: Minecraft, serverMsg: string) {
 		|| serverMsg === "[⚠] Sử dụng: /login <mật khẩu>.")
 		main.bot.chat(`/login ${password}`);
 
-	if (serverMsg === "(!) Đăng ký với lệnh \"/reg <mật khẩu> <nhập lại mật khẩu>"
+	if (serverMsg === "[⚠] Đăng ký với lệnh \"/reg <mật khẩu> <nhập lại mật khẩu>"
 		|| serverMsg === "[⚠] Sử dụng: /register <mật khẩu> <nhập lại mật khẩu>.")
 		main.bot.chat(`/reg ${password} ${password}`);
 
