@@ -139,14 +139,14 @@ function login(main: Minecraft, serverMsg: string) {
 		main.bot.chat("/anarchyvn");
 	}
 
-	if (serverMsg === "[✔] Bạn đã đăng nhập thành công."
+	if (serverMsg === "[✔] Đăng nhập thành công!"
 		|| serverMsg === "[✔] Bạn đã đăng kí thành công.") {
 		main.currentServer = Server.Queue;
-		main.bot.pathfinder.setGoal(new goals.GoalNear(3, 202, 25, 1));
+		main.bot.pathfinder.setGoal(new goals.GoalNear(3, 202, 25, 0));
 		const click = () => {
 			if (main.currentServer === Server.Main) return;
 			main.bot.activateEntity(main.bot.nearestEntity());
-			setTimeout(click, 5 * 1000);
+			setTimeout(click, 10 * 1000);
 		};
 		click();
 	}
