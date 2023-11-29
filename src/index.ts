@@ -32,12 +32,12 @@ client.on("ready", () => {
 		livechat: client.dev ? "987204059838709780" : "1001826269664661616",
 	});
 
-	new Minecraft(client, {
-		ip: ServerIp.viAnarchy,
-		version: "1.20.1",
-		auth: "offline",
-		livechat: client.dev ? "987204059838709780" : "1146392891552432158",
-	});
+	// new Minecraft(client, {
+	// 	ip: ServerIp.viAnarchy,
+	// 	version: "1.20.1",
+	// 	auth: "offline",
+	// 	livechat: client.dev ? "987204059838709780" : "1146392891552432158",
+	// });
 });
 
 client.start();
