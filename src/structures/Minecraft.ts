@@ -42,9 +42,12 @@ export class Minecraft {
 			autoMessage: {
 				enabled: true,
 				msgs: [
-					"Xem livechat tại discord: bit.ly/mo0nbot2",
+					"Server lưu trữ tin nhắn hơn 25.000 players và hơn 11 triệu tin nhắn tại discord: bit.ly/mo0nbot2",
+					"Bot đời đầu tại 2y2c anarchy, ghé discord bit.ly/mo0nbot2 để ủng hộ <3",
+					"Cập nhật livechat các server anarchy tại: bit.ly/mo0nbot2",
+					"Tin nhắn được gửi mỗi 15 phút, hiện tại là {time}"
 				],
-				interval: 5 * 60 * 1000,
+				interval: 15 * 60 * 1000,
 			},
 		},
 	};
@@ -55,7 +58,7 @@ export class Minecraft {
 		this.config.serverInfo = serverInfo;
 		this.config.livechat.channelId = serverInfo.livechat;
 
-		if (this.config.serverInfo.auth == 'offline')
+		if (this.config.serverInfo.auth == "offline")
 			this.config.username = process.env.USERNAME;
 
 		this.client.on("messageCreate", message => {
