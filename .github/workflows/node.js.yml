@@ -1,0 +1,42 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Node.js CI/CD
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ main ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - name: Save .env file
+      run: |
+        cp .env ../.env
+  
+    - uses: actions/checkout@v2
+    - name: Use Node ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Restore .env file
+      run: |
+        cp ../.env .env
+  
+    - run: |
+        rm -rf dist
+        npm i --if-present
+        npm run build
+        cd ..
+        pm2 restart dist --max-memory-restart 300M --cron-restart="0 0 * * *"
+        pm2 save
