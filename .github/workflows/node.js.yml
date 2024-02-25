@@ -34,9 +34,8 @@ jobs:
         cp ../.env .env
   
     - run: |
-        rm -rf dist
         npm i --if-present
         npm run build
         cd ..
-        pm2 restart dist --max-memory-restart 300M --cron-restart="0 0 * * *"
+        pm2 restart anarchy-bot --max-memory-restart 300M --cron-restart="0 0 * * *"
         pm2 save
