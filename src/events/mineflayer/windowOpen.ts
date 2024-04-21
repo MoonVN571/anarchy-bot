@@ -3,6 +3,8 @@ import { Minecraft } from "../../structures";
 export async function execute(main: Minecraft, window) {
 	window.requiresConfirmation = false;
 
+	main.client.logger.info(`Slot: ${window.slots.length}`);
+
 	switch (window.slots.length) {
 		case 46: {
 			const pin = main.config.pin.map(pin => +pin);
