@@ -34,8 +34,7 @@ jobs:
         cp ../.env .env
   
     - run: |
-        npm i --if-present
+        bun install
         npm run build
-        cd ..
         pm2 restart anarchy-bot --max-memory-restart 300M --cron-restart="0 0 * * *"
         pm2 save
