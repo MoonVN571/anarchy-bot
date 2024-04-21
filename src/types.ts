@@ -10,6 +10,7 @@ export enum ServerIp {
     twoYtwoC = "2y2c.org",
     viAnarchy = "vianarchy.net",
     anarchyVN = "anarchyvn.net",
+    _2A2BOrg = "2a2b.org",
 }
 
 export interface DefaultOptions {

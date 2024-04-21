@@ -164,6 +164,20 @@ function login(main: Minecraft, serverMsg: string) {
 		};
 		click();
 	}
+
+	if (serverMsg === "Bảo mật > Vui lòng đăng ký với /register <mật khẩu>")
+		main.bot.chat(`/register ${password} ${password}`);
+
+	if (serverMsg === "Bảo mật > Vui lòng đăng nhập bằng cách sử dụng /login <mật khẩu>")
+		main.bot.chat(`/login ${password}`);
+
+	if (serverMsg === "Bảo mật > Bạn đã đăng nhập thành công.") {
+		setTimeout(() => {
+			// console.log(main.bot.inventory)
+			main.bot.setQuickBarSlot(4);
+			main.bot.activateItem(); // middle hotbar
+		}, 7 * 1000);
+	}
 }
 
 function extractAllText(formattedText: object) {
