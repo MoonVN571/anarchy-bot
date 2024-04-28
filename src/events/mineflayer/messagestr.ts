@@ -124,11 +124,13 @@ function livechat(main: Minecraft, serverMsg: string) {
 function login(main: Minecraft, serverMsg: string) {
 	const { password } = main.config;
 	if (serverMsg === "(!) Đăng nhập bằng lệnh \"/login <mật khẩu>\""
-		|| serverMsg === "[⚠] Đăng nhập bằng lệnh \"/login <mật khẩu>\"")
+		|| serverMsg === "[⚠] Đăng nhập bằng lệnh \"/login <mật khẩu>\""
+		|| serverMsg === " Hãy nhập lệnh : /login < mật khẩu của bạn> để vào server ")
 		main.bot.chat(`/login ${password}`);
 
 	if (serverMsg === "(!) Đăng ký với lệnh \"/reg <mật khẩu> <nhập lại mật khẩu>"
-		|| serverMsg === "[⚠] Đăng ký với lệnh \"/reg <mật khẩu> <nhập lại mật khẩu>")
+		|| serverMsg === "[⚠] Đăng ký với lệnh \"/reg <mật khẩu> <nhập lại mật khẩu>"
+		|| serverMsg === " Hãy đăng ký tài khoản bằng lệnh : /register <mật khẩu bạn muốn đặt> <nhập lại mật khẩu")
 		main.bot.chat(`/reg ${password} ${password}`);
 
 	if (serverMsg === "đang vào AnarchyVN...") {
@@ -137,6 +139,10 @@ function login(main: Minecraft, serverMsg: string) {
 
 	if (serverMsg === " dùng lệnh/anarchyvn để vào server Anarchy.") {
 		main.bot.chat("/anarchyvn");
+	}
+
+	if (serverMsg === " Đăng nhập thành công!") {
+		main.bot.activateItem();
 	}
 
 	if (serverMsg === "[✔] Đăng nhập thành công!"
