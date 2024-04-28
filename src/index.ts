@@ -46,6 +46,13 @@ client.on("ready", () => {
 	// 	auth: "microsoft",
 	// 	livechat: client.dev ? "987204059838709780" : "1231592483780300872",
 	// });
+
+	new Minecraft(client, {
+		ip: ServerIp.MCVui,
+		version: "1.20.4",
+		auth: "offline",
+		livechat: client.dev ? "987204059838709780" : "1234031355659157588",
+	});
 });
 
 client.start();

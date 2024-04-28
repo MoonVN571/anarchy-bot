@@ -11,6 +11,7 @@ export enum ServerIp {
     viAnarchy = "vianarchy.net",
     anarchyVN = "vinamc.net",
     _2A2BOrg = "2a2b.org",
+    MCVui = "mcvui.net",
 }
 
 export interface DefaultOptions {

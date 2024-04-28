@@ -50,6 +50,8 @@ export async function execute(main: Minecraft, serverMsg: string) {
 }
 
 function livechat(main: Minecraft, serverMsg: string) {
+	if (!serverMsg) return;
+
 	const { username, message, rank } = parseUserMessage(serverMsg.trim());
 
 	// color, escape discord format
@@ -123,17 +125,13 @@ function livechat(main: Minecraft, serverMsg: string) {
 
 function login(main: Minecraft, serverMsg: string) {
 	const { password } = main.config;
-	if (serverMsg === "(!) Đăng nhập bằng lệnh \"/login <mật khẩu>\""
-		|| serverMsg === "[⚠] Đăng nhập bằng lệnh \"/login <mật khẩu>\""
-		|| serverMsg === " Hãy nhập lệnh : /login < mật khẩu của bạn> để vào server ")
+	if (serverMsg.includes("/l") || serverMsg.includes("/login"))
 		main.bot.chat(`/login ${password}`);
 
-	if (serverMsg === "(!) Đăng ký với lệnh \"/reg <mật khẩu> <nhập lại mật khẩu>"
-		|| serverMsg === "[⚠] Đăng ký với lệnh \"/reg <mật khẩu> <nhập lại mật khẩu>"
-		|| serverMsg === " Hãy đăng ký tài khoản bằng lệnh : /register <mật khẩu bạn muốn đặt> <nhập lại mật khẩu")
+	if (serverMsg.includes("/reg"))
 		main.bot.chat(`/reg ${password} ${password}`);
 
-	if (serverMsg === "đang vào AnarchyVN...") {
+	if (serverMsg === main.bot.username + " joined the game." || serverMsg === main.bot.username + " đã vào trò chơi.") {
 		main.currentServer = Server.Main;
 	}
 
@@ -141,8 +139,19 @@ function login(main: Minecraft, serverMsg: string) {
 		main.bot.chat("/anarchyvn");
 	}
 
+	// Anarchyvn
 	if (serverMsg === " Đăng nhập thành công!") {
 		main.bot.activateItem();
+	}
+
+	// 2a2b , MCVui
+	if (serverMsg === "Bảo mật > Bạn đã đăng nhập thành công."
+		|| serverMsg === "[*] Chào Mừng " + main.bot.username + " Đã Đến Máy Chủ MCVUI.NET") {
+		setTimeout(() => {
+			// console.log(main.bot.inventory)
+			main.bot.setQuickBarSlot(4);
+			main.bot.activateItem(); // middle hotbar
+		}, 7 * 1000);
 	}
 
 	if (serverMsg === "[✔] Đăng nhập thành công!"
@@ -169,20 +178,6 @@ function login(main: Minecraft, serverMsg: string) {
 			setTimeout(click, 5 * 1000);
 		};
 		click();
-	}
-
-	if (serverMsg === "Bảo mật > Vui lòng đăng ký với /register <mật khẩu>")
-		main.bot.chat(`/register ${password} ${password}`);
-
-	if (serverMsg === "Bảo mật > Vui lòng đăng nhập bằng cách sử dụng /login <mật khẩu>")
-		main.bot.chat(`/login ${password}`);
-
-	if (serverMsg === "Bảo mật > Bạn đã đăng nhập thành công.") {
-		setTimeout(() => {
-			// console.log(main.bot.inventory)
-			main.bot.setQuickBarSlot(4);
-			main.bot.activateItem(); // middle hotbar
-		}, 7 * 1000);
 	}
 }
 
