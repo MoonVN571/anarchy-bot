@@ -208,31 +208,47 @@ function escapeDiscordFormat(text: string): string {
 	return text.replace(regex, "\\$1");
 }
 
-function parseUserMessage(input: string) {
-	const regex = /^<(\w+)>\s+(.*)$|^MEMBER\s+(\w+)\s+➡\s+(.*)$|^MEMBER\s+\*(\w+)\s+➡\s+(.*)$|^(\w+)\s+>>\s+(.*)$|^\*(\w+)\s+>>\s+(.*)$|^<\[([^\]]+)\](\w+)>\s+(.*)$|^<\[([^\]]+)\](\w+)>\s+(.*)$/;
+function parseUserMessage(input) {
+	const regex = /^<(?:\[([^\]]+)\])?(\w+)>\s*(.*)$|^MEMBER\s+(\w+)\s+(?:➡|>>)\s+(.*)$|^(\w+)\s+>>\s+(.*)$/;
 	const matches = input.match(regex);
 
 	if (matches) {
-		const [, username1, message1, username2, message2, username3, message3, username4, message4, username5, message5, rank1, username6, message6, rank2, username7, message7] = matches;
+		const [, rank, username, message1, message2, username3, message3] = matches;
 
-		if (username1) {
-			return { rank: null, username: username1, message: message1 };
-		} else if (username2) {
-			return { username: username2, message: message2 };
+		if (username) {
+			return { rank: rank || null, username, message: message1 || message2 };
 		} else if (username3) {
-			return { username: username3, message: message3 };
-		} else if (username4) {
-			return { rank: null, username: username4, message: message4 };
-		} else if (username5) {
-			return { rank: null, username: username5, message: message5 };
-		} else if (rank1) {
-			return { rank: rank1, username: username6, message: message6 };
-		} else if (rank2) {
-			return { rank: rank2, username: username7, message: message7 };
+			return { rank: null, username: username3, message: message3 };
 		}
 	}
 	return { rank: null, username: null, message: input };
 }
+
+// function parseUserMessage(input: string) {
+// 	const regex = /^<(\w+)>\s+(.*)$|^MEMBER\s+(\w+)\s+➡\s+(.*)$|^MEMBER\s+\*(\w+)\s+➡\s+(.*)$|^(\w+)\s+>>\s+(.*)$|^\*(\w+)\s+>>\s+(.*)$|^<\[([^\]]+)\](\w+)>\s+(.*)$|^<\[([^\]]+)\](\w+)>\s+(.*)$/;
+// 	const matches = input.match(regex);
+
+// 	if (matches) {
+// 		const [, username1, message1, username2, message2, username3, message3, username4, message4, username5, message5, rank1, username6, message6, rank2, username7, message7] = matches;
+
+// 		if (username1) {
+// 			return { rank: null, username: username1, message: message1 };
+// 		} else if (username2) {
+// 			return { username: username2, message: message2 };
+// 		} else if (username3) {
+// 			return { username: username3, message: message3 };
+// 		} else if (username4) {
+// 			return { rank: null, username: username4, message: message4 };
+// 		} else if (username5) {
+// 			return { rank: null, username: username5, message: message5 };
+// 		} else if (rank1) {
+// 			return { rank: rank1, username: username6, message: message6 };
+// 		} else if (rank2) {
+// 			return { rank: rank2, username: username7, message: message7 };
+// 		}
+// 	}
+// 	return { rank: null, username: null, message: input };
+// }
 
 function isWhisperMsg(inputString: string) {
 	const p = inputString.split(" ");
