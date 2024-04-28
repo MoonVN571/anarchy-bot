@@ -25,12 +25,12 @@ client.on("ready", () => {
 	// 	livechat: client.dev ? "987204059838709780" : "986599157068361734",
 	// });
 
-	// new Minecraft(client, {
-	// 	ip: ServerIp.anarchyVN,
-	// 	auth: "offline",
-	// 	version: "1.19.4",
-	// 	livechat: client.dev ? "987204059838709780" : "1001826269664661616",
-	// });
+	new Minecraft(client, {
+		ip: ServerIp.anarchyVN,
+		auth: "offline",
+		version: "1.16.5",
+		livechat: client.dev ? "987204059838709780" : "1001826269664661616",
+	});
 
 	// new Minecraft(client, {
 	// 	ip: ServerIp.viAnarchy,
@@ -40,12 +40,12 @@ client.on("ready", () => {
 	// });
 
 
-	new Minecraft(client, {
-		ip: ServerIp._2A2BOrg,
-		version: "1.20.4",
-		auth: "microsoft",
-		livechat: client.dev ? "987204059838709780" : "1231592483780300872",
-	});
+	// new Minecraft(client, {
+	// 	ip: ServerIp._2A2BOrg,
+	// 	version: "1.20.4",
+	// 	auth: "microsoft",
+	// 	livechat: client.dev ? "987204059838709780" : "1231592483780300872",
+	// });
 });
 
 client.start();
