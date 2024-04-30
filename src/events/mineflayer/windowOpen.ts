@@ -16,7 +16,9 @@ export async function execute(main: Minecraft, window) {
 		}
 		case 63:
 			main.bot.clickWindow(13, 0, 0);
+			break;
 		case 90:
 			main.bot.clickWindow(31, 0, 0);
+			break;
 	}
 }
