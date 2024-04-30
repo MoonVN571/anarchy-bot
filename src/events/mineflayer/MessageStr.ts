@@ -74,8 +74,8 @@ function livechat(main: Minecraft, serverMsg: string) {
 			|| serverMsg.startsWith("- ")) msgType = MessageType.Quit;
 	} else {
 		// livechat style
-		let prefix = `**<${username}>**`;
-		if (rank) prefix = `**<\`[${rank}]\` ${username}>**`;
+		let prefix = `**<${escapeDiscordFormat(username)}>**`;
+		if (rank) prefix = `**<\`[${rank}]\` ${escapeDiscordFormat(username)}>**`;
 		msg = `${prefix} ${escapeDiscordFormat(message)}`;
 		msgType = MessageType.Chat;
 		if (message.startsWith(">")) msgType = MessageType.HighlightChat;
