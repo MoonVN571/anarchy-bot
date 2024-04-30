@@ -140,6 +140,10 @@ function login(main: Minecraft, serverMsg: string) {
 		main.currentServer = Server.Main;
 	}
 
+	if (serverMsg === "[+] " + main.bot.username) {
+		main.currentServer = Server.Queue;
+	}
+
 	if (serverMsg === " dùng lệnh/anarchyvn để vào server Anarchy.") {
 		main.bot.chat("/anarchyvn");
 	}
