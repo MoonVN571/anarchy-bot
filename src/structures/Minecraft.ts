@@ -82,6 +82,7 @@ export class Minecraft {
 			username: this.config.username,
 			version: this.config.serverInfo.version,
 			auth: this.config.serverInfo.auth,
+			hideErrors: true,
 		});
 		this.bot.loadPlugin(pathfinder);
 
