@@ -2,6 +2,11 @@ import { Minecraft } from "../../structures";
 import { Colors, APIEmbed } from "discord.js";
 import { DisconnectType, Server, ServerIp } from "../../types";
 import { goals } from "mineflayer-pathfinder";
+import { MineflayerEvent } from "../../types";
+
+export const data = {
+	name: MineflayerEvent.MessageStr,
+};
 
 const colors = {
 	chat: 0x979797,

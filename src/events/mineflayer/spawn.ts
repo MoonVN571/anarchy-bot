@@ -1,5 +1,11 @@
 import { Minecraft } from "../../structures";
 import { Server, ServerIp } from "../../types";
+import { MineflayerEvent } from "../../types";
+
+export const data = {
+	name: MineflayerEvent.Spawn,
+	once: true,
+};
 
 export async function execute(main: Minecraft) {
 	main.spawnCount++;

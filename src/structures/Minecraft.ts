@@ -4,7 +4,7 @@ import { pathfinder } from "mineflayer-pathfinder";
 import { TextChannel } from "discord.js";
 import { config } from "dotenv";
 import { Discord } from ".";
-import { MineflayerOptions, Server, ServerInfo } from "../types";
+import { MEvent, MineflayerOptions, Server, ServerInfo } from "../types";
 config();
 
 export class Minecraft {
@@ -88,12 +88,11 @@ export class Minecraft {
 		this.loadEvents();
 	}
 
-	/* eslint-disable @typescript-eslint/no-explicit-any */
 	private loadEvents() {
-		readdirSync((this.client.dev ? "./src" : "./dist") + "/events/mineflayer").forEach(async event => {
-			const eventName = event.split(".")[0];
-			const data = await import(`../events/mineflayer/${eventName}`);
-			this.bot.on(eventName as any, (...p: any) => data.execute(this, ...p));
+		readdirSync((this.client.dev ? "./src" : "./dist") + "/events/mineflayer").forEach(async eventFile => {
+			const eventName = eventFile.split(".")[0];
+			const event: MEvent = await import(`../events/mineflayer/${eventName}`);
+			this.bot.on(event.data.name, (...p) => event.execute(this, ...p));
 		});
 	}
 }

@@ -1,4 +1,9 @@
 import { Minecraft } from "../../structures";
+import { MineflayerEvent } from "../../types";
+
+export const data = {
+	name: MineflayerEvent.WindowOpen,
+};
 
 export async function execute(main: Minecraft, window) {
 	window.requiresConfirmation = false;

@@ -1,3 +1,5 @@
+import { Minecraft } from "./structures";
+
 export enum Server {
     Main, Queue,
 }
@@ -58,4 +60,20 @@ export interface MineflayerOptions {
             interval: number;
         }
     };
+}
+
+export interface MEvent {
+    execute?: (main: Minecraft, ...param) => void;
+    data?: {
+        once: boolean;
+        name: MineflayerEvent;
+    };
+}
+
+export enum MineflayerEvent {
+    Spawn = "spawn",
+    WindowOpen = "windowOpen",
+    End = "end",
+    Kicked = "kicked",
+    MessageStr = "messagestr",
 }
