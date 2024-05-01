@@ -142,6 +142,9 @@ function login(main: Minecraft, serverMsg: string) {
 
 	if (serverMsg === "[+] " + main.bot.username) {
 		main.currentServer = Server.Queue;
+		setTimeout(() => {
+			if (main.currentServer === Server.Queue) main.bot.quit();
+		}, 5 * 60 * 1000);
 	}
 
 	if (serverMsg === " dùng lệnh/anarchyvn để vào server Anarchy.") {
