@@ -36,5 +36,5 @@ jobs:
     - run: |
         bun install
         npm run build
-        pm2 restart anarchy-bot --max-memory-restart 300M --cron-restart="0 0 * * *"
+        pm2 restart anarchy-bot --max-memory-restart 400M --cron-restart="0 0 * * *"
         pm2 save

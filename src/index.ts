@@ -40,12 +40,12 @@ client.on("ready", () => {
 	// });
 
 
-	// new Minecraft(client, {
-	// 	ip: ServerIp._2A2BOrg,
-	// 	version: "1.20.4",
-	// 	auth: "microsoft",
-	// 	livechat: client.dev ? "987204059838709780" : "1231592483780300872",
-	// });
+	new Minecraft(client, {
+		ip: ServerIp._2A2BOrg,
+		version: "1.20.4",
+		auth: "microsoft",
+		livechat: client.dev ? "987204059838709780" : "1231592483780300872",
+	});
 
 	new Minecraft(client, {
 		ip: ServerIp.MCVui,
