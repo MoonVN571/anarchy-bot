@@ -129,12 +129,12 @@ function livechat(main: Minecraft, serverMsg: string) {
 }
 
 function login(main: Minecraft, serverMsg: string) {
-	const { password } = main.config;
+	const { authme } = main.config;
 	if (serverMsg.includes("/l") || serverMsg.includes("/login"))
-		main.bot.chat(`/login ${password}`);
+		main.bot.chat(`/login ${authme}`);
 
 	if (serverMsg.includes("/reg"))
-		main.bot.chat(`/reg ${password} ${password}`);
+		main.bot.chat(`/reg ${authme} ${authme}`);
 
 	if (serverMsg === main.bot.username + " joined the game." || serverMsg === main.bot.username + " đã vào trò chơi.") {
 		main.currentServer = Server.Main;
