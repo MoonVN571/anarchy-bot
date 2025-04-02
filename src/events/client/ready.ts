@@ -3,9 +3,9 @@ import { Discord } from "../../structures";
 import { DiscordEvent } from "../../typings/DiscordEvent";
 
 export default class ReadyEvent extends DiscordEvent {
-    constructor() {
-        super({
-            name: Events.ClientReady,
+	constructor() {
+		super({
+			name: Events.ClientReady,
 		});
 	}
 

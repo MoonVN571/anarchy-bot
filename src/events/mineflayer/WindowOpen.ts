@@ -7,6 +7,8 @@ export default class WindowOpenEvent extends MineflayerEvent {
 			name: 'windowOpen',
 		});
 	}
+
+	// eslint-disable-next-line
 	async execute(main: Minecraft, window: any): Promise<void> {
 		window.requiresConfirmation = false;
 

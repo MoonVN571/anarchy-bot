@@ -30,12 +30,12 @@ export class Minecraft {
 			chat: "> [{displayName}] {message} | bit.ly/mo0nbot",
 			rateLimitFlags: {
 				enabled: true,
-				time: 2 * 60 * 1000,           // Cooldown period when rate limited
-				windowSize: 10 * 1000,         // Sliding window size in ms
-				messageThreshold: 10,          // Max messages in window before limiting
-				burstThreshold: 5,             // Max messages in quick succession
-				burstInterval: 2 * 1000,       // Interval to check for bursts
-				minimumEmbeds: 5,              // Minimum embeds to send when rate limited
+				time: 2 * 60 * 1000, // Cooldown period when rate limited
+				windowSize: 10 * 1000, // Sliding window size in ms
+				messageThreshold: 10, // Max messages in window before limiting
+				burstThreshold: 5, // Max messages in quick succession
+				burstInterval: 2 * 1000, // Interval to check for bursts
+				minimumEmbeds: 5, // Minimum embeds to send when rate limited
 			},
 			topic: {
 				enabled: true,
@@ -106,11 +106,13 @@ export class Minecraft {
 			const EventClass = (await import(`../events/mineflayer/${eventFile}`)).default;
 			const event: MineflayerEvent = new EventClass();
 
-			if (event.once) {
+			/* eslint-disable */
+
+			if (event.once) 
 				this.bot.once(event.name, (...args: any[]) => event.execute(this, ...args));
-			} else {
+			else 
 				this.bot.on(event.name, (...args: any[]) => event.execute(this, ...args));
-			}
+			
 		});
 	}
 }
