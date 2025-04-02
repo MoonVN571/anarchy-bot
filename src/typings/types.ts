@@ -1,5 +1,3 @@
-import { Minecraft } from "./structures";
-
 export enum Server {
     Main, Queue,
 }
@@ -11,17 +9,9 @@ export enum DisconnectType {
 export enum ServerIp {
     twoYtwoC = "2y2c.org",
     viAnarchy = "vianarchy.net",
-    anarchyVN = "vinamc.net",
+    anarchyVN = "2y2c.org",
     _2A2BOrg = "2a2b.org",
     MCVui = "mcvui.net",
-}
-
-export interface DefaultOptions {
-    prefix: "!";
-    developers: string[];
-    dev: boolean;
-    guildId: string;
-    emojis: { tick: string };
 }
 
 export interface ServerInfo {
@@ -38,7 +28,7 @@ export interface MineflayerOptions {
     auth: "mojang" | "microsoft" | "offline";
     authme: string;
     pin: string[];
-    serverInfo?: ServerInfo;
+    serverInfo: ServerInfo;
     reconnectInterval: number;
     livechat: {
         channelId?: string;
@@ -51,22 +41,16 @@ export interface MineflayerOptions {
         rateLimitFlags: {
             enabled: boolean;
             time: number;
-            keepCountTime: number;
-            flaggedCount: number;
             minimumEmbeds: number;
+            windowSize: number;
+            burstInterval: number;
+            burstThreshold: number;
+            messageThreshold: number;
         },
         topic: {
             enabled: boolean,
             interval: number;
         }
-    };
-}
-
-export interface MEvent {
-    execute?: (main: Minecraft, ...param) => void;
-    data?: {
-        once: boolean;
-        name: MineflayerEvent;
     };
 }
 

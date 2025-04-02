@@ -1,14 +1,18 @@
 import { Minecraft } from "../../structures";
-import { MineflayerEvent } from "../../types";
+import { MineflayerEvent } from "../../typings/MineflayerEvent";
 
-export const data = {
-	name: MineflayerEvent.End,
-};
+export default class EndEvent extends MineflayerEvent {
+    constructor() {
+        super({
+            name: 'end',
+        });
+    }
 
-export async function execute(main: Minecraft, reason: string) {
-	console.log(main.config.serverInfo.ip, reason);
+    async execute(main: Minecraft, reason: string): Promise<void> {
+        main.client.logger.info(main.config.serverInfo.ip, reason);
 
-	setTimeout(() => {
-		new Minecraft(main.client, main.config.serverInfo);
-	}, main.config.reconnectInterval);
+        setTimeout(() => {
+            new Minecraft(main.client, main.config.serverInfo);
+        }, main.config.reconnectInterval);
+    }
 }

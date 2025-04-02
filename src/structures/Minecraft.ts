@@ -2,38 +2,40 @@ import { Bot, createBot } from "mineflayer";
 import { readdirSync } from "fs";
 import { pathfinder } from "mineflayer-pathfinder";
 import { TextChannel } from "discord.js";
-import { config } from "dotenv";
 import { Discord } from ".";
-import { MEvent, MineflayerOptions, Server, ServerInfo } from "../types";
-config();
+import { MineflayerOptions, Server, ServerInfo, ServerIp } from "../typings/types";
+import { MineflayerEvent } from "../typings/MineflayerEvent";
 
 export class Minecraft {
-	public bot: Bot;
-	public client: Discord;
-
-	public currentServer: Server;
-	public uptime: number;
+	public currentServer: Server = Server.Queue;
+	public uptime: number = 0;
 	public channel: TextChannel;
-	public joined: boolean;
+	public joined = false;
 	public spawnCount = 0;
 
-	public readonly dev: boolean;
+	public readonly dev = false;
 	public readonly config: MineflayerOptions = {
 		username: process.env.EMAIL,
 		password: process.env.PASSWORD,
 		authme: process.env.AUTHME,
 		pin: process.env.PIN?.split(""),
 		auth: "microsoft",
+		serverInfo: { auth: "offline", ip: ServerIp.anarchyVN, version: "1.12.2", livechat: "000000000000000000" },
 		reconnectInterval: 5 * 60 * 1000,
 		livechat: {
-			// displayName, message
+			/**
+			 * displayName: The display name of the discord user
+			 * message: The message sent by the discord user
+			 */
 			chat: "> [{displayName}] {message} | bit.ly/mo0nbot",
 			rateLimitFlags: {
 				enabled: true,
-				time: 2 * 60 * 1000,
-				keepCountTime: 2 * 1000,
-				flaggedCount: 5,
-				minimumEmbeds: 5,
+				time: 2 * 60 * 1000,           // Cooldown period when rate limited
+				windowSize: 10 * 1000,         // Sliding window size in ms
+				messageThreshold: 10,          // Max messages in window before limiting
+				burstThreshold: 5,             // Max messages in quick succession
+				burstInterval: 2 * 1000,       // Interval to check for bursts
+				minimumEmbeds: 5,              // Minimum embeds to send when rate limited
 			},
 			topic: {
 				enabled: true,
@@ -52,6 +54,15 @@ export class Minecraft {
 		},
 	};
 
+	public bot: Bot = createBot({
+		host: this.config.serverInfo.ip,
+		username: this.config.username,
+		version: this.config.serverInfo.version,
+		auth: this.config.serverInfo.auth,
+		hideErrors: true,
+	});
+	public client: Discord;
+
 	constructor(client: Discord, serverInfo: ServerInfo) {
 		this.client = client;
 		this.config.dev = this.client.dev;
@@ -62,10 +73,16 @@ export class Minecraft {
 			this.config.username = process.env.USERNAME;
 
 		this.client.on("messageCreate", message => {
-			if (message.author.bot || !this.joined || this.currentServer !== Server.Main) return;
+			if (message.author.bot || !message.content) return;
+
 			if (message.channel?.id === this.config.livechat.channelId) {
-				if (message.content.startsWith(">")
-					|| !message.content) return;
+				if (message.content.startsWith(">")) return;
+
+				if (!this.joined || this.currentServer !== Server.Main) {
+					message.react(this.client.config.emojis.no_chatting);
+					return;
+				}
+
 				this.bot.chat(this.config.livechat.chat
 					.replace(/\{displayName\}/g, message.author.displayName)
 					.replace(/\{message\}/g, message.content));
@@ -77,23 +94,23 @@ export class Minecraft {
 	}
 
 	private start() {
-		this.bot = createBot({
-			host: this.config.serverInfo.ip,
-			username: this.config.username,
-			version: this.config.serverInfo.version,
-			auth: this.config.serverInfo.auth,
-			hideErrors: true,
-		});
 		this.bot.loadPlugin(pathfinder);
 
 		this.loadEvents();
 	}
 
 	private loadEvents() {
-		readdirSync((this.client.dev ? "./src" : "./dist") + "/events/mineflayer").forEach(async eventFile => {
-			const eventName = eventFile.split(".")[0];
-			const event: MEvent = await import(`../events/mineflayer/${eventName}`);
-			this.bot.on(event.data.name, (...p) => event.execute(this, ...p));
+		readdirSync("./dist/events/mineflayer").forEach(async eventFile => {
+			if (!eventFile.endsWith(".js") && !eventFile.endsWith(".ts")) return;
+
+			const EventClass = (await import(`../events/mineflayer/${eventFile}`)).default;
+			const event: MineflayerEvent = new EventClass();
+
+			if (event.once) {
+				this.bot.once(event.name, (...args: any[]) => event.execute(this, ...args));
+			} else {
+				this.bot.on(event.name, (...args: any[]) => event.execute(this, ...args));
+			}
 		});
 	}
 }

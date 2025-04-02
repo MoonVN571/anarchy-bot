@@ -1,10 +1,14 @@
 import { Minecraft } from "../../structures";
-import { MineflayerEvent } from "../../types";
+import { MineflayerEvent } from "../../typings/MineflayerEvent";
 
-export const data = {
-	name: MineflayerEvent.Kicked,
-};
+export default class KickedEvent extends MineflayerEvent {
+    constructor() {
+        super({
+            name: 'kicked',
+        });
+    }
 
-export async function execute(main: Minecraft, reason: string, logged: boolean) {
-	console.log(main.config.serverInfo.ip, reason, logged);
+    async execute(main: Minecraft, reason: string, logged: boolean): Promise<void> {
+        console.log(main.config.serverInfo.ip, reason, logged);
+    }
 }

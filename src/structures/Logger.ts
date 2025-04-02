@@ -1,65 +1,100 @@
-import { SignaleOptions, Signale } from "signale";
-const options: SignaleOptions = {
-	disabled: false,
-	interactive: false,
-	logLevel: "info"
-};
-export default class Logger extends Signale {
-	constructor() {
-		super({
-			...options,
-			types: {
-				info: {
-					badge: "ℹ",
-					color: "blue",
-					label: "info",
-				},
-				warn: {
-					badge: "⚠",
-					color: "yellow",
-					label: "warn",
-				},
-				error: {
-					badge: "✖",
-					color: "red",
-					label: "error",
-				},
-				debug: {
-					badge: "🐛",
-					color: "magenta",
-					label: "debug",
-				},
-				success: {
-					badge: "✔",
-					color: "green",
-					label: "success",
-				},
-				log: {
-					badge: "📝",
-					color: "white",
-					label: "log",
-				},
-				pause: {
-					badge: "⏸",
-					color: "yellow",
-					label: "pause",
-				},
-				start: {
-					badge: "▶",
-					color: "green",
-					label: "start",
-				},
-			},
-		});
-	}
+import winston from "winston";
+import DailyRotateFile from "winston-daily-rotate-file";
+
+class Logger {
+    private logger: winston.Logger;
+
+    constructor() {
+        this.logger = this.initLogger();
+    }
+
+    public getLogger(): winston.Logger {
+        return this.logger;
+    }
+
+    private initLogger(): winston.Logger {
+        const { timestamp, align } = winston.format;
+        const print = winston.format.printf((info) => {
+            const log = `${info.timestamp} [${info.level}] ${info.message}`;
+
+            return info.stack
+                ? `${log}\n${info.stack}`
+                : log;
+        });
+        const transports: winston.transport[] = [
+            new winston.transports.Console(),
+        ];
+        if (process.env.NODE_ENV !== "development") {
+            transports.push(
+                new DailyRotateFile({
+                    filename: "logs/log-%DATE%.log",
+                    datePattern: "DD-MM-YYYY",
+                    zippedArchive: true,
+                    maxSize: "20m",
+                    maxFiles: "14d",
+                })
+            );
+        }
+        return winston.createLogger({
+            level: "debug",
+            format: winston.format.combine(
+                winston.format.errors({ stack: true }),
+                timestamp({ format: "DD-MM-YYYY hh:mm:ss.SSS A" }),
+                align(),
+                print,
+            ),
+            transports,
+        });
+    }
+
+    private formatArgs(...args: any[]): string {
+        return args.map(arg => {
+            if (typeof arg === 'object') {
+                try {
+                    return JSON.stringify(String(arg), (key, value) =>
+                        typeof value === 'bigint' ? value.toString() : value
+                        , 3);
+                } catch {
+                    return String(arg);
+                }
+            }
+            return String(arg);
+        }).join(' ');
+    }
+
+    debug(...args: any[]) {
+        const message = this.formatArgs(...args);
+        const stack = new Error().stack;
+        const callerLine = stack?.split('\n')[2] || 'unknown';
+        this.logger.debug(`${message} (${callerLine.trim()})`);
+    }
+
+    info(...args: any[]) {
+        const message = this.formatArgs(...args);
+        this.logger.info(message);
+    }
+
+    start(...args: any[]) {
+        const message = this.formatArgs(...args);
+        this.logger.info(message);
+    }
+
+    warn(...args: any[]) {
+        const message = this.formatArgs(...args);
+        this.logger.warn(message);
+    }
+
+    error(...args: any[]) {
+        const message = this.formatArgs(...args);
+
+        const errorObj = args.find(arg => arg instanceof Error);
+        if (errorObj && errorObj.stack)
+            this.logger.error(`${errorObj.stack}`);
+        else
+            this.logger.error(message);
+
+    }
 }
 
-/**
- * Project: lavamusic
- * Author: Blacky
- * Company: Coders
- * Copyright (c) 2023. All rights reserved.
- * This code is the property of Coder and may not be reproduced or
- * modified without permission. For more information, contact us at
- * https://discord.gg/ns8CTk9J3e
- */
+const logger = new Logger();
+export default logger;

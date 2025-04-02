@@ -1,6 +1,5 @@
 import { Discord } from "./Discord";
 import { Minecraft } from "./Minecraft";
-import { Express } from "./Express";
-import Logger from "./Logger";
+import logger from "./Logger";
 
-export { Express, Discord, Logger, Minecraft };
+export { Discord, logger, Minecraft };

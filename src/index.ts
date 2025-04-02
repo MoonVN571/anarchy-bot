@@ -1,6 +1,9 @@
 import { ActivityType, GatewayIntentBits, Partials } from "discord.js";
-import { Discord, Express, Minecraft } from "./structures";
-import { ServerIp } from "./types";
+import { Discord, Minecraft } from "./structures";
+import { ServerIp } from "./typings/types";
+import { Express } from "./backend";
+import dotenv from "@dotenvx/dotenvx";
+dotenv.config();
 
 const client = new Discord({
 	intents: [
@@ -16,9 +19,10 @@ const client = new Discord({
 	partials: [Partials.Message, Partials.Message, Partials.GuildMember, Partials.User],
 });
 
-new Express();
 
 client.on("ready", () => {
+	new Express(client);
+
 	// new Minecraft(client, {
 	// 	ip: ServerIp.twoYtwoC,
 	// 	version: '1.20.1',
@@ -28,7 +32,7 @@ client.on("ready", () => {
 	new Minecraft(client, {
 		ip: ServerIp.anarchyVN,
 		auth: "offline",
-		version: "1.16.5",
+		version: "1.20.4",
 		livechat: client.dev ? "987204059838709780" : "1001826269664661616",
 	});
 
@@ -40,19 +44,19 @@ client.on("ready", () => {
 	// });
 
 
-	new Minecraft(client, {
-		ip: ServerIp._2A2BOrg,
-		version: "1.20.4",
-		auth: "microsoft",
-		livechat: client.dev ? "987204059838709780" : "1231592483780300872",
-	});
+	// new Minecraft(client, {
+	// 	ip: ServerIp._2A2BOrg,
+	// 	version: "1.20.4",
+	// 	auth: "microsoft",
+	// 	livechat: client.dev ? "987204059838709780" : "1231592483780300872",
+	// });
 
-	new Minecraft(client, {
-		ip: ServerIp.MCVui,
-		version: "1.20.4",
-		auth: "offline",
-		livechat: client.dev ? "987204059838709780" : "1234031355659157588",
-	});
+	// new Minecraft(client, {
+	// 	ip: ServerIp.MCVui,
+	// 	version: "1.20.4",
+	// 	auth: "offline",
+	// 	livechat: client.dev ? "987204059838709780" : "1234031355659157588",
+	// });
 });
 
 client.start();
