@@ -1,6 +1,6 @@
 {
   "name": "anarchy-bot",
-  "version": "6.1.0",
+  "version": "6.2.0",
   "description": "Bot anarchy server Minecraft",
   "main": "dist/index.js",
   "scripts": {
