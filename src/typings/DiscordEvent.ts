@@ -35,11 +35,11 @@ export async function loadDiscordEvents(client: Discord): Promise<void> {
 				continue;
 			}
 			
-			if (event.once) {
+			if (event.once) 
 				client.once(event.name as any, (...p) => event.execute(client, ...p));
-			} else {
+			else 
 				client.on(event.name as any, (...p) => event.execute(client, ...p));
-			}
+			
 		} catch (error) {
 			client.logger.error(`Error loading event ${eventFile}: ${error}`);
 		}

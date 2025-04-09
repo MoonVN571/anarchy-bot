@@ -36,11 +36,11 @@ export async function loadMineflayerEvents(bot: Minecraft): Promise<void> {
 					continue;
 				}
 
-				if (event.once) {
+				if (event.once) 
 					bot.bot.once(event.name, (...p: any) => event.execute(bot, ...p));
-				} else {
+				else 
 					bot.bot.on(event.name, (...p: any) => event.execute(bot, ...p));
-				}
+				
 
 				bot.client.logger.info(`Loaded Minecraft event: ${event.name} (${eventFile})`);
 			} catch (error) {
