@@ -1,7 +1,6 @@
 import { Minecraft } from "../../structures";
 import { Colors, APIEmbed } from "discord.js";
-import { DisconnectType, Server, ServerIp } from "../../typings/types";
-import { goals } from "mineflayer-pathfinder";
+import { Server, ServerIp } from "../../typings/types";
 import { MineflayerEvent } from "../../typings/MineflayerEvent";
 
 // Color constants for different message types
@@ -233,14 +232,15 @@ export default class MessageStrEvent extends MineflayerEvent {
 
 	private handleServerSpecificLogin(main: Minecraft, serverMsg: string): void {
 		// AnarchyVN specific
-		if (serverMsg === " Dùng lệnh /avn để vào server.")
+		if (serverMsg === " Dùng lệnh /avn để vào server.") {
 			main.bot.chat("/avn");
-		else if (serverMsg === " Đăng nhập thành công!")
+			main.currentServer = Server.Queue;
+		} else if (serverMsg === " Đăng nhập thành công!")
 			main.bot.activateItem();
 	}
 
 	private escapeDiscordFormat(text: string): string {
-		return text.replace(/([*_~`>#\-])/g, "\\$1");
+		return text.replace(/([*_~`>#\-])/g, "\$1");
 	}
 
 	private parseUserMessage(input: string): ParsedMessage {
@@ -248,18 +248,19 @@ export default class MessageStrEvent extends MineflayerEvent {
 		const matches = input.match(regex);
 
 		if (matches) {
-			const [, rank, username1, message1, username2, message2, username3, message3] = matches;
-
-			if (username1)
-				return { rank: rank || null, username: username1, message: message1 };
-			else if (username2)
-				return { rank: null, username: username2, message: message2 };
-			else if (username3)
-				return { rank: null, username: username3, message: message3 };
-
+			const [, rank, username, message] = matches;
+			return {
+				rank: rank || null,
+				username,
+				message,
+			};
 		}
 
-		return { rank: null, username: null, message: input };
+		return {
+			rank: null,
+			username: null,
+			message: input,
+		};
 	}
 
 	private isWhisperMsg(inputString: string): boolean {
