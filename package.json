@@ -13,35 +13,24 @@
   "author": "Moon",
   "license": "ISC",
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.39.0",
+    "@dotenvx/dotenvx": "^1.39.1",
     "axios": "^1.8.4",
     "discord.js": "^14.18.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
     "mineflayer": "^4.27.0",
     "mineflayer-pathfinder": "^2.4.5",
     "prismarine-chat": "^1.11.0",
-    "signale": "^1.4.0",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin-ts": "^4.2.0",
     "@types/express": "^5.0.1",
-    "@types/signale": "^1.4.7",
-    "@typescript-eslint/eslint-plugin": "^8.29.0",
-    "@typescript-eslint/parser": "^8.29.0",
-    "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^9.23.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.29.0"
-  },
-  "signale": {
-    "displayScope": true,
-    "displayBadge": true,
-    "displayDate": true,
-    "displayLabel": true,
-    "displayTimestamp": true,
-    "underlineLabel": true
+    "@typescript-eslint/eslint-plugin": "^8.29.1",
+    "@typescript-eslint/parser": "^8.29.1",
+    "eslint": "^9.24.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1"
   }
 }

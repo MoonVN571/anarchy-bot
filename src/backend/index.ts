@@ -1,7 +1,7 @@
 import express, { Application } from "express";
 import { Discord, logger } from "../structures";
 import { setupRoutes } from "./routes";
-import { errorHandler, requestLogger } from "./middleware";
+import { errorHandler, requestLogger, rateLimiter } from "./middleware";
 
 export class Express {
 	private express: Application;
@@ -15,6 +15,7 @@ export class Express {
 		this.express.use(express.json());
 		this.express.use(express.urlencoded({ extended: true }));
 		this.express.use(requestLogger);
+		this.express.use(rateLimiter); // Add rate limiting middleware
 
 		// Setup routes
 		setupRoutes(this.express, this.discordClient);
