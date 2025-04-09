@@ -9,7 +9,7 @@ export enum DisconnectType {
 export enum ServerIp {
 	twoYtwoC = "2y2c.org",
 	viAnarchy = "vianarchy.net",
-	anarchyVN = "2y2c.org",
+	anarchyVN = "anarchy.vn",
 	_2A2BOrg = "2a2b.org",
 	MCVui = "mcvui.net",
 }

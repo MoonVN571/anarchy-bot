@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import { Client } from "discord.js";
 
 import { logger } from "./";
@@ -14,7 +11,7 @@ export class Discord extends Client {
 	public config = config;
 
 	public async start(): Promise<string> {
-		loadDiscordEvents(this);
+		await loadDiscordEvents(this);
 
 		this.rest.on("rateLimited", (info) => {
 			this.logger.warn(info);

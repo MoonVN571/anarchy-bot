@@ -1,10 +1,10 @@
 import { Bot, createBot } from "mineflayer";
 import { readdirSync } from "fs";
-import { pathfinder } from "mineflayer-pathfinder";
 import { TextChannel } from "discord.js";
 import { Discord } from ".";
 import { MineflayerOptions, Server, ServerInfo, ServerIp } from "../typings/types";
 import { MineflayerEvent } from "../typings/MineflayerEvent";
+import { pathfinder } from "mineflayer-pathfinder";
 
 export class Minecraft {
 	public currentServer: Server = Server.Queue;
@@ -12,6 +12,7 @@ export class Minecraft {
 	public channel: TextChannel;
 	public joined = false;
 	public spawnCount = 0;
+	public bot!: Bot; // Added non-null assertion operator
 
 	public readonly dev = false;
 	public readonly config: MineflayerOptions = {
@@ -54,13 +55,6 @@ export class Minecraft {
 		},
 	};
 
-	public bot: Bot = createBot({
-		host: this.config.serverInfo.ip,
-		username: this.config.username,
-		version: this.config.serverInfo.version,
-		auth: this.config.serverInfo.auth,
-		hideErrors: true,
-	});
 	public client: Discord;
 
 	constructor(client: Discord, serverInfo: ServerInfo) {
@@ -70,7 +64,10 @@ export class Minecraft {
 		this.config.livechat.channelId = serverInfo.livechat;
 
 		if (this.config.serverInfo.auth == "offline")
-			this.config.username = process.env.USERNAME;
+			this.config.username = process.env.BOT_NAME;
+		
+		this.createBot();
+		this.loadEvents();
 
 		this.client.on("messageCreate", message => {
 			if (message.author.bot || !message.content) return;
@@ -90,13 +87,17 @@ export class Minecraft {
 			}
 		});
 		this.channel = this.client.channels.cache.get(this.config.livechat.channelId) as TextChannel;
-		this.start();
 	}
 
-	private start() {
+	private createBot() {
+		this.bot = createBot({
+			host: this.config.serverInfo.ip,
+			port: 25565,
+			username: this.config.username,
+			version: this.config.serverInfo.version,
+			auth: this.config.serverInfo.auth,
+		});
 		this.bot.loadPlugin(pathfinder);
-
-		this.loadEvents();
 	}
 
 	private loadEvents() {
@@ -108,11 +109,11 @@ export class Minecraft {
 
 			/* eslint-disable */
 
-			if (event.once) 
+			if (event.once)
 				this.bot.once(event.name, (...args: any[]) => event.execute(this, ...args));
-			else 
+			else
 				this.bot.on(event.name, (...args: any[]) => event.execute(this, ...args));
-			
+
 		});
 	}
 }

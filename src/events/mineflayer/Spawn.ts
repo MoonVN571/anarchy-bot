@@ -15,8 +15,8 @@ export default class SpawnEvent extends MineflayerEvent {
 		if (main.spawnCount === 2) main.currentServer = Server.Main;
 
 		if (main.joined) return;
-		main.client.logger.start("Bot connected to " + main.config.serverInfo.ip);
-
+		main.client.logger.start("Bot connected to " + main.config.serverInfo.ip + " as " + main.bot.username);
+		
 		main.joined = true;
 		main.uptime = Date.now();
 

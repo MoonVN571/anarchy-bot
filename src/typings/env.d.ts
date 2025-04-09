@@ -1,7 +1,7 @@
 declare namespace NodeJS {
 	interface ProcessEnv {
 		TOKEN: string;
-		USERNAME: string;
+		BOT_NAME: string;
 		PIN: string;
 		EMAIL: string;
 		PASSWORD: string
