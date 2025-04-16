@@ -43,7 +43,7 @@ export class Minecraft {
 				interval: 5 * 1000 + 10 * 60 * 1000,
 			},
 			autoMessage: {
-				enabled: true,
+				enabled: false,
 				msgs: [
 					// "Server lưu trữ tin nhắn hơn 25.000 players và hơn 11 triệu tin nhắn tại discord: bit.ly/mo0nbot2",
 					// "Bot đời đầu tại 2y2c anarchy, ghé discord bit.ly/mo0nbot2 để ủng hộ <3",
