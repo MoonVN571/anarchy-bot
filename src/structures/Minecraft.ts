@@ -2,6 +2,7 @@ import { Bot, createBot } from "mineflayer";
 import { readdirSync } from "fs";
 import { TextChannel } from "discord.js";
 import { Discord } from ".";
+import { LiveChatManager } from "./LiveChatManager";
 import { MineflayerOptions, Server, ServerInfo, ServerIp } from "../typings/types";
 import { MineflayerEvent } from "../typings/MineflayerEvent";
 import { pathfinder } from "mineflayer-pathfinder";
@@ -13,15 +14,17 @@ export class Minecraft {
 	public joined = false;
 	public spawnCount = 0;
 	public bot!: Bot; // Added non-null assertion operator
+	public liveChatManager: LiveChatManager;
 
 	public readonly dev = false;
 	public readonly config: MineflayerOptions = {
-		username: process.env.EMAIL,
-		password: process.env.PASSWORD,
+		username: process.env.BOT_NAME || process.env.EMAIL || "mo0nbot",
+		// password: process.env.PASSWORD,
 		authme: process.env.AUTHME,
 		pin: process.env.PIN?.split(""),
-		auth: "microsoft",
-		serverInfo: { auth: "offline", ip: ServerIp.anarchyVN, version: "1.12.2", livechat: "000000000000000000" },
+		auth: (process.env.AUTH_MODE as "microsoft" | "offline") || "offline",
+		profilesFolder: "./.ms_cache",
+		serverInfo: { auth: "offline", ip: ServerIp.anarchyVN, version: "1.19.4", livechat: "000000000000000000" },
 		reconnectInterval: 5 * 60 * 1000,
 		livechat: {
 			/**
@@ -63,9 +66,12 @@ export class Minecraft {
 		this.config.serverInfo = serverInfo;
 		this.config.livechat.channelId = serverInfo.livechat;
 
-		if (this.config.serverInfo.auth == "offline")
-			this.config.username = process.env.BOT_NAME;
-		
+		if (this.config.serverInfo.auth === "offline") {
+			this.config.username = process.env.BOT_NAME || "mo0nbot";
+		} else if (this.config.serverInfo.auth === "microsoft") {
+			this.config.username = process.env.EMAIL;
+		}
+
 		this.createBot();
 		this.loadEvents();
 
@@ -87,16 +93,36 @@ export class Minecraft {
 			}
 		});
 		this.channel = this.client.channels.cache.get(this.config.livechat.channelId) as TextChannel;
+		this.liveChatManager = new LiveChatManager(this);
 	}
 
 	private createBot() {
-		this.bot = createBot({
+		const isMicrosoft = this.config.serverInfo.auth === "microsoft";
+		const username = isMicrosoft
+			? (this.config.username || process.env.EMAIL)
+			: (this.config.username || process.env.BOT_NAME || "mo0nbot");
+
+		if (!username) {
+			this.client.logger.error("No username or email provided for Minecraft bot!");
+			return;
+		}
+
+		const botOptions: any = {
 			host: this.config.serverInfo.ip,
 			port: 25565,
-			username: this.config.username,
+			username: username,
 			version: this.config.serverInfo.version,
 			auth: this.config.serverInfo.auth,
-		});
+		};
+
+		if (isMicrosoft) {
+			botOptions.profilesFolder = this.config.profilesFolder || "./.ms_cache";
+			if (this.config.password) {
+				botOptions.password = this.config.password;
+			}
+		}
+
+		this.bot = createBot(botOptions);
 		this.bot.loadPlugin(pathfinder);
 	}
 

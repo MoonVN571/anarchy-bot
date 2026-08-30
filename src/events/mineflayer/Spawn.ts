@@ -49,13 +49,13 @@ export default class SpawnEvent extends MineflayerEvent {
 				const clean = (str: string) => {
 					return str.replace(/\u00A7[0-9A-FK-OR]|-/ig, "");
 				};
-				const tlHeader = main.bot.tablist.header;
-				const tlFooter = main.bot.tablist.footer;
-				const header = clean(tlHeader.json.text);
-				const footer = clean(tlFooter.json.text + (tlFooter.extra?.join("") || ""));
+				const tlHeader = main.bot.tablist?.header;
+				const tlFooter = main.bot.tablist?.footer;
+				const header = tlHeader?.json?.text ? clean(tlHeader.json.text) : "";
+				const footer = tlFooter?.json?.text ? clean(tlFooter.json.text + (tlFooter.extra?.join("") || "")) : "";
 				let str = "";
 
-				if (main.config.serverInfo.ip === "2y2c.org")
+				if (main.config.serverInfo.ip === "2y2c.org" && footer)
 					str += footer.split("\n").slice(1, 2).join("\n");
 				str += `\nTham gia <t:${parseInt(String(main.uptime / 1000))}:R>, cập nhật <t:${parseInt(String(Date.now() / 1000))}:R>`
                     + "\n\n" + header + footer;

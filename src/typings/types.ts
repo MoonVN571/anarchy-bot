@@ -23,11 +23,12 @@ export interface ServerInfo {
 
 export interface MineflayerOptions {
 	dev?: boolean;
-	username: string;
-	password: string;
+	username?: string;
+	password?: string;
 	auth: "mojang" | "microsoft" | "offline";
-	authme: string;
-	pin: string[];
+	authme?: string;
+	pin?: string[];
+	profilesFolder?: string;
 	serverInfo: ServerInfo;
 	reconnectInterval: number;
 	livechat: {

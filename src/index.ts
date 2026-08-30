@@ -23,11 +23,13 @@ const client = new Discord({
 client.on("ready", () => {
 	new Express(client);
 
+	const authMode = (process.env.AUTH_MODE as "microsoft" | "offline") || "offline";
+
 	new Minecraft(client, {
 		ip: ServerIp.anarchyVN,
-		auth: "offline",
+		auth: authMode,
 		version: "1.19.4",
-		livechat: client.dev ? "987204059838709780" : "1001826269664661616",
+		livechat: client.dev ? "987204059838709780" : "1543610895584727080",
 	});
 });
 
