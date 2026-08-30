@@ -10,15 +10,38 @@ import { escapeRegex } from "../../../utils/regexUtils";
 
 export async function handleClassifyDeathModal(client: Discord, interaction: ButtonInteraction): Promise<void> {
 	try {
-		const embed = interaction.message.embeds[0];
-		const rawMsgField = embed.fields.find(
-			f => f.name.includes("Noi dung tin nhan") || f.name.includes("Nội dung tin nhắn") || f.name.includes("Message Content")
-		);
-		const rawMsg = rawMsgField ? rawMsgField.value.replace(/```/g, "").trim() : "";
-		const serverField = embed.fields.find(
-			f => f.name.includes("May chu") || f.name.includes("Máy chủ") || f.name.includes("Server")
-		);
-		const serverScope = serverField ? serverField.value.replace(/`/g, "").trim() : "global";
+		let rawMsg = "";
+		let serverScope = "global";
+
+		// 1. Extract from Message Components (Components V2 Container)
+		const fullText = JSON.stringify(interaction.message.components || []);
+		const msgMatch = fullText.match(/```(?:regex)?\n?([\s\S]*?)```/);
+		if (msgMatch) {
+			rawMsg = msgMatch[1].trim();
+		}
+
+		const serverMatch = fullText.match(/Máy chủ:[^\`]*\`([^\`]+)\`/i);
+		if (serverMatch) {
+			serverScope = serverMatch[1].trim();
+		}
+
+		// 2. Fallback to Embeds if present
+		if (!rawMsg && interaction.message.embeds?.[0]) {
+			const embed = interaction.message.embeds[0];
+			const rawMsgField = embed.fields?.find(
+				f => f.name.includes("Noi dung tin nhan") || f.name.includes("Nội dung tin nhắn") || f.name.includes("Message Content")
+			);
+			if (rawMsgField) {
+				rawMsg = rawMsgField.value.replace(/```/g, "").trim();
+			}
+
+			const serverField = embed.fields?.find(
+				f => f.name.includes("May chu") || f.name.includes("Máy chủ") || f.name.includes("Server")
+			);
+			if (serverField) {
+				serverScope = serverField.value.replace(/`/g, "").trim();
+			}
+		}
 
 		const promptId = interaction.customId.replace("classify_death_", "");
 		const modal = new ModalBuilder()
