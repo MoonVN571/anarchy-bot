@@ -1,4 +1,8 @@
-import { ButtonInteraction, EmbedBuilder } from "discord.js";
+import {
+	ButtonInteraction,
+	ContainerBuilder,
+	TextDisplayBuilder,
+} from "discord.js";
 import { Discord } from "../../../structures";
 import { DeathPatternModel } from "../../../database/models/DeathPatternModel";
 
@@ -12,14 +16,17 @@ export async function handleDeathDismiss(client: Discord, interaction: ButtonInt
 			confirmedBy: `dismissed_by_${interaction.user.username}`,
 		});
 
-		const updatedEmbed = EmbedBuilder.from(interaction.message.embeds[0])
-			.setColor(0x808080)
-			.setTitle("Death Message Đã Bị Bỏ Qua")
-			.setFooter({ text: `Đã bỏ qua bởi @${interaction.user.username}` });
+		const container = new ContainerBuilder()
+			.setAccentColor(0x808080)
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					`**Death Message Đã Bị Bỏ Qua**\n` +
+					`*Đã bỏ qua bởi @${interaction.user.username}*`
+				)
+			);
 
 		await interaction.editReply({
-			embeds: [updatedEmbed],
-			components: [],
+			components: [container],
 		});
 
 		client.logger.info(`[DeathVerification] Pattern ID ${patternId} dismissed by ${interaction.user.tag}`);

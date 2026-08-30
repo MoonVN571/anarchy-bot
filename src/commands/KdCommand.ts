@@ -1,4 +1,11 @@
-import { EmbedBuilder } from "discord.js";
+import {
+	ContainerBuilder,
+	SectionBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+	ThumbnailBuilder,
+	MessageFlags,
+} from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
 import { StatsService } from "../services/StatsService";
 
@@ -40,30 +47,37 @@ export class KdCommand extends Command {
 		const pvpDeaths = Math.max(0, deaths - suicides - mobDeaths);
 		const kdRatio = deaths > 0 ? (kills / deaths).toFixed(2) : kills.toFixed(2);
 
-		const embed = new EmbedBuilder()
-			.setColor(0xe74c3c)
-			.setAuthor({
-				name: `Chỉ số K/D: ${stats.displayName || stats.username}`,
-				iconURL: `https://mc-heads.net/avatar/${stats.username}/64`,
-			})
-			.setThumbnail(`https://mc-heads.net/avatar/${stats.username}/128`)
-			.addFields(
-				{ name: "Tỉ lệ K/D", value: `**${kdRatio}**`, inline: true },
-				{ name: "Kills (Hạ gục)", value: `\`${kills}\``, inline: true },
-				{ name: "Tổng Deaths (Tử vong)", value: `\`${deaths}\``, inline: true },
-				{ name: "PvP Deaths", value: `\`${pvpDeaths}\``, inline: true },
-				{ name: "Mob Deaths", value: `\`${mobDeaths}\``, inline: true },
-				{ name: "Tự sát (Suicide)", value: `\`${suicides}\``, inline: true },
-				{
-					name: "Killstreak",
-					value: `Hiện tại: **${stats.currentKillstreak || 0}** | Cao nhất: **${stats.highestKillstreak || 0}**`,
-					inline: false,
-				}
-			)
-			.setFooter({ text: `Server: ${serverHost} | anarchy-bot` })
-			.setTimestamp();
+		const username = stats.displayName || stats.username;
+		const headUrl = `https://mc-heads.net/avatar/${stats.username}/128.png`;
 
-		await message.reply({ embeds: [embed] });
+		const section = new SectionBuilder()
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					`**Chỉ số K/D: ${username}**\n` +
+					`- Tỉ lệ K/D: **${kdRatio}**\n` +
+					`- Kills: **${kills}** | Tổng Deaths: **${deaths}**\n` +
+					`- PvP Deaths: **${pvpDeaths}** | Mob Deaths: **${mobDeaths}** | Suicide: **${suicides}**`
+				)
+			)
+			.setThumbnailAccessory(
+				new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`)
+			);
+
+		const container = new ContainerBuilder()
+			.setAccentColor(0xe74c3c)
+			.addSectionComponents(section)
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					`🔥 Killstreak Hiện tại: **${stats.currentKillstreak || 0}** | Cao nhất: **${stats.highestKillstreak || 0}**\n` +
+					`*Máy chủ: ${serverHost}*`
+				)
+			);
+
+		await message.reply({
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	}
 
 	public async executeInGame(ctx: InGameCommandContext): Promise<string | void> {
@@ -71,7 +85,7 @@ export class KdCommand extends Command {
 		const stats = await StatsService.getPlayerStats(ctx.serverHost, targetUser);
 
 		if (!stats) {
-			return `[K/D] Khong tim thay thong ke cua player "${targetUser}".`;
+			return `[K/D] Không tìm thấy thống kê của người chơi "${targetUser}".`;
 		}
 
 		const kills = stats.kills || 0;
@@ -80,6 +94,6 @@ export class KdCommand extends Command {
 		const currStreak = stats.currentKillstreak || 0;
 		const maxStreak = stats.highestKillstreak || 0;
 
-		return `[K/D] ${stats.displayName || stats.username}: ${kills}K / ${deaths}D (K/D: ${kdRatio}) | Killstreak: ${currStreak} (Max: ${maxStreak})`;
+		return `[K/D] ${stats.displayName || stats.username}: ${kills} Kills / ${deaths} Deaths (K/D: ${kdRatio}) | Killstreak: ${currStreak} (Cao nhất: ${maxStreak})`;
 	}
 }

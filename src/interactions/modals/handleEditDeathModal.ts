@@ -1,4 +1,10 @@
-import { ModalSubmitInteraction, EmbedBuilder, MessageFlags } from "discord.js";
+import {
+	ModalSubmitInteraction,
+	MessageFlags,
+	ContainerBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+} from "discord.js";
 import { Discord } from "../../structures";
 import { DeathPatternModel } from "../../database/models/DeathPatternModel";
 import { DeathCause } from "../../database/models/DeathModel";
@@ -48,22 +54,25 @@ export async function handleEditDeathModal(client: Discord, interaction: ModalSu
 		await interaction.editReply({ content: "Đã lưu và điều chỉnh K/D & Regex Pattern thành công!" });
 
 		if (interaction.message) {
-			const updatedEmbed = EmbedBuilder.from(interaction.message.embeds[0])
-				.setColor(0x2ea711)
-				.setTitle("Death Message Đã Được Chỉnh Sửa & Xác Minh")
-				.setFields(
-					{ name: "Server Scope", value: `\`${pattern.serverScope}\``, inline: true },
-					{ name: "Nguyên nhân (Cause)", value: `\`${pattern.cause}\``, inline: true },
-					...(customVictim ? [{ name: "Nạn nhân (Victim)", value: `\`${customVictim}\``, inline: true }] : []),
-					...(customKillerOrMob ? [{ name: "Kẻ hạ gục / Mob", value: `\`${customKillerOrMob}\``, inline: true }] : []),
-					{ name: "Tin nhắn gốc", value: `\`\`\`${pattern.sampleMessage || "N/A"}\`\`\`` },
-					{ name: "Regex Đã Sửa", value: `\`\`\`regex\n${pattern.pattern}\`\`\`` }
+			const container = new ContainerBuilder()
+				.setAccentColor(0x2ea711)
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`**Death Message Đã Được Chỉnh Sửa & Xác Minh**\n\n` +
+						`- **Server Scope:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`${pattern.cause}\`\n` +
+						(customVictim ? `- **Nạn nhân:** \`${customVictim}\`\n` : "") +
+						(customKillerOrMob ? `- **Kẻ hạ gục / Mob:** \`${customKillerOrMob}\`\n` : "") +
+						`- **Tin nhắn gốc:** \`\`\`${pattern.sampleMessage || "N/A"}\`\`\`\n` +
+						`- **Regex Đã Sửa:** \`\`\`regex\n${pattern.pattern}\`\`\``
+					)
 				)
-				.setFooter({ text: `Đã chỉnh sửa & duyệt bởi @${interaction.user.username}` });
+				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(`*Đã chỉnh sửa & duyệt bởi @${interaction.user.username}*`)
+				);
 
 			await interaction.message.edit({
-				embeds: [updatedEmbed],
-				components: [],
+				components: [container],
 			});
 		}
 

@@ -1,4 +1,10 @@
-import { ModalSubmitInteraction, EmbedBuilder, MessageFlags } from "discord.js";
+import {
+	ModalSubmitInteraction,
+	MessageFlags,
+	ContainerBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+} from "discord.js";
 import { Discord } from "../../structures";
 import { DeathPatternModel } from "../../database/models/DeathPatternModel";
 import { DeathCause } from "../../database/models/DeathModel";
@@ -47,20 +53,24 @@ export async function handleCreateDeathModal(client: Discord, interaction: Modal
 		await interaction.editReply({ content: "Đã lưu Death Regex Pattern mới và cập nhật K/D thành công!" });
 
 		if (interaction.message) {
-			const updatedEmbed = EmbedBuilder.from(interaction.message.embeds[0])
-				.setColor(0x2ea711)
-				.setTitle("Đã Phân Loại Là Tin Nhắn Tử Vong (Death)")
-				.addFields(
-					{ name: "Nguyên nhân (Cause)", value: `\`${cause}\``, inline: true },
-					...(customVictim ? [{ name: "Nạn nhân", value: `\`${customVictim}\``, inline: true }] : []),
-					...(customKillerOrMob ? [{ name: "Kẻ hạ gục / Mob", value: `\`${customKillerOrMob}\``, inline: true }] : []),
-					{ name: "Death Regex Đã Lưu", value: `\`\`\`regex\n${newRegex}\`\`\`` }
+			const container = new ContainerBuilder()
+				.setAccentColor(0x2ea711)
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`**Đã Phân Loại Là Tin Nhắn Tử Vong (Death)**\n\n` +
+						`- **Nguyên nhân (Cause):** \`${cause}\`\n` +
+						(customVictim ? `- **Nạn nhân:** \`${customVictim}\`\n` : "") +
+						(customKillerOrMob ? `- **Kẻ hạ gục / Mob:** \`${customKillerOrMob}\`\n` : "") +
+						`- **Death Regex Đã Lưu:** \`\`\`regex\n${newRegex}\`\`\``
+					)
 				)
-				.setFooter({ text: `Đã duyệt Death bởi @${interaction.user.username}` });
+				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(`*Đã duyệt Death bởi @${interaction.user.username}*`)
+				);
 
 			await interaction.message.edit({
-				embeds: [updatedEmbed],
-				components: [],
+				components: [container],
 			});
 		}
 

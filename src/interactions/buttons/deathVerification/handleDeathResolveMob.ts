@@ -1,4 +1,10 @@
-import { ButtonInteraction, EmbedBuilder, MessageFlags } from "discord.js";
+import {
+	ButtonInteraction,
+	MessageFlags,
+	ContainerBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+} from "discord.js";
 import { Discord } from "../../../structures";
 import { DeathPatternModel } from "../../../database/models/DeathPatternModel";
 import { DeathCause } from "../../../database/models/DeathModel";
@@ -11,30 +17,38 @@ export async function handleDeathResolveMob(client: Discord, interaction: Button
 	try {
 		const pattern = await DeathPatternModel.findById(patternId);
 		if (!pattern) {
-			await interaction.followUp({ content: "Không tìm thấy pattern này.", flags: MessageFlags.Ephemeral });
+			await interaction.followUp({ content: "Không tìm thấy pattern này trong database.", flags: MessageFlags.Ephemeral });
 			return;
 		}
 
 		pattern.cause = DeathCause.MOB;
-		pattern.pattern = pattern.pattern.replace(/\(\?<killer>\[a-zA-Z0-9_\]\{3,16\}\)/g, "(?<mob>.+?)");
 		pattern.enabled = true;
 		pattern.confirmedBy = interaction.user.tag || interaction.user.username;
 		await pattern.save();
 
 		await RedisManager.invalidateDeathPatterns(pattern.serverScope);
 
-		const updatedEmbed = EmbedBuilder.from(interaction.message.embeds[0])
-			.setColor(0x3498db)
-			.setTitle("Đã Xác Nhận: Là Mob (Quái Vật)")
-			.setFooter({ text: `Xác nhận Mob bởi @${interaction.user.username}` });
+		const container = new ContainerBuilder()
+			.setAccentColor(0x3498db)
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					`**Đã Xác Nhận Là Quái Vật (Mob)**\n\n` +
+					`- **Server:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`MOB\`\n` +
+					`- **Regex:** \`\`\`regex\n${pattern.pattern}\`\`\`\n` +
+					`- **Tin nhắn gốc:** \`\`\`${pattern.sampleMessage || "N/A"}\`\`\``
+				)
+			)
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`*Đã duyệt bởi @${interaction.user.username}*`)
+			);
 
 		await interaction.editReply({
-			embeds: [updatedEmbed],
-			components: [],
+			components: [container],
 		});
 
-		client.logger.info(`[DeathVerification] Resolved conflict as Mob for pattern "${pattern.name}" by ${interaction.user.tag}`);
+		client.logger.info(`[DeathVerification] Pattern "${pattern.name}" resolved as MOB by ${interaction.user.tag}`);
 	} catch (err) {
-		client.logger.error(`[DeathVerification] Error resolving Mob conflict: ${err}`);
+		client.logger.error(`[DeathVerification] Error resolving Mob pattern: ${err}`);
 	}
 }

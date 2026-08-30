@@ -1,4 +1,9 @@
-import { EmbedBuilder } from "discord.js";
+import {
+	ContainerBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+	MessageFlags,
+} from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
 import { StatsService } from "../services/StatsService";
 import { formatDuration } from "../utils/timeFormat";
@@ -19,17 +24,17 @@ export class TopCommand extends Command {
 		const rawCategory = (args[0] || "playtime").toLowerCase();
 
 		let category: "playtime" | "kills" | "deaths" | "messages" = "playtime";
-		let categoryTitle = "Thời gian chơi (Playtime)";
+		let categoryTitle = "Playtime (Thời gian chơi)";
 
 		if (rawCategory === "kills" || rawCategory === "kill" || rawCategory === "k") {
 			category = "kills";
-			categoryTitle = "Kills (Hạ gục)";
+			categoryTitle = "Kills";
 		} else if (rawCategory === "deaths" || rawCategory === "death" || rawCategory === "d") {
 			category = "deaths";
-			categoryTitle = "Deaths (Tử vong)";
+			categoryTitle = "Deaths";
 		} else if (rawCategory === "messages" || rawCategory === "msg" || rawCategory === "chat" || rawCategory === "m") {
 			category = "messages";
-			categoryTitle = "Tin nhắn chat (Messages)";
+			categoryTitle = "Messages";
 		}
 
 		const leaderboard = await StatsService.getLeaderboard(serverHost, category, 10);
@@ -51,14 +56,20 @@ export class TopCommand extends Command {
 			return `\`#${index + 1}\` **${entry.username}** — \`${formattedScore}\``;
 		});
 
-		const embed = new EmbedBuilder()
-			.setColor(0xe67e22)
-			.setTitle(`Bảng Xếp Hạng Top 10: ${categoryTitle}`)
-			.setDescription(listLines.join("\n"))
-			.setFooter({ text: `Server: ${serverHost} | Dùng >top [kills|deaths|playtime|messages]` })
-			.setTimestamp();
+		const container = new ContainerBuilder()
+			.setAccentColor(0xe67e22)
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`**Bảng Xếp Hạng Top 10: ${categoryTitle}**\n\n${listLines.join("\n")}`)
+			)
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`Dùng >top [kills|deaths|playtime|messages]\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+			);
 
-		await message.reply({ embeds: [embed] });
+		await message.reply({
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	}
 
 	public async executeInGame(ctx: InGameCommandContext): Promise<string | void> {
@@ -75,13 +86,13 @@ export class TopCommand extends Command {
 			label = "Deaths";
 		} else if (rawCategory === "messages" || rawCategory === "msg" || rawCategory === "chat" || rawCategory === "m") {
 			category = "messages";
-			label = "Chats";
+			label = "Messages";
 		}
 
 		const leaderboard = await StatsService.getLeaderboard(ctx.serverHost, category, 5);
 
 		if (!leaderboard || leaderboard.length === 0) {
-			return `[Top 5 ${label}] Khong co du lieu xep hang.`;
+			return `[Top 5 ${label}] Chưa có dữ liệu bảng xếp hạng.`;
 		}
 
 		const entriesStr = leaderboard.map((e, idx) => {

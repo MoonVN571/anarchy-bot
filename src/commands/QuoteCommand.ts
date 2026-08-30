@@ -1,4 +1,11 @@
-import { EmbedBuilder } from "discord.js";
+import {
+	ContainerBuilder,
+	SectionBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+	ThumbnailBuilder,
+	MessageFlags,
+} from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
 import { QuoteService } from "../services/QuoteService";
 
@@ -33,20 +40,29 @@ export class QuoteCommand extends Command {
 		}
 
 		const totalQuotes = await QuoteService.getQuotesCount(serverHost, quote.username);
+		const username = quote.displayName || quote.username;
+		const headUrl = `https://mc-heads.net/avatar/${quote.username}/64.png`;
 
-		const embed = new EmbedBuilder()
-			.setColor(0xf1c40f)
-			.setAuthor({
-				name: `${quote.displayName || quote.username}`,
-				iconURL: `https://mc-heads.net/avatar/${quote.username}/64`,
-			})
-			.setDescription(`*“ ${quote.message} ”*`)
-			.setFooter({
-				text: `Server: ${serverHost} | Tổng trích dẫn của player: ${totalQuotes}`,
-			})
-			.setTimestamp(quote.timestamp);
+		const section = new SectionBuilder()
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`**${username}**\n*“ ${quote.message} ”*`)
+			)
+			.setThumbnailAccessory(
+				new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`)
+			);
 
-		await message.reply({ embeds: [embed] });
+		const container = new ContainerBuilder()
+			.setAccentColor(0xf1c40f)
+			.addSectionComponents(section)
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`Tổng Quotes của player: **${totalQuotes}**\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+			);
+
+		await message.reply({
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	}
 
 	public async executeInGame(ctx: InGameCommandContext): Promise<string | void> {
@@ -55,8 +71,8 @@ export class QuoteCommand extends Command {
 
 		if (!quote) {
 			return targetUser
-				? `[Quote] Khong tim thay trich dan nao cua player "${targetUser}".`
-				: `[Quote] Khong co trich dan nao duoc luu tren server.`;
+				? `[Quote] Không tìm thấy trích dẫn nào của người chơi "${targetUser}".`
+				: `[Quote] Chưa có trích dẫn nào được lưu trên server.`;
 		}
 
 		return `[Quote] <${quote.displayName || quote.username}>: "${quote.message}"`;

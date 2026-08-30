@@ -4,11 +4,17 @@ import { DeathCause } from "../database/models/DeathModel";
 import { RedisManager } from "../redis/RedisManager";
 import { isMinecraftMob, MINECRAFT_MOBS } from "./minecraftMobs";
 import {
-	EmbedBuilder,
 	TextChannel,
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
+	StringSelectMenuBuilder,
+	ContainerBuilder,
+	SectionBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+	ThumbnailBuilder,
+	MessageFlags,
 } from "discord.js";
 
 export class DeathRegexLearner {
@@ -27,31 +33,43 @@ export class DeathRegexLearner {
 		if (this.pendingMessages.has(`${serverIp}:${cleanMsg}`)) return null;
 		this.pendingMessages.add(`${serverIp}:${cleanMsg}`);
 
-		// Prevent memory leak on pending set
+		// Prevent duplicate triggers for 10 minutes
 		setTimeout(() => this.pendingMessages.delete(`${serverIp}:${cleanMsg}`), 10 * 60 * 1000);
 
-		// 1. Get online players to identify victim/killer in text
+		// 1. Fetch current online player usernames from Redis
 		const onlinePlayers = await RedisManager.getOnlinePlayers(serverIp);
 		const botPlayers = main.bot?.players ? Object.keys(main.bot.players) : [];
 		const allKnownPlayers = Array.from(new Set([...onlinePlayers, ...botPlayers]));
 
-		// Find players mentioned in the message
-		const foundPlayers = allKnownPlayers.filter(p => {
-			if (!p || p.length < 3) return false;
-			const regex = new RegExp(`\\b${p}\\b`, "i");
-			return regex.test(cleanMsg);
-		});
+		const matchedPlayers: string[] = [];
+		for (const username of allKnownPlayers) {
+			if (!username || username.length < 3) continue;
+			const regex = new RegExp(`\\b${username}\\b`, "i");
+			if (regex.test(cleanMsg)) {
+				matchedPlayers.push(username);
+			}
+		}
 
-		if (foundPlayers.length === 0) {
+		// Also extract any standard Minecraft username format
+		const wordTokens = cleanMsg.split(/\s+/);
+		for (const token of wordTokens) {
+			const cleanToken = token.replace(/[^a-zA-Z0-9_]/g, "");
+			if (/^[a-zA-Z0-9_]{3,16}$/.test(cleanToken)) {
+				if (!matchedPlayers.includes(cleanToken) && !isMinecraftMob(cleanToken)) {
+					matchedPlayers.push(cleanToken);
+				}
+			}
+		}
+
+		if (matchedPlayers.length === 0) {
 			return null;
 		}
 
-		const victim = foundPlayers[0];
-		let killer: string | null = foundPlayers.length > 1 ? foundPlayers[1] : null;
-		let detectedMob: string | null = null;
-		let hasPlayerMobConflict = false;
+		// 2. Identify victim, killer, or mob
+		const victim = matchedPlayers[0];
+		let killer: string | null = matchedPlayers.length > 1 ? matchedPlayers[1] : null;
 
-		// Check if message mentions any known mob
+		let detectedMob: string | null = null;
 		for (const mobName of MINECRAFT_MOBS) {
 			const mobRegex = new RegExp(`\\b${mobName}\\b`, "i");
 			if (mobRegex.test(cleanMsg)) {
@@ -60,76 +78,55 @@ export class DeathRegexLearner {
 			}
 		}
 
-		// Conflict check: killer is both an online player and a known mob name (e.g. player named "Zombie" or "Alex")
-		if (killer && isMinecraftMob(killer)) {
-			hasPlayerMobConflict = true;
-		}
-
-		// 2. Generate candidate regex pattern
-		let generatedPattern = this.escapeRegex(cleanMsg);
-		generatedPattern = generatedPattern.replace(
-			new RegExp(this.escapeRegex(victim), "gi"),
-			"(?<victim>[a-zA-Z0-9_]{3,16})"
-		);
-
+		const hasPlayerMobConflict = killer !== null && isMinecraftMob(killer);
 		let cause = DeathCause.UNKNOWN;
 
 		if (hasPlayerMobConflict) {
-			// Ambiguous: could be PvP or Mob
-			generatedPattern = generatedPattern.replace(
-				new RegExp(this.escapeRegex(killer!), "gi"),
-				"(?<killer>[a-zA-Z0-9_]{3,16})"
-			);
-			cause = DeathCause.UNKNOWN;
+			cause = DeathCause.PVP;
 		} else if (killer) {
-			generatedPattern = generatedPattern.replace(
-				new RegExp(this.escapeRegex(killer), "gi"),
-				"(?<killer>[a-zA-Z0-9_]{3,16})"
-			);
 			cause = DeathCause.PVP;
 		} else if (detectedMob) {
-			generatedPattern = generatedPattern.replace(
-				new RegExp(this.escapeRegex(detectedMob), "gi"),
-				"(?<mob>.+?)"
-			);
 			cause = DeathCause.MOB;
-		} else {
-			const lower = cleanMsg.toLowerCase();
-			if (lower.includes("rơi") || lower.includes("fall") || lower.includes("bay") || lower.includes("dù")) {
-				cause = DeathCause.FALL;
-			} else if (lower.includes("void") || lower.includes("hư không") || lower.includes("thế giới")) {
-				cause = DeathCause.VOID;
-			} else if (lower.includes("dung nham") || lower.includes("lava")) {
-				cause = DeathCause.LAVA;
-			} else if (lower.includes("đuối") || lower.includes("drown")) {
-				cause = DeathCause.DROWN;
-			} else if (lower.includes("tự sát") || lower.includes("suicide")) {
-				cause = DeathCause.SUICIDE;
-			}
+		} else if (/ngã|rơi|fall|fell|hit the ground/i.test(cleanMsg)) {
+			cause = DeathCause.FALL;
+		} else if (/void|hư vô/i.test(cleanMsg)) {
+			cause = DeathCause.VOID;
+		} else if (/drown|chết đuối|ngạt nước/i.test(cleanMsg)) {
+			cause = DeathCause.DROWN;
+		} else if (/lava|fire|cháy|dung nham/i.test(cleanMsg)) {
+			cause = DeathCause.FIRE;
+		} else if (/nổ|tnt|crystal|exploded|blown/i.test(cleanMsg)) {
+			cause = DeathCause.EXPLOSION;
+		} else if (/magic|wither|thuốc độc|phép/i.test(cleanMsg)) {
+			cause = DeathCause.MAGIC;
+		} else if (/suicide|tự sát|died/i.test(cleanMsg)) {
+			cause = DeathCause.SUICIDE;
+		}
+
+		// 3. Auto-generate candidate regex
+		let generatedPattern = this.escapeRegex(cleanMsg);
+		generatedPattern = generatedPattern.replace(new RegExp(this.escapeRegex(victim), "g"), "(?<victim>[a-zA-Z0-9_]{3,16})");
+
+		if (killer && killer !== victim) {
+			generatedPattern = generatedPattern.replace(new RegExp(this.escapeRegex(killer), "g"), "(?<killer>[a-zA-Z0-9_]{3,16})");
+		} else if (detectedMob) {
+			generatedPattern = generatedPattern.replace(new RegExp(this.escapeRegex(detectedMob), "g"), "(?<mob>.+?)");
 		}
 
 		generatedPattern = `^${generatedPattern}$`;
-		const patternName = `auto_${serverIp.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`;
 
-		// 3. Save candidate pattern into MongoDB
 		try {
+			const patternName = `auto_learned_${serverIp.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`;
 			const newPattern = await DeathPatternModel.create({
 				serverScope: serverIp,
 				name: patternName,
 				pattern: generatedPattern,
 				cause,
 				priority: 50,
-				enabled: true,
+				enabled: false,
 				sampleMessage: cleanMsg,
-				confirmedBy: null,
 			});
 
-			await RedisManager.invalidateDeathPatterns(serverIp);
-			main.client.logger.info(
-				`[DeathRegexLearner] Created candidate death pattern for ${serverIp}: "${generatedPattern}" (Cause: ${cause}${hasPlayerMobConflict ? ", CONFLICT DETECTED" : ""})`
-			);
-
-			// 4. Send interactive verification message to dedicated channel
 			const verifyChannelId =
 				process.env.DEATH_VERIFY_CHANNEL_ID ||
 				(main.client.config as any).deathVerificationChannel;
@@ -139,30 +136,6 @@ export class DeathRegexLearner {
 				(main.channel as TextChannel);
 
 			if (targetChannel) {
-				const embed = new EmbedBuilder()
-					.setTitle(
-						hasPlayerMobConflict
-							? "Xung đột: Trùng Tên Người Chơi & Mob"
-							: "Yêu cầu xác minh Death Message mới"
-					)
-					.setColor(hasPlayerMobConflict ? 0xff4500 : 0xffa500)
-					.setDescription(
-						hasPlayerMobConflict
-							? `Tên \`${killer}\` vừa là **Tên người chơi online** vừa là **Tên quái vật (Mob)** trong Minecraft. Vui lòng xác nhận chính xác nguyên nhân bên dưới.`
-							: "Bot phát hiện một câu thông báo tử vong chưa có trong danh mục mẫu. Vui lòng xác minh để hoàn tất học mẫu regex."
-					)
-					.addFields(
-						{ name: "Server", value: `\`${serverIp}\``, inline: true },
-						{ name: "Nguyên nhân (Cause)", value: `\`${cause}\``, inline: true },
-						{ name: "Nạn nhân (Victim)", value: `\`${victim}\``, inline: true },
-						...(killer ? [{ name: "Kẻ hạ gục", value: `\`${killer}\``, inline: true }] : []),
-						...(detectedMob && !killer ? [{ name: "Quái vật (Mob)", value: `\`${detectedMob}\``, inline: true }] : []),
-						{ name: "Tin nhắn gốc", value: `\`\`\`${cleanMsg}\`\`\`` },
-						{ name: "Candidate Regex", value: `\`\`\`regex\n${generatedPattern}\`\`\`` }
-					)
-					.setFooter({ text: `Pattern ID: ${newPattern._id} | Chờ Admin duyệt` })
-					.setTimestamp();
-
 				const row = new ActionRowBuilder<ButtonBuilder>();
 
 				if (hasPlayerMobConflict) {
@@ -197,7 +170,63 @@ export class DeathRegexLearner {
 					);
 				}
 
-				targetChannel.send({ embeds: [embed], components: [row] }).catch((err) => {
+				const causeSelectRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+					new StringSelectMenuBuilder()
+						.setCustomId(`select_death_cause_${newPattern._id}`)
+						.setPlaceholder("Hoặc chọn trực tiếp nguyên nhân tử vong...")
+						.addOptions(
+							{ label: "PvP (Player vs Player)", value: "PVP", description: "Người chơi tiêu diệt lẫn nhau" },
+							{ label: "Mob (Quái vật / Boss)", value: "MOB", description: "Bị quái vật hạ gục" },
+							{ label: "Fall (Rơi ngã)", value: "FALL", description: "Rơi từ trên cao" },
+							{ label: "Void (Hư vô)", value: "VOID", description: "Rơi vào The Void" },
+							{ label: "Drown (Chết đuối)", value: "DROWN", description: "Ngạt nước" },
+							{ label: "Explosion (Cháy nổ)", value: "EXPLOSION", description: "Nổ TNT, Crystal, Creeper" },
+							{ label: "Fire / Lava (Lửa / Dung nham)", value: "FIRE", description: "Chết cháy hoặc rơi vào dung nham" },
+							{ label: "Magic / Wither (Phép thuật)", value: "MAGIC", description: "Thuốc độc, Wither effect" },
+							{ label: "Suicide (Tự sát)", value: "SUICIDE", description: "Tự tử / Lệnh kill" },
+							{ label: "Khác / Chưa xác định", value: "UNKNOWN", description: "Nguyên nhân khác" }
+						)
+				);
+
+				const title = hasPlayerMobConflict
+					? "**Xung đột: Trùng Tên Người Chơi & Mob**"
+					: "**Yêu cầu xác minh Death Message mới**";
+
+				const desc = hasPlayerMobConflict
+					? `Tên \`${killer}\` vừa là **Tên người chơi online** vừa là **Tên quái vật (Mob)** trong Minecraft. Vui lòng xác nhận chính xác nguyên nhân bên dưới.`
+					: "Bot phát hiện một câu thông báo tử vong chưa có trong danh mục mẫu. Vui lòng xác minh để hoàn tất học mẫu regex.";
+
+				const victimHead = `https://mc-heads.net/avatar/${victim}/64.png`;
+
+				const section = new SectionBuilder()
+					.addTextDisplayComponents(
+						new TextDisplayBuilder().setContent(
+							`${title}\n${desc}\n\n` +
+							`- **Server:** \`${serverIp}\` | **Nguyên nhân:** \`${cause}\`\n` +
+							`- **Nạn nhân:** \`${victim}\`${killer ? ` | **Kẻ hạ gục:** \`${killer}\`` : ""}${detectedMob && !killer ? ` | **Quái vật:** \`${detectedMob}\`` : ""}`
+						)
+					)
+					.setThumbnailAccessory(new ThumbnailBuilder().setURL(victimHead).setDescription(`Victim: ${victim}`));
+
+				const container = new ContainerBuilder()
+					.setAccentColor(hasPlayerMobConflict ? 0xff4500 : 0xffa500)
+					.addSectionComponents(section)
+					.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+					.addTextDisplayComponents(
+						new TextDisplayBuilder().setContent(
+							`**Tin nhắn gốc:**\n\`\`\`${cleanMsg}\`\`\`\n` +
+							`**Candidate Regex:**\n\`\`\`regex\n${generatedPattern}\`\`\`\n` +
+							`*Pattern ID: ${newPattern._id} | Chờ Admin duyệt*`
+						)
+					)
+					.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+					.addActionRowComponents(row)
+					.addActionRowComponents(causeSelectRow);
+
+				targetChannel.send({
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				}).catch((err) => {
 					main.client.logger.error(`[DeathRegexLearner] Failed to send verification message: ${err}`);
 				});
 			}
@@ -213,4 +242,3 @@ export class DeathRegexLearner {
 		return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 	}
 }
-

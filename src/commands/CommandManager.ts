@@ -58,7 +58,7 @@ export class CommandManager {
 			return true;
 		} catch (error) {
 			client.logger.error(`[CommandManager] Error executing command >${cmdName}: ${error}`);
-			await message.reply({ content: `❌ Đã xảy ra lỗi khi thực thi lệnh \`>${cmdName}\`.` }).catch(() => {});
+			await message.reply({ content: `Đã xảy ra lỗi khi thực thi lệnh \`>${cmdName}\`.` }).catch(() => {});
 			return true;
 		}
 	}

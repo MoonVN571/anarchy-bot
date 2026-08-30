@@ -1,4 +1,10 @@
-import { ButtonInteraction, EmbedBuilder, MessageFlags } from "discord.js";
+import {
+	ButtonInteraction,
+	MessageFlags,
+	ContainerBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+} from "discord.js";
 import { Discord } from "../../../structures";
 import { SystemPatternModel } from "../../../database/models/SystemPatternModel";
 import { SystemPatternService } from "../../../services/SystemPatternService";
@@ -8,25 +14,33 @@ export async function handleClassifySystem(client: Discord, interaction: ButtonI
 	await interaction.deferUpdate();
 
 	try {
-		const embed = interaction.message.embeds[0];
-		const rawMsgField = embed.fields.find(
-			f => f.name.includes("Noi dung tin nhan") || f.name.includes("Nội dung tin nhắn") || f.name.includes("Message Content")
-		);
-		const rawMsg = rawMsgField ? rawMsgField.value.replace(/```/g, "").trim() : "";
-		const serverField = embed.fields.find(
-			f => f.name.includes("May chu") || f.name.includes("Máy chủ") || f.name.includes("Server")
-		);
-		const serverScope = serverField ? serverField.value.replace(/`/g, "").trim() : "global";
+		const message = interaction.message;
+		const rawContent = message.content || "";
+
+		// Extract raw message from message components or content
+		let rawMsg = "";
+		let serverScope = "global";
+
+		// Parse from message text components if available
+		const fullText = JSON.stringify(message.components || []);
+		const msgMatch = fullText.match(/```(?:regex)?\n?([\s\S]*?)```/);
+		if (msgMatch) {
+			rawMsg = msgMatch[1].trim();
+		}
+
+		if (!rawMsg) {
+			rawMsg = rawContent.trim();
+		}
 
 		if (!rawMsg) {
 			await interaction.followUp({
-				content: "Không thể trích xuất tin nhắn gốc từ Embed.",
+				content: "Không thể trích xuất tin nhắn gốc từ Component.",
 				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
 
-		// Auto-generate system regex pattern (escape special characters, replace numbers with \d+)
+		// Auto-generate system regex pattern
 		let pattern = escapeRegex(rawMsg);
 		pattern = pattern.replace(/\\\d+/g, "\\d+");
 		pattern = `^${pattern}$`;
@@ -46,15 +60,22 @@ export async function handleClassifySystem(client: Discord, interaction: ButtonI
 
 		await SystemPatternService.invalidateCache(serverScope);
 
-		const updatedEmbed = EmbedBuilder.from(embed)
-			.setColor(0x3498db)
-			.setTitle("Đã Phân Loại Là Tin Nhắn Hệ Thống (System)")
-			.addFields({ name: "System Regex Đã Lưu", value: `\`\`\`regex\n${pattern}\`\`\`` })
-			.setFooter({ text: `Đã duyệt System bởi @${interaction.user.username}` });
+		const container = new ContainerBuilder()
+			.setAccentColor(0x3498db)
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					`**Đã Phân Loại Là Tin Nhắn Hệ Thống (System)**\n\n` +
+					`- **System Regex Đã Lưu:** \`\`\`regex\n${pattern}\`\`\`\n` +
+					`- **Tin nhắn mẫu:** \`\`\`${rawMsg}\`\`\``
+				)
+			)
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`*Đã duyệt System bởi @${interaction.user.username}*`)
+			);
 
 		await interaction.editReply({
-			embeds: [updatedEmbed],
-			components: [],
+			components: [container],
 		});
 
 		client.logger.info(`[MessageClassifier] Saved system pattern for "${rawMsg}" by ${interaction.user.tag}`);

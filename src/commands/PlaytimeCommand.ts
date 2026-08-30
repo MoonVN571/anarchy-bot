@@ -1,4 +1,11 @@
-import { EmbedBuilder } from "discord.js";
+import {
+	ContainerBuilder,
+	SectionBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+	ThumbnailBuilder,
+	MessageFlags,
+} from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
 import { StatsService } from "../services/StatsService";
 import { formatDuration, formatTimeAgo } from "../utils/timeFormat";
@@ -34,24 +41,36 @@ export class PlaytimeCommand extends Command {
 			return;
 		}
 
-		const embed = new EmbedBuilder()
-			.setColor(0x3498db)
-			.setAuthor({
-				name: `Thời gian chơi: ${stats.displayName || stats.username}`,
-				iconURL: `https://mc-heads.net/avatar/${stats.username}/64`,
-			})
-			.setThumbnail(`https://mc-heads.net/avatar/${stats.username}/128`)
-			.addFields(
-				{ name: "Tổng Playtime", value: `**${formatDuration(stats.playtime || 0)}**`, inline: false },
-				{ name: "Trạng thái", value: stats.isOnline ? "**Đang Online**" : "**Offline**", inline: true },
-				{ name: "Số lần kết nối", value: `\`${stats.joinCount || 1}\` lần`, inline: true },
-				{ name: "Ngày đầu tiên", value: stats.firstSeen ? formatTimeAgo(stats.firstSeen) : "N/A", inline: true },
-				{ name: "Hoạt động gần nhất", value: stats.lastSeen ? formatTimeAgo(stats.lastSeen) : "N/A", inline: true }
-			)
-			.setFooter({ text: `Server: ${serverHost} | anarchy-bot` })
-			.setTimestamp();
+		const username = stats.displayName || stats.username;
+		const headUrl = `https://mc-heads.net/avatar/${stats.username}/128.png`;
+		const statusText = stats.isOnline ? "Online" : "Offline";
 
-		await message.reply({ embeds: [embed] });
+		const section = new SectionBuilder()
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					`**Playtime: ${username}**\n` +
+					`- Tổng Playtime: **${formatDuration(stats.playtime || 0)}**\n` +
+					`- Trạng thái: **${statusText}** | Số lần kết nối: **${stats.joinCount || 1}**\n` +
+					`- Ngày đầu tiên: ${stats.firstSeen ? formatTimeAgo(stats.firstSeen) : "N/A"}\n` +
+					`- Hoạt động gần nhất: ${stats.lastSeen ? formatTimeAgo(stats.lastSeen) : "N/A"}`
+				)
+			)
+			.setThumbnailAccessory(
+				new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`)
+			);
+
+		const container = new ContainerBuilder()
+			.setAccentColor(0x3498db)
+			.addSectionComponents(section)
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`<t:${Math.floor(Date.now() / 1000)}:F>`)
+			);
+
+		await message.reply({
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	}
 
 	public async executeInGame(ctx: InGameCommandContext): Promise<string | void> {
@@ -59,12 +78,12 @@ export class PlaytimeCommand extends Command {
 		const stats = await StatsService.getPlayerStats(ctx.serverHost, targetUser);
 
 		if (!stats) {
-			return `[Playtime] Khong tim thay du lieu cua player "${targetUser}".`;
+			return `[Playtime] Không tìm thấy dữ liệu của người chơi "${targetUser}".`;
 		}
 
 		const ptStr = formatDuration(stats.playtime || 0);
 		const status = stats.isOnline ? "Online" : "Offline";
 
-		return `[Playtime] ${stats.displayName || stats.username} (${status}): ${ptStr} | Joins: ${stats.joinCount || 1}`;
+		return `[Playtime] ${stats.displayName || stats.username} (${status}): ${ptStr} | Số lần vào: ${stats.joinCount || 1}`;
 	}
 }

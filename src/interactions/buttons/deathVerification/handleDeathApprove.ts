@@ -1,4 +1,10 @@
-import { ButtonInteraction, EmbedBuilder, MessageFlags } from "discord.js";
+import {
+	ButtonInteraction,
+	MessageFlags,
+	ContainerBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+} from "discord.js";
 import { Discord } from "../../../structures";
 import { DeathPatternModel } from "../../../database/models/DeathPatternModel";
 import { RedisManager } from "../../../redis/RedisManager";
@@ -20,14 +26,23 @@ export async function handleDeathApprove(client: Discord, interaction: ButtonInt
 
 		await RedisManager.invalidateDeathPatterns(pattern.serverScope);
 
-		const updatedEmbed = EmbedBuilder.from(interaction.message.embeds[0])
-			.setColor(0x2ea711)
-			.setTitle("Death Message Đã Được Xác Minh")
-			.setFooter({ text: `Đã duyệt bởi @${interaction.user.username} (${interaction.user.id})` });
+		const container = new ContainerBuilder()
+			.setAccentColor(0x2ea711)
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					`**Death Message Đã Được Xác Minh**\n\n` +
+					`- **Server:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`${pattern.cause}\`\n` +
+					`- **Regex:** \`\`\`regex\n${pattern.pattern}\`\`\`\n` +
+					`- **Tin nhắn gốc:** \`\`\`${pattern.sampleMessage || "N/A"}\`\`\``
+				)
+			)
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`*Đã duyệt bởi @${interaction.user.username} (${interaction.user.id})*`)
+			);
 
 		await interaction.editReply({
-			embeds: [updatedEmbed],
-			components: [],
+			components: [container],
 		});
 
 		client.logger.info(`[DeathVerification] Pattern "${pattern.name}" approved by ${interaction.user.tag}`);

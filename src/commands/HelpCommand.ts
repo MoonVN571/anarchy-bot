@@ -1,4 +1,9 @@
-import { EmbedBuilder } from "discord.js";
+import {
+	ContainerBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+	MessageFlags,
+} from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
 import { CommandManager } from "./CommandManager";
 
@@ -27,38 +32,54 @@ export class HelpCommand extends Command {
 				return;
 			}
 
-			const embed = new EmbedBuilder()
-				.setColor(0x3498db)
-				.setTitle(`Chi tiết Lệnh: >${cmd.name}`)
-				.addFields(
-					{ name: "Mô tả", value: cmd.description },
-					{ name: "Cú pháp Discord", value: `\`${cmd.usage}\`` },
-					{ name: "Cú pháp In-game", value: `\`${cmd.inGameUsage}\`` },
-					{ name: "Tên gọi khác (Aliases)", value: cmd.aliases.length > 0 ? cmd.aliases.map(a => `\`>${a}\``).join(", ") : "Không có" }
+			const aliasStr = cmd.aliases.length > 0 ? cmd.aliases.map(a => `\`>${a}\``).join(", ") : "Không có";
+			const container = new ContainerBuilder()
+				.setAccentColor(0x3498db)
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`**Chi tiết Lệnh: >${cmd.name}**\n\n` +
+						`- **Mô tả:** ${cmd.description}\n` +
+						`- **Cú pháp Discord:** \`${cmd.usage}\`\n` +
+						`- **Cú pháp In-game:** \`${cmd.inGameUsage}\`\n` +
+						`- **Aliases:** ${aliasStr}`
+					)
 				)
-				.setFooter({ text: `Server: ${serverHost}` });
+				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(`<t:${Math.floor(Date.now() / 1000)}:F>`)
+				);
 
-			await message.reply({ embeds: [embed] });
+			await message.reply({
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
+			});
 			return;
 		}
 
 		const uniqueCommands = this.manager.getAllCommands();
 		const lines = uniqueCommands.map(cmd => {
 			const aliasStr = cmd.aliases.length > 0 ? ` *(${cmd.aliases.map(a => `>${a}`).join(", ")})*` : "";
-			return `• \`${cmd.usage}\`${aliasStr} (In-game: \`${cmd.inGameUsage}\`)\n  └ ${cmd.description}`;
+			return `- \`${cmd.usage}\`${aliasStr} (In-game: \`${cmd.inGameUsage}\`)\n  └ ${cmd.description}`;
 		});
 
-		const embed = new EmbedBuilder()
-			.setColor(0x9b59b6)
-			.setTitle("Danh Sách Lệnh (Discord: Prefix `>` | In-game: Prefix `!`)")
-			.setDescription(
-				"Bạn có thể nhập trực tiếp các lệnh này trên kênh livechat Discord hoặc trong game Minecraft:\n\n" +
-				lines.join("\n\n")
+		const container = new ContainerBuilder()
+			.setAccentColor(0x9b59b6)
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					"**Danh Sách Lệnh (Discord: Prefix `>` | In-game: Prefix `!`)**\n\n" +
+					"Bạn có thể nhập trực tiếp các lệnh này trên kênh livechat Discord hoặc trong game Minecraft:\n\n" +
+					lines.join("\n\n")
+				)
 			)
-			.setFooter({ text: `Server: ${serverHost} | Dùng >help <lệnh> để xem chi tiết` })
-			.setTimestamp();
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`Dùng >help <lệnh> để xem chi tiết\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+			);
 
-		await message.reply({ embeds: [embed] });
+		await message.reply({
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	}
 
 	public async executeInGame(_ctx: InGameCommandContext): Promise<string | void> {

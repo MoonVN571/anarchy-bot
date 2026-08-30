@@ -71,6 +71,56 @@ export class DeathParserService {
 	}
 
 	/**
+	 * Synchronously extract victim, killer, mob, weapon from death message
+	 */
+	public static extractDeathInfoSync(server: string, text: string): {
+		victim: string;
+		killer?: string | null;
+		mob?: string | null;
+		weapon?: string | null;
+		cause: DeathCause;
+	} | null {
+		if (!text) return null;
+		const clean = text.trim();
+		const s = server.toLowerCase();
+
+		const cached = this.memoryCache.get(s) || this.memoryCache.get("global");
+		if (cached && cached.length > 0) {
+			for (const { regex, patternDoc } of cached) {
+				const m = clean.match(regex);
+				if (m && m.groups && m.groups.victim) {
+					return {
+						victim: m.groups.victim.trim(),
+						killer: m.groups.killer ? m.groups.killer.trim() : null,
+						mob: m.groups.mob ? m.groups.mob.trim() : null,
+						weapon: m.groups.weapon ? m.groups.weapon.trim() : null,
+						cause: patternDoc.cause || DeathCause.UNKNOWN,
+					};
+				}
+			}
+		}
+
+		for (const p of defaultDeathPatterns) {
+			try {
+				const m = clean.match(new RegExp(p.pattern, "i"));
+				if (m && m.groups && m.groups.victim) {
+					return {
+						victim: m.groups.victim.trim(),
+						killer: m.groups.killer ? m.groups.killer.trim() : null,
+						mob: m.groups.mob ? m.groups.mob.trim() : null,
+						weapon: m.groups.weapon ? m.groups.weapon.trim() : null,
+						cause: p.cause || DeathCause.UNKNOWN,
+					};
+				}
+			} catch {
+				// Ignore
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Get compiled regex patterns for a server (scoped + global)
 	 */
 	public static async getPatternsForServer(server: string): Promise<{ regex: RegExp; patternDoc: IDeathPattern }[]> {

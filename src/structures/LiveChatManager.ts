@@ -1,16 +1,16 @@
-import { APIEmbed, TextChannel } from "discord.js";
+import { TextChannel } from "discord.js";
 import { Minecraft } from "./Minecraft";
-import { ParsedChatMessage, MessageType, messageColors } from "../utils/chatParser";
+import { ParsedChatMessage, MessageType } from "../utils/chatParser";
+import { MessageV2Renderer } from "../utils/messageV2Renderer";
 
-interface QueuedMessage {
-	msg: string;
-	type: string;
+interface QueuedEventMessage {
+	parsed: ParsedChatMessage;
 	serverHost: string;
 }
 
 export class LiveChatManager {
 	private main: Minecraft;
-	private messages: QueuedMessage[] = [];
+	private eventQueue: QueuedEventMessage[] = [];
 	private rateLimited = false;
 	private messageWindow: number[] = [];
 	private burstCounter = 0;
@@ -19,18 +19,58 @@ export class LiveChatManager {
 		this.main = main;
 	}
 
-	public push(parsed: ParsedChatMessage): void {
-		if (!parsed.formattedMsg) return;
+	public async push(parsed: ParsedChatMessage): Promise<void> {
+		if (!parsed.formattedMsg && !parsed.message) return;
 		if (parsed.type === MessageType.BotChat) return;
 
-		this.messages.push({
-			type: parsed.type,
-			msg: parsed.formattedMsg,
-			serverHost: this.main.config.connection.host,
+		const channel = this.main.channel as TextChannel;
+		if (!channel) return;
+
+		const serverHost = this.main.config.connection.host;
+
+		// 1. Dispatch Player Chat via Discord Components V2 Container (Skin Head Avatar Section)
+		if (
+			(parsed.type === MessageType.Chat || parsed.type === MessageType.HighlightChat) &&
+			parsed.username
+		) {
+			const container = MessageV2Renderer.renderPlayerChatContainer(parsed);
+
+			try {
+				await channel.send({
+					components: [container],
+					flags: "IsComponentsV2",
+				});
+				return;
+			} catch (err) {
+				this.main.client.logger.debug("LiveChat", `Component V2 send error: ${err}`);
+				return;
+			}
+		}
+
+		// 2. Dispatch PvP Death Event with Dual Player Skin Heads
+		if (parsed.type === MessageType.Dead && parsed.killer && parsed.victim) {
+			const container = MessageV2Renderer.renderPvPDeathContainer(parsed, serverHost);
+
+			try {
+				await channel.send({
+					components: [container],
+					flags: "IsComponentsV2",
+				});
+				return;
+			} catch (err) {
+				this.main.client.logger.debug("LiveChat", `Component V2 send error: ${err}`);
+				return;
+			}
+		}
+
+		// 3. Queue other events (Join, Quit, Mob Death, Server Broadcast, Queue)
+		this.eventQueue.push({
+			parsed,
+			serverHost,
 		});
 
 		this.handleRateLimit();
-		this.sendMessagesToChannel();
+		this.sendEventsToChannel();
 	}
 
 	private handleRateLimit(): void {
@@ -57,8 +97,8 @@ export class LiveChatManager {
 
 			setTimeout(() => {
 				this.rateLimited = false;
-				if (this.messages.some(msg => msg.serverHost === this.main.config.connection.host)) {
-					this.sendMessagesToChannel();
+				if (this.eventQueue.some(msg => msg.serverHost === this.main.config.connection.host)) {
+					this.sendEventsToChannel();
 				}
 			}, rateLimit.time);
 
@@ -68,59 +108,30 @@ export class LiveChatManager {
 		}
 	}
 
-	private sendMessagesToChannel(): void {
+	private async sendEventsToChannel(): Promise<void> {
 		const channel = this.main.channel as TextChannel;
 		if (!channel) return;
 
-		const embeds = this.generateEmbeds();
+		const serverEvents = this.eventQueue.filter(msg => msg.serverHost === this.main.config.connection.host);
+		if (serverEvents.length === 0) return;
+
 		const { rateLimit } = this.main.config.livechat;
+		if (this.rateLimited && serverEvents.length < rateLimit.minimumEmbeds) return;
 
-		if (this.rateLimited && embeds.length < rateLimit.minimumEmbeds) return;
+		// Dispatch each event with Component V2 Container
+		for (const item of serverEvents.slice(0, 5)) {
+			const container = MessageV2Renderer.renderEventContainer(item.parsed, item.serverHost);
 
-		if (embeds.length > 0) {
-			channel.send({ embeds }).catch(err => {
-				this.main.client.logger.error(`Error sending livechat message: ${err}`);
-			});
-			this.messages = this.messages.filter(msg => msg.serverHost !== this.main.config.connection.host);
-		}
-	}
-
-	private generateEmbeds(): APIEmbed[] {
-		const embeds: APIEmbed[] = [];
-		const serverMessages = this.messages.filter(msg => msg.serverHost === this.main.config.connection.host);
-
-		for (let i = 0; i < serverMessages.length; i++) {
-			const prevMsg = serverMessages[i - 1];
-			const currentMsg = serverMessages[i];
-
-			if (!currentMsg.msg) continue;
-
-			// Append to previous embed if same type and under character/line limits
-			if (
-				prevMsg &&
-				prevMsg.type === currentMsg.type &&
-				embeds.length > 0 &&
-				embeds[embeds.length - 1].description &&
-				embeds[embeds.length - 1].description!.length < 4096
-			) {
-				embeds[embeds.length - 1].description = (embeds[embeds.length - 1].description || "") + currentMsg.msg + "\n";
-
-				if (embeds[embeds.length - 1].description!.split("\n").length <= 10) {
-					continue;
-				}
+			try {
+				await channel.send({
+					components: [container],
+					flags: "IsComponentsV2",
+				});
+			} catch (err) {
+				this.main.client.logger.debug("LiveChat", `Component V2 send error for event: ${err}`);
 			}
-
-			const color = (messageColors as Record<string, number>)[currentMsg.type] || 0x979797;
-
-			const embed: APIEmbed = {
-				timestamp: new Date().toISOString(),
-				description: currentMsg.msg + "\n",
-				color: color,
-			};
-
-			embeds.push(embed);
 		}
 
-		return embeds;
+		this.eventQueue = this.eventQueue.filter(msg => msg.serverHost !== this.main.config.connection.host);
 	}
 }

@@ -1,93 +1,78 @@
-import { Minecraft } from "../structures/Minecraft";
-import { MessageType, ChatParser } from "../utils/chatParser";
+import { Minecraft } from "../structures";
 import { DeathParserService } from "./DeathParserService";
 import { SystemPatternService } from "./SystemPatternService";
+import { DeathRegexLearner } from "../utils/deathRegexLearner";
 import { RedisManager } from "../redis/RedisManager";
 import {
-	EmbedBuilder,
 	TextChannel,
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
+	ContainerBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+	MessageFlags,
 } from "discord.js";
-
-export enum ClassifiedCategory {
-	Chat = "CHAT",
-	Join = "JOIN",
-	Leave = "LEAVE",
-	Death = "DEATH",
-	System = "SYSTEM",
-	Unclassified = "UNCLASSIFIED",
-}
 
 export class MessageClassifierService {
 	private static pendingPrompts = new Set<string>();
 
 	/**
-	 * Process and classify incoming Minecraft message
+	 * Main entry point: Inspects non-player messages to either route or prompt for classification
 	 */
 	public static async classifyAndProcess(
-		main: Minecraft,
-		rawText: string,
+		bot: Minecraft,
+		cleanText: string,
 		fullMsg: string,
-		parsedChat: any
-	): Promise<ClassifiedCategory> {
-		const cleanText = (rawText || fullMsg || "").trim();
-		const serverIp = main.config.connection.host;
+		parsed: any
+	): Promise<void> {
+		const serverIp = bot.config.connection.host;
 
-		if (!cleanText) return ClassifiedCategory.Unclassified;
-
-		// 1. Normal Player Chat Message
-		if (parsedChat && parsedChat.username && parsedChat.type === MessageType.Chat) {
-			return ClassifiedCategory.Chat;
+		// 1. Check if it's an existing System message
+		const isSystem = await SystemPatternService.matchSystemMessage(serverIp, cleanText);
+		if (isSystem) {
+			bot.client.logger.debug("Classifier", `[${serverIp}] System message identified: "${cleanText}"`);
+			return;
 		}
 
-		// 2. Player Join Message
-		if (ChatParser.isJoinMessage(cleanText)) {
-			const joinMatch = cleanText.match(
-				/(?:>>\s*)?\[\+\]\s*([a-zA-Z0-9_]{3,16})|([a-zA-Z0-9_]{3,16})\s+(?:joined the game|đã tham gia)/i
-			);
-			const joinedUser = joinMatch ? joinMatch[1] || joinMatch[2] : null;
-			if (joinedUser) {
-				main.playtimeTracker?.handlePlayerJoin(joinedUser);
-			}
-			return ClassifiedCategory.Join;
-		}
-
-		// 3. Player Leave Message
-		if (ChatParser.isLeaveMessage(cleanText)) {
-			const leaveMatch = cleanText.match(
-				/(?:>>\s*)?\[\-\]\s*([a-zA-Z0-9_]{3,16})|([a-zA-Z0-9_]{3,16})\s+(?:left the game|đã rời khỏi|đã rời đi)/i
-			);
-			const leftUser = leaveMatch ? leaveMatch[1] || leaveMatch[2] : null;
-			if (leftUser) {
-				main.playtimeTracker?.handlePlayerLeave(leftUser);
-			}
-			return ClassifiedCategory.Leave;
-		}
-
-		// 4. Check Known Death Patterns
-		const deathResult = await DeathParserService.handleDeathMessage(main, cleanText);
+		// 2. Check if it's an existing Death message
+		const deathResult = await DeathParserService.handleDeathMessage(bot, cleanText);
 		if (deathResult) {
-			return ClassifiedCategory.Death;
+			return;
 		}
 
-		// 5. Check Known System Patterns
-		const systemMatch = await SystemPatternService.matchSystemMessage(serverIp, cleanText);
-		if (systemMatch) {
-			main.client.logger.debug("System", `[${serverIp}] Matched system pattern "${systemMatch.name}": "${cleanText}"`);
-			return ClassifiedCategory.System;
+		// 3. Check for keywords suggesting Death -> Trigger DeathRegexLearner directly
+		if (DeathParserService.hasDeathKeywords(cleanText)) {
+			await DeathRegexLearner.processUnknownDeathMessage(bot, cleanText);
+			return;
 		}
 
-		// 6. Ambiguous / Unclassified Non-Player Message -> Prompt Admin for manual classification
-		this.promptManualClassification(main, serverIp, cleanText).catch(() => {});
-		return ClassifiedCategory.Unclassified;
+		// 4. Check if message is a standard join/leave/queue/auth or chat (skip prompting)
+		if (
+			parsed.type === "join" ||
+			parsed.type === "quit" ||
+			parsed.type === "queue" ||
+			parsed.type === "achievement" ||
+			parsed.type === "whisper" ||
+			parsed.type === "chat" ||
+			parsed.type === "highlightChat" ||
+			parsed.type === "botChat" ||
+			cleanText.length < 4 ||
+			cleanText.toLowerCase().includes("/login") ||
+			cleanText.toLowerCase().includes("/register") ||
+			cleanText.toLowerCase().includes("/pin")
+		) {
+			return;
+		}
+
+		// 5. Unrecognized message -> Prompt Admin for Classification
+		await this.promptAdminClassification(bot, serverIp, cleanText);
 	}
 
 	/**
-	 * Send an interactive Discord prompt asking Admin to classify the message as System or Death
+	 * Send classification prompt with interactive Discord Components V2 Container
 	 */
-	private static async promptManualClassification(
+	public static async promptAdminClassification(
 		main: Minecraft,
 		serverIp: string,
 		cleanText: string
@@ -122,26 +107,6 @@ export class MessageClassifierService {
 
 		if (!targetChannel) return;
 
-		const embed = new EmbedBuilder()
-			.setTitle("Yêu Cầu Phân Loại Tin Nhắn Mới")
-			.setColor(likelyDeath ? 0xffa500 : 0x3498db)
-			.setDescription(
-				"Bot nhận được một tin nhắn hệ thống/server chưa rõ loại. Vui lòng duyệt xem đây là **Thông báo Hệ thống (System)** hay **Thông báo Tử vong (Death)**."
-			)
-			.addFields(
-				{ name: "Máy chủ", value: `\`${serverIp}\``, inline: true },
-				{
-					name: "Dự đoán sơ bộ",
-					value: likelyDeath
-						? `Nghi vấn Death Message (Phát hiện: ${foundPlayers.map(p => `\`${p}\``).join(", ") || "Từ khóa tử vong"})`
-						: "Nghi vấn System / Thông báo Server",
-					inline: true,
-				},
-				{ name: "Nội dung tin nhắn", value: `\`\`\`${cleanText}\`\`\`` }
-			)
-			.setFooter({ text: `ID: ${promptId} | Chọn một trong các nút bên dưới` })
-			.setTimestamp();
-
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
 				.setCustomId(`classify_system_${promptId}`)
@@ -157,7 +122,34 @@ export class MessageClassifierService {
 				.setStyle(ButtonStyle.Secondary)
 		);
 
-		targetChannel.send({ embeds: [embed], components: [row] }).catch((err) => {
+		const prediction = likelyDeath
+			? `Nghi vấn Death Message (Phát hiện: ${foundPlayers.map(p => `\`${p}\``).join(", ") || "Từ khóa tử vong"})`
+			: "Nghi vấn System / Thông báo Server";
+
+		const container = new ContainerBuilder()
+			.setAccentColor(likelyDeath ? 0xffa500 : 0x3498db)
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					"**Yêu Cầu Phân Loại Tin Nhắn Mới**\n" +
+					"Bot nhận được một tin nhắn hệ thống/server chưa rõ loại. Vui lòng duyệt xem đây là **Thông báo Hệ thống (System)** hay **Thông báo Tử vong (Death)**.\n\n" +
+					`- **Máy chủ:** \`${serverIp}\`\n` +
+					`- **Dự đoán sơ bộ:** ${prediction}`
+				)
+			)
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					`**Nội dung tin nhắn:**\n\`\`\`${cleanText}\`\`\`\n` +
+					`*ID: ${promptId} | Chọn một trong các nút bên dưới*`
+				)
+			)
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addActionRowComponents(row);
+
+		targetChannel.send({
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		}).catch((err) => {
 			main.client.logger.error(`[MessageClassifier] Failed to send classification prompt: ${err}`);
 		});
 	}

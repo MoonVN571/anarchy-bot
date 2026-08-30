@@ -1,4 +1,9 @@
-import { EmbedBuilder } from "discord.js";
+import {
+	ContainerBuilder,
+	TextDisplayBuilder,
+	SeparatorBuilder,
+	MessageFlags,
+} from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
 
 export class OnlineCommand extends Command {
@@ -35,23 +40,28 @@ export class OnlineCommand extends Command {
 			playerListStr += ` và **+${remaining} người chơi khác...**`;
 		}
 
-		const embed = new EmbedBuilder()
-			.setColor(0x2ecc71)
-			.setTitle(`Danh Sách Người Chơi Đang Online (${players.length})`)
-			.setDescription(players.length > 0 ? playerListStr : "*Hiện không có người chơi nào online.*")
-			.addFields(
-				{ name: "Máy chủ", value: `\`${serverHost}\``, inline: true },
-				{ name: "Ping bot", value: `${bot.bot.player?.ping || 0}ms`, inline: true }
+		const container = new ContainerBuilder()
+			.setAccentColor(0x2ecc71)
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					`**Danh Sách Người Chơi Đang Online (${players.length})**\n\n` +
+					(players.length > 0 ? playerListStr : "*Hiện không có người chơi nào online.*")
+				)
 			)
-			.setFooter({ text: `Server: ${serverHost} | anarchy-bot` })
-			.setTimestamp();
+			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`Ping bot: **${bot.bot.player?.ping || 0}ms**\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+			);
 
-		await message.reply({ embeds: [embed] });
+		await message.reply({
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	}
 
 	public async executeInGame(ctx: InGameCommandContext): Promise<string | void> {
 		if (!ctx.bot || !ctx.bot.bot || !ctx.bot.bot.players) {
-			return `[Online] Bot chua dong bo danh sach online.`;
+			return `[Online] Bot chưa đồng bộ danh sách người chơi online.`;
 		}
 
 		const players = Object.values(ctx.bot.bot.players)
@@ -59,8 +69,8 @@ export class OnlineCommand extends Command {
 			.map(p => p.username);
 
 		const preview = players.slice(0, 10).join(", ");
-		const extra = players.length > 10 ? ` va +${players.length - 10} players khac` : "";
+		const extra = players.length > 10 ? ` và +${players.length - 10} người chơi khác` : "";
 
-		return `[Online] ${players.length} players online: ${preview}${extra}`;
+		return `[Online] ${players.length} người chơi online: ${preview}${extra}`;
 	}
 }

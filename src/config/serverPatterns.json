@@ -1,0 +1,42 @@
+[
+	{
+		"id": "server_restart",
+		"serverScope": "global",
+		"pattern": "^(?:\\[Server\\]|SERVER|HỆ THỐNG)\\s*[:>>]?\\s*(?:Server|Máy chủ)\\s+(?:sẽ khởi động lại|restart|đóng lại|tắt) trong (?<time>.+)$",
+		"type": "server_restart",
+		"color": 16733525,
+		"priority": 100
+	},
+	{
+		"id": "server_broadcast",
+		"serverScope": "global",
+		"pattern": "^(?:\\[Broadcast\\]|THÔNG BÁO|2Y2C >>|ANARCHY >>)\\s*(?<content>.+)$",
+		"type": "server_broadcast",
+		"color": 16755200,
+		"priority": 90
+	},
+	{
+		"id": "queue_position",
+		"serverScope": "global",
+		"pattern": "^(?:Vị trí trong hàng chờ|Position in queue|Vị trí hàng đợi):\\s*(?<pos>\\d+)(?:\\s*\\/\\s*(?<total>\\d+))?",
+		"type": "queue",
+		"color": 5635925,
+		"priority": 95
+	},
+	{
+		"id": "anti_spam_notice",
+		"serverScope": "global",
+		"pattern": "^(?:\\[AntiSpam\\]|CẢNH BÁO|CHÚ Ý)\\s*[:>>]?\\s*(?:Bạn chat quá nhanh|Vui lòng chat chậm lại|Không thể gửi tin nhắn liên tục).*$",
+		"type": "anti_spam",
+		"color": 16766720,
+		"priority": 85
+	},
+	{
+		"id": "maintenance_notice",
+		"serverScope": "global",
+		"pattern": "^(?:\\[Bảo trì\\]|BẢO TRÌ|MAINTENANCE)\\s*[:>>]?\\s*(?<content>.+)$",
+		"type": "maintenance",
+		"color": 15158332,
+		"priority": 90
+	}
+]

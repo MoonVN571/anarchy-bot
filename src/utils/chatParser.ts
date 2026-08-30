@@ -34,6 +34,12 @@ export interface ParsedChatMessage {
 	formattedMsg: string;
 	rawText: string;
 	username: string | null;
+	targetUser?: string | null;
+	victim?: string | null;
+	killer?: string | null;
+	mob?: string | null;
+	weapon?: string | null;
+	avatarUrl?: string;
 	rank: string | null;
 	message: string;
 }
@@ -306,6 +312,11 @@ export class ChatParser {
 		let formattedMsg = "";
 		let rawText = cleanText;
 
+		let victim: string | null = null;
+		let killer: string | null = null;
+		let mob: string | null = null;
+		let weapon: string | null = null;
+
 		if (!username) {
 			formattedMsg = this.escapeDiscordFormat(cleanText);
 			const serverIp = main.config.connection.host;
@@ -315,8 +326,18 @@ export class ChatParser {
 			else if (this.isJoinMessage(cleanText)) msgType = MessageType.Join;
 			else if (this.isLeaveMessage(cleanText)) msgType = MessageType.Quit;
 			else if (this.isQueueMessage(cleanText)) msgType = MessageType.Queue;
-			else if (DeathParserService.isDeathMessageSync(serverIp, cleanText)) msgType = MessageType.Dead;
-			else msgType = MessageType.Server;
+			else {
+				const deathInfo = DeathParserService.extractDeathInfoSync(serverIp, cleanText);
+				if (deathInfo) {
+					msgType = MessageType.Dead;
+					victim = deathInfo.victim;
+					killer = deathInfo.killer || null;
+					mob = deathInfo.mob || null;
+					weapon = deathInfo.weapon || null;
+				} else {
+					msgType = MessageType.Server;
+				}
+			}
 		} else {
 			let prefix = `**<${this.escapeDiscordFormat(username)}>**`;
 			let rawPrefix = `<${username}>`;
@@ -341,6 +362,10 @@ export class ChatParser {
 			formattedMsg,
 			rawText,
 			username,
+			victim,
+			killer,
+			mob,
+			weapon,
 			rank,
 			message,
 		};
