@@ -13,7 +13,7 @@ export class DiscordController {
 			const guilds = await this.discordClient.getGuilds();
 			res.json({
 				success: true,
-				data: guilds.map(g=>({ guildId: g.id, name: g.name })),
+				data: guilds.map(g => ({ guildId: g.id, name: g.name })),
 			});
 		} catch (error) {
 			res.status(500).json({
@@ -26,7 +26,7 @@ export class DiscordController {
 	getGuildDetails = async (req: Request, res: Response): Promise<void> => {
 		try {
 			const { guildId } = req.params;
-			const guild = await this.discordClient.getGuild(guildId);
+			const guild = await this.discordClient.getGuild(guildId as string);
 			if (!guild) {
 				return void res.status(404).json({
 					success: false,
