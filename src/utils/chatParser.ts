@@ -1,5 +1,7 @@
 import { Colors } from "discord.js";
 import { Minecraft } from "../structures";
+import { DeathParserService } from "../services/DeathParserService";
+import { SystemPatternService } from "../services/SystemPatternService";
 
 export enum MessageType {
 	Chat = "chat",
@@ -15,16 +17,16 @@ export enum MessageType {
 }
 
 export const messageColors: Record<MessageType, number> = {
-	chat: 0x979797,
-	highlightChat: 0x2EA711,
-	server: 0xb60000,
-	whisper: 0xFD00FF,
-	queue: 0xFFC214,
-	dead: 0xDB2D2D,
-	achievement: 0x7DF9FF,
-	botChat: 0x4983e7,
-	join: Colors.Green,
-	quit: Colors.Red,
+	chat: 0x979797, // Xám: Chat người chơi
+	highlightChat: 0x2ea711, // Xanh lá: Greentext (>...)
+	botChat: 0x5865f2, // Blurple: Bot chat
+	whisper: 0xfd00ff, // Hồng tím (Magenta): Thì thầm (Whisper / Msg)
+	server: 0x3498db, // Xanh lam (Sky Blue): Tin nhắn hệ thống / Server broadcast
+	queue: 0xf1c40f, // Vàng (Gold): Hàng đợi (Queue position)
+	dead: 0xdb2d2d, // Đỏ thẫm (Crimson): Thông báo tử vong (Death / Kill)
+	achievement: 0x9b59b6, // Tím (Purple): Thành tựu (Achievement / Advancement)
+	join: 0x2ecc71, // Xanh lá tươi (Emerald): Người chơi vào server [+]
+	quit: 0xe67e22, // Cam ấm (Carrot Orange): Người chơi rời server [-]
 };
 
 export interface ParsedChatMessage {
@@ -306,11 +308,15 @@ export class ChatParser {
 
 		if (!username) {
 			formattedMsg = this.escapeDiscordFormat(cleanText);
+			const serverIp = main.config.serverInfo.ip;
 
 			if (this.isWhisperMsg(cleanText)) msgType = MessageType.Whisper;
 			else if (this.isAchievementMsg(cleanText)) msgType = MessageType.Achievement;
 			else if (this.isJoinMessage(cleanText)) msgType = MessageType.Join;
 			else if (this.isLeaveMessage(cleanText)) msgType = MessageType.Quit;
+			else if (this.isQueueMessage(cleanText)) msgType = MessageType.Queue;
+			else if (DeathParserService.isDeathMessageSync(serverIp, cleanText)) msgType = MessageType.Dead;
+			else msgType = MessageType.Server;
 		} else {
 			let prefix = `**<${this.escapeDiscordFormat(username)}>**`;
 			let rawPrefix = `<${username}>`;
@@ -339,7 +345,7 @@ export class ChatParser {
 	}
 
 	public static isWhisperMsg(text: string): boolean {
-		return /^(?:\w+ Thì thầm:|Đến \w+:) .*$/i.test(text);
+		return /^(?:(?:\w+\s+(?:thì\s+thầm|whispers|tells\s+you|whispered\s+to\s+you):)|(?:(?:Đến|To)\s+\w+:))\s+.*$/i.test(text);
 	}
 
 	public static isAchievementMsg(text: string): boolean {
@@ -352,5 +358,23 @@ export class ChatParser {
 
 	public static isLeaveMessage(text: string): boolean {
 		return /(?:>>\s*)?\[\-\]\s*\w+|(?:\b\w+\s+(?:left the game|đã rời khỏi|đã rời đi))/i.test(text);
+	}
+
+	public static isQueueMessage(text: string): boolean {
+		return /(?:vị\s+trí\s+hàng\s+đợi|hàng\s+đợi|queue\s+position|position\s+in\s+queue)/i.test(text);
+	}
+
+	/**
+	 * Matches text against active death patterns (dynamic memory cache + MongoDB/Redis + default templates)
+	 */
+	public static isDeathMessage(text: string, serverIp: string = "global"): boolean {
+		return DeathParserService.isDeathMessageSync(serverIp, text);
+	}
+
+	/**
+	 * Matches text against active system patterns (dynamic memory cache + MongoDB/Redis + default templates)
+	 */
+	public static isSystemMessage(text: string, serverIp: string = "global"): boolean {
+		return SystemPatternService.isSystemMessageSync(serverIp, text);
 	}
 }

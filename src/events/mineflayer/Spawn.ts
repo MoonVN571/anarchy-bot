@@ -19,6 +19,7 @@ export default class SpawnEvent extends MineflayerEvent {
 		
 		main.joined = true;
 		main.uptime = Date.now();
+		main.playtimeTracker?.start();
 
 		this.setupAutoMessage(main);
 		this.setupChannelTopic(main);

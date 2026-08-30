@@ -3,6 +3,7 @@ import { readdirSync } from "fs";
 import { TextChannel } from "discord.js";
 import { Discord } from ".";
 import { LiveChatManager } from "./LiveChatManager";
+import { PlaytimeTracker } from "../services/PlaytimeTracker";
 import { MineflayerOptions, Server, ServerInfo, ServerIp } from "../typings/types";
 import { MineflayerEvent } from "../typings/MineflayerEvent";
 import { pathfinder } from "mineflayer-pathfinder";
@@ -15,6 +16,7 @@ export class Minecraft {
 	public spawnCount = 0;
 	public bot!: Bot; // Added non-null assertion operator
 	public liveChatManager: LiveChatManager;
+	public playtimeTracker: PlaytimeTracker;
 
 	public readonly dev = false;
 	public readonly config: MineflayerOptions = {
@@ -94,6 +96,7 @@ export class Minecraft {
 		});
 		this.channel = this.client.channels.cache.get(this.config.livechat.channelId) as TextChannel;
 		this.liveChatManager = new LiveChatManager(this);
+		this.playtimeTracker = new PlaytimeTracker(this);
 	}
 
 	private createBot() {

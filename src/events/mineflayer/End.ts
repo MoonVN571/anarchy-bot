@@ -9,6 +9,7 @@ export default class EndEvent extends MineflayerEvent {
 	}
 
 	async execute(main: Minecraft, reason: string): Promise<void> {
+		main.playtimeTracker?.stop();
 		main.client.logger.info(main.config.serverInfo.ip, reason);
 
 		setTimeout(() => {

@@ -9,6 +9,7 @@ export default class KickedEvent extends MineflayerEvent {
 	}
 
 	async execute(main: Minecraft, reason: string, logged: boolean): Promise<void> {
+		main.playtimeTracker?.stop();
 		main.client.logger.info(main.config.serverInfo.ip, reason, logged);
 	}
 }

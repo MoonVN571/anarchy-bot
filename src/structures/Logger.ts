@@ -37,8 +37,9 @@ class Logger {
 				})
 			);
 		}
+		const isDebug = process.env.DEBUG === "true" || process.env.DEBUG === "1";
 		return winston.createLogger({
-			level: "debug",
+			level: isDebug ? "debug" : "info",
 			format: winston.format.combine(
 				winston.format.errors({ stack: true }),
 				timestamp({ format: "DD-MM-YYYY hh:mm:ss.SSS A" }),
@@ -49,13 +50,17 @@ class Logger {
 		});
 	}
 
+	public isDebug(): boolean {
+		return process.env.DEBUG === "true" || process.env.DEBUG === "1";
+	}
+
 	private formatArgs(...args: any[]): string {
 		return args.map(arg => {
 			if (typeof arg === 'object') {
 				try {
-					return JSON.stringify(String(arg), (key, value) =>
+					return JSON.stringify(arg, (key, value) =>
 						typeof value === 'bigint' ? value.toString() : value
-					, 3);
+					);
 				} catch {
 					return String(arg);
 				}
@@ -64,11 +69,14 @@ class Logger {
 		}).join(' ');
 	}
 
-	debug(...args: any[]) {
-		const message = this.formatArgs(...args);
-		const stack = new Error().stack;
-		const callerLine = stack?.split('\n')[2] || 'unknown';
-		this.logger.debug(`${message} (${callerLine.trim()})`);
+	debug(categoryOrMsg: string, ...args: any[]) {
+		if (!this.isDebug()) return;
+		if (args.length > 0) {
+			const message = this.formatArgs(...args);
+			this.logger.debug(`[${categoryOrMsg}] ${message}`);
+		} else {
+			this.logger.debug(categoryOrMsg);
+		}
 	}
 
 	info(...args: any[]) {
