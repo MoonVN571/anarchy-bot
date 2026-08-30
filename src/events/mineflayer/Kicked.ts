@@ -4,12 +4,12 @@ import { MineflayerEvent } from "../../typings/MineflayerEvent";
 export default class KickedEvent extends MineflayerEvent {
 	constructor() {
 		super({
-			name: 'kicked',
+			name: "kicked",
 		});
 	}
 
 	async execute(main: Minecraft, reason: string, logged: boolean): Promise<void> {
 		main.playtimeTracker?.stop();
-		main.client.logger.info(main.config.serverInfo.ip, reason, logged);
+		main.client.logger.warn(`[${main.config.connection.host}] Kicked from server: ${reason} (logged: ${logged})`);
 	}
 }

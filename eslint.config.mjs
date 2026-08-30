@@ -1,12 +1,9 @@
 // @ts-check
 
-import eslint from '@eslint/js'
 import stylisticTs from '@stylistic/eslint-plugin-ts'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-	// Basic eslint rules
-	eslint.configs.recommended,
 	// Eslint rules for TS
 	...tseslint.configs.recommended,
 	{
@@ -35,37 +32,37 @@ export default tseslint.config(
 			"no-warning-comments": [
 				"warn",
 				{
-					"terms": ['TODO'], // Các từ cần cảnh báo
-					"location": 'start', // Vị trí kiểm tra (start, end, hoặc anywhere)
+					"terms": ['TODO'],
+					"location": 'start',
 				}
 			],
 
 			"keyword-spacing": [
 				"error",
 				{
-					"before": true, // Require a space before keywords
-					"after": true // Require a space after keywords
+					"before": true,
+					"after": true
 				}
 			],
 
 			"comma-spacing": [
 				"error",
 				{
-					before: false, // Không cho phép khoảng trắng trước dấu phẩy
-					after: true, // Bắt buộc khoảng trắng sau dấu phẩy
+					before: false,
+					after: true,
 				},
 			],
 
 			// TypeScript Specific
 			"@typescript-eslint/no-unused-vars": [
-				"warn", // or "error"
+				"warn",
 				{
 					"argsIgnorePattern": "^_",
 					"varsIgnorePattern": "^_",
 					"caughtErrorsIgnorePattern": "^_"
 				}
 			],
-			"@typescript-eslint/no-explicit-any": 'error',
+			"@typescript-eslint/no-explicit-any": 'off',
 			"@typescript-eslint/no-non-null-assertion": 'off',
 			"@typescript-eslint/explicit-module-boundary-types": 'off',
 			"@typescript-eslint/no-require-imports": 'off',

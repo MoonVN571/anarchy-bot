@@ -4,12 +4,14 @@ import { RedisManager } from "../redis/RedisManager";
 
 export class PlaytimeTracker {
 	private main: Minecraft;
-	private serverIp: string;
 	private syncInterval: NodeJS.Timeout | null = null;
 
 	constructor(main: Minecraft) {
 		this.main = main;
-		this.serverIp = main.config.serverInfo.ip;
+	}
+
+	private get serverIp(): string {
+		return this.main.config.connection.host;
 	}
 
 	public start(): void {
@@ -138,7 +140,7 @@ export class PlaytimeTracker {
 					$set: { lastSeen: now, isOnline: true },
 					$inc: { playtime: 60 },
 				}
-			).catch(() => { });
+			).catch(() => {});
 		}
 	}
 

@@ -1,5 +1,8 @@
+export * from "./config.types";
+
 export enum Server {
-	Main, Queue,
+	Main,
+	Queue,
 }
 
 export enum DisconnectType {
@@ -14,48 +17,7 @@ export enum ServerIp {
 	MCVui = "mcvui.net",
 }
 
-export interface ServerInfo {
-	ip: ServerIp;
-	auth: "microsoft" | "offline";
-	version: string;
-	livechat: string;
-}
-
-export interface MineflayerOptions {
-	dev?: boolean;
-	username?: string;
-	password?: string;
-	auth: "mojang" | "microsoft" | "offline";
-	authme?: string;
-	pin?: string[];
-	profilesFolder?: string;
-	serverInfo: ServerInfo;
-	reconnectInterval: number;
-	livechat: {
-		channelId?: string;
-		chat: string;
-		autoMessage: {
-			enabled: boolean;
-			interval: number;
-			msgs: string[];
-		},
-		rateLimitFlags: {
-			enabled: boolean;
-			time: number;
-			minimumEmbeds: number;
-			windowSize: number;
-			burstInterval: number;
-			burstThreshold: number;
-			messageThreshold: number;
-		},
-		topic: {
-			enabled: boolean,
-			interval: number;
-		}
-	};
-}
-
-export enum MineflayerEvent {
+export enum MineflayerEventName {
 	Spawn = "spawn",
 	WindowOpen = "windowOpen",
 	End = "end",

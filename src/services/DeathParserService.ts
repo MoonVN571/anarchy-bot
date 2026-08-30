@@ -121,7 +121,7 @@ export class DeathParserService {
 		if (!serverMsg) return null;
 
 		const cleanMsg = serverMsg.trim();
-		const serverIp = main.config.serverInfo.ip;
+		const serverIp = main.config.connection.host;
 
 		const patterns = await this.getPatternsForServer(serverIp);
 

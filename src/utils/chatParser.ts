@@ -308,7 +308,7 @@ export class ChatParser {
 
 		if (!username) {
 			formattedMsg = this.escapeDiscordFormat(cleanText);
-			const serverIp = main.config.serverInfo.ip;
+			const serverIp = main.config.connection.host;
 
 			if (this.isWhisperMsg(cleanText)) msgType = MessageType.Whisper;
 			else if (this.isAchievementMsg(cleanText)) msgType = MessageType.Achievement;
@@ -326,8 +326,10 @@ export class ChatParser {
 			}
 
 			formattedMsg = `${prefix} ${this.escapeDiscordFormat(message)}`;
-			rawText = `${rawPrefix} ${message}`;
-			if (username === main.bot?.username) {
+			const isBot = (main.bot?.username && username.toLowerCase() === main.bot.username.toLowerCase())
+				|| (main.config.connection.username && username.toLowerCase() === main.config.connection.username.toLowerCase());
+
+			if (isBot) {
 				msgType = MessageType.BotChat;
 			} else {
 				msgType = message.startsWith(">") ? MessageType.HighlightChat : MessageType.Chat;

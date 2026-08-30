@@ -22,7 +22,7 @@ export class DeathRegexLearner {
 		serverMsg: string
 	): Promise<IDeathPattern | null> {
 		const cleanMsg = serverMsg.trim();
-		const serverIp = main.config.serverInfo.ip;
+		const serverIp = main.config.connection.host;
 
 		if (this.pendingMessages.has(`${serverIp}:${cleanMsg}`)) return null;
 		this.pendingMessages.add(`${serverIp}:${cleanMsg}`);

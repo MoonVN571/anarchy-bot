@@ -3,10 +3,10 @@ import { Server } from "../typings/types";
 
 export class AuthHandler {
 	/**
-	 * Handles authentication (AuthMe, PIN) and server redirection logic
+	 * Handles in-game authentication (AuthMe, PIN) and server redirection logic
 	 */
 	public static handle(main: Minecraft, rawMsg: string): void {
-		const authme = main.config.authme || process.env.AUTHME;
+		const authme = main.config.auth.authmePassword;
 		const botUsername = main.bot?.username;
 		const lowerMsg = rawMsg.toLowerCase();
 
@@ -43,11 +43,11 @@ export class AuthHandler {
 
 		// 2. Handle PIN authentication
 		if (
-			main.config.pin &&
-			main.config.pin.length > 0 &&
+			main.config.auth.pin &&
+			main.config.auth.pin.length > 0 &&
 			(rawMsg.includes("/pin") || lowerMsg.includes("mã pin") || lowerMsg.includes("nhập pin"))
 		) {
-			main.bot.chat(`/pin ${main.config.pin.join("")}`);
+			main.bot.chat(`/pin ${main.config.auth.pin.join("")}`);
 		}
 
 		// 3. Handle Server Join Detection
@@ -62,13 +62,12 @@ export class AuthHandler {
 			)
 		) {
 			main.currentServer = Server.Main;
+			main.clearQueueTimeout();
 		}
 
 		// 4. Handle Queue Timeout
 		if (main.currentServer !== Server.Main) {
-			setTimeout(() => {
-				if (main.currentServer === Server.Queue) main.bot.quit();
-			}, 5 * 60 * 1000);
+			main.startQueueTimeout();
 		}
 
 		// 5. Handle Server-specific navigation
@@ -76,6 +75,12 @@ export class AuthHandler {
 	}
 
 	private static handleServerNavigation(main: Minecraft, lowerMsg: string): void {
+		if (main.config.auth.autoNavigateCommand) {
+			main.bot.chat(main.config.auth.autoNavigateCommand);
+			main.currentServer = Server.Queue;
+			return;
+		}
+
 		if (lowerMsg.includes("/avn để vào server") || lowerMsg.includes("/avn de vao server")) {
 			main.bot.chat("/avn");
 			main.currentServer = Server.Queue;

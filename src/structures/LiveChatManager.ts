@@ -1,12 +1,11 @@
 import { APIEmbed, TextChannel } from "discord.js";
 import { Minecraft } from "./Minecraft";
-import { ParsedChatMessage, messageColors } from "../utils/chatParser";
-import { ServerIp } from "../typings/types";
+import { ParsedChatMessage, MessageType, messageColors } from "../utils/chatParser";
 
 interface QueuedMessage {
 	msg: string;
 	type: string;
-	server: ServerIp;
+	serverHost: string;
 }
 
 export class LiveChatManager {
@@ -22,11 +21,12 @@ export class LiveChatManager {
 
 	public push(parsed: ParsedChatMessage): void {
 		if (!parsed.formattedMsg) return;
+		if (parsed.type === MessageType.BotChat) return;
 
 		this.messages.push({
 			type: parsed.type,
 			msg: parsed.formattedMsg,
-			server: this.main.config.serverInfo.ip,
+			serverHost: this.main.config.connection.host,
 		});
 
 		this.handleRateLimit();
@@ -34,36 +34,36 @@ export class LiveChatManager {
 	}
 
 	private handleRateLimit(): void {
-		const { rateLimitFlags } = this.main.config.livechat;
-		if (!rateLimitFlags.enabled) return;
+		const { rateLimit } = this.main.config.livechat;
+		if (!rateLimit.enabled) return;
 
 		const now = Date.now();
 		this.messageWindow.push(now);
 
-		// Remove old entries outside the window
+		// Remove old entries outside the sliding window
 		this.messageWindow = this.messageWindow.filter(
-			timestamp => now - timestamp < rateLimitFlags.windowSize
+			timestamp => now - timestamp < rateLimit.windowSize
 		);
 
 		// Track burst counter
 		this.burstCounter++;
-		setTimeout(() => this.burstCounter--, rateLimitFlags.burstInterval);
+		setTimeout(() => this.burstCounter--, rateLimit.burstInterval);
 
-		const windowExceeded = this.messageWindow.length > rateLimitFlags.messageThreshold;
-		const burstExceeded = this.burstCounter > rateLimitFlags.burstThreshold;
+		const windowExceeded = this.messageWindow.length > rateLimit.messageThreshold;
+		const burstExceeded = this.burstCounter > rateLimit.burstThreshold;
 
 		if ((windowExceeded || burstExceeded) && !this.rateLimited) {
 			this.rateLimited = true;
 
 			setTimeout(() => {
 				this.rateLimited = false;
-				if (this.messages.some(msg => msg.server === this.main.config.serverInfo.ip)) {
+				if (this.messages.some(msg => msg.serverHost === this.main.config.connection.host)) {
 					this.sendMessagesToChannel();
 				}
-			}, rateLimitFlags.time);
+			}, rateLimit.time);
 
 			this.main.client.logger.warn(
-				`Rate limit triggered for ${this.main.config.serverInfo.ip}, delaying messages for ${rateLimitFlags.time}ms`
+				`Livechat rate limit triggered for ${this.main.config.connection.host}, delaying messages for ${rateLimit.time}ms`
 			);
 		}
 	}
@@ -73,21 +73,21 @@ export class LiveChatManager {
 		if (!channel) return;
 
 		const embeds = this.generateEmbeds();
-		const { rateLimitFlags } = this.main.config.livechat;
+		const { rateLimit } = this.main.config.livechat;
 
-		if (this.rateLimited && embeds.length < rateLimitFlags.minimumEmbeds) return;
+		if (this.rateLimited && embeds.length < rateLimit.minimumEmbeds) return;
 
 		if (embeds.length > 0) {
 			channel.send({ embeds }).catch(err => {
 				this.main.client.logger.error(`Error sending livechat message: ${err}`);
 			});
-			this.messages = this.messages.filter(msg => msg.server !== this.main.config.serverInfo.ip);
+			this.messages = this.messages.filter(msg => msg.serverHost !== this.main.config.connection.host);
 		}
 	}
 
 	private generateEmbeds(): APIEmbed[] {
 		const embeds: APIEmbed[] = [];
-		const serverMessages = this.messages.filter(msg => msg.server === this.main.config.serverInfo.ip);
+		const serverMessages = this.messages.filter(msg => msg.serverHost === this.main.config.connection.host);
 
 		for (let i = 0; i < serverMessages.length; i++) {
 			const prevMsg = serverMessages[i - 1];
@@ -110,7 +110,7 @@ export class LiveChatManager {
 				}
 			}
 
-			const color = (messageColors as any)[currentMsg.type] || 0x979797;
+			const color = (messageColors as Record<string, number>)[currentMsg.type] || 0x979797;
 
 			const embed: APIEmbed = {
 				timestamp: new Date().toISOString(),

@@ -7,6 +7,7 @@ import { PlayerModel } from "../../database/models/PlayerModel";
 import { RedisManager } from "../../redis/RedisManager";
 import { QuoteService } from "../../services/QuoteService";
 import { MessageClassifierService } from "../../services/MessageClassifierService";
+import { inGameCommandManager } from "../../commands";
 
 export default class MessageStrEvent extends MineflayerEvent {
 	constructor() {
@@ -25,24 +26,40 @@ export default class MessageStrEvent extends MineflayerEvent {
 	): Promise<void> {
 		if (!serverMsg && !jsonMsg) return;
 
-		const serverIp = bot.config.serverInfo.ip;
+		const serverIp = bot.config.connection.host;
 
-		// 1. Parse chat message first to resolve username and full message format
+		// 1. Parse chat message first to resolve username and formatted structure
 		const parsed = ChatParser.parse(bot, serverMsg, jsonMsg, sender);
 		if (!parsed) return;
 
 		const fullMsg = parsed.rawText;
 		if (!fullMsg || fullMsg.endsWith("players sleeping")) return;
 
-		// console.log(`[Minecraft Chat] ${fullMsg}`);
+		// Ignore messages sent by the bot itself
+		if (parsed.type === MessageType.BotChat) return;
 
-		// 2. AuthMe / PIN handling (Non-premium login)
+		// 2. In-Game Minecraft Commands Handler (Prefix "!")
+		if (parsed.username && parsed.message && parsed.message.startsWith("!")) {
+			const isHandled = await inGameCommandManager.handleInGameMessage(bot, parsed.username, parsed.message);
+			if (isHandled) {
+				// Still push to discord livechat or save if needed, but command is handled
+			}
+		} else if (parsed.type === MessageType.Whisper || ChatParser.isWhisperMsg(fullMsg)) {
+			// Extract whisper sender and message if sent as direct whisper
+			const whisperMatch = fullMsg.match(/^([a-zA-Z0-9_]{3,16})\s+(?:thì\s+thầm|whispers|tells\s+you|whispered\s+to\s+you|nhắn\s+cho\s+bạn):\s*(.*)$/i)
+				|| fullMsg.match(/^\[([a-zA-Z0-9_]{3,16})\s*->\s*(?:me|tôi|bạn)\]\s*(.*)$/i);
+			if (whisperMatch && whisperMatch[2].startsWith("!")) {
+				await inGameCommandManager.handleInGameMessage(bot, whisperMatch[1], whisperMatch[2]);
+			}
+		}
+
+		// 3. AuthMe / PIN handling (Non-premium login)
 		AuthHandler.handle(bot, serverMsg || fullMsg);
 
-		// 3. Push to Discord livechat queue
+		// 4. Push to Discord livechat queue
 		bot.liveChatManager.push(parsed);
 
-		// 4. Process Database & Services Asynchronously
+		// 5. Process Database & Services Asynchronously
 		this.processBackgroundServices(bot, serverIp, parsed, fullMsg);
 	}
 
@@ -72,7 +89,7 @@ export default class MessageStrEvent extends MineflayerEvent {
 				message: parsed.message,
 				type: parsed.type,
 				timestamp: new Date(),
-			}).catch(() => { });
+			}).catch(() => {});
 
 			// 2. Increment message count in PlayerModel & Redis Leaderboard
 			PlayerModel.updateOne(
@@ -91,9 +108,9 @@ export default class MessageStrEvent extends MineflayerEvent {
 					$inc: { messageCount: 1 },
 				},
 				{ upsert: true }
-			).catch(() => { });
+			).catch(() => {});
 
-			RedisManager.incrementLeaderboard(serverIp, "messages", lowerUser, 1).catch(() => { });
+			RedisManager.incrementLeaderboard(serverIp, "messages", lowerUser, 1).catch(() => {});
 
 			// 3. Save potential quotes
 			QuoteService.recordPotentialQuote(
@@ -101,11 +118,11 @@ export default class MessageStrEvent extends MineflayerEvent {
 				lowerUser,
 				parsed.username,
 				parsed.message
-			).catch(() => { });
+			).catch(() => {});
 			return;
 		}
 
-		// B. Handle Non-Player Messages (Join/Leave, Death, System, or Unclassified Prompter)
+		// B. Handle Non-Player Messages (Join/Leave, Death, System, or Unclassified Messages)
 		await MessageClassifierService.classifyAndProcess(bot, cleanText, fullMsg, parsed);
 	}
 }

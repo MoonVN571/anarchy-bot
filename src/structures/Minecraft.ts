@@ -1,148 +1,249 @@
 import { Bot, createBot } from "mineflayer";
 import { readdirSync } from "fs";
 import { TextChannel } from "discord.js";
-import { Discord } from ".";
+import { pathfinder } from "mineflayer-pathfinder";
+import { Discord } from "./Discord";
 import { LiveChatManager } from "./LiveChatManager";
 import { PlaytimeTracker } from "../services/PlaytimeTracker";
-import { MineflayerOptions, Server, ServerInfo, ServerIp } from "../typings/types";
+import { MinecraftServerConfig, Server } from "../typings/types";
 import { MineflayerEvent } from "../typings/MineflayerEvent";
-import { pathfinder } from "mineflayer-pathfinder";
 
 export class Minecraft {
+	public client: Discord;
+	public config: MinecraftServerConfig;
+
 	public currentServer: Server = Server.Queue;
 	public uptime: number = 0;
-	public channel: TextChannel;
-	public joined = false;
-	public spawnCount = 0;
-	public bot!: Bot; // Added non-null assertion operator
+	public channel!: TextChannel;
+	public joined: boolean = false;
+	public spawnCount: number = 0;
+	public bot!: Bot;
 	public liveChatManager: LiveChatManager;
 	public playtimeTracker: PlaytimeTracker;
 
-	public readonly dev = false;
-	public readonly config: MineflayerOptions = {
-		username: process.env.BOT_NAME || process.env.EMAIL || "mo0nbot",
-		// password: process.env.PASSWORD,
-		authme: process.env.AUTHME,
-		pin: process.env.PIN?.split(""),
-		auth: (process.env.AUTH_MODE as "microsoft" | "offline") || "offline",
-		profilesFolder: "./.ms_cache",
-		serverInfo: { auth: "offline", ip: ServerIp.anarchyVN, version: "1.19.4", livechat: "000000000000000000" },
-		reconnectInterval: 5 * 60 * 1000,
-		livechat: {
-			/**
-			 * displayName: The display name of the discord user
-			 * message: The message sent by the discord user
-			 */
-			chat: "> [{displayName}] {message} | bit.ly/mo0nbot",
-			rateLimitFlags: {
-				enabled: true,
-				time: 2 * 60 * 1000, // Cooldown period when rate limited
-				windowSize: 10 * 1000, // Sliding window size in ms
-				messageThreshold: 10, // Max messages in window before limiting
-				burstThreshold: 5, // Max messages in quick succession
-				burstInterval: 2 * 1000, // Interval to check for bursts
-				minimumEmbeds: 5, // Minimum embeds to send when rate limited
-			},
-			topic: {
-				enabled: true,
-				interval: 5 * 1000 + 10 * 60 * 1000,
-			},
-			autoMessage: {
-				enabled: false,
-				msgs: [
-					// "Server lưu trữ tin nhắn hơn 25.000 players và hơn 11 triệu tin nhắn tại discord: bit.ly/mo0nbot2",
-					// "Bot đời đầu tại 2y2c anarchy, ghé discord bit.ly/mo0nbot2 để ủng hộ <3",
-					// "Cập nhật livechat các server anarchy tại: bit.ly/mo0nbot2",
-					// "Tin nhắn được gửi mỗi 15 phút, hiện tại là {time}"
-				],
-				interval: 15 * 60 * 1000,
-			},
-		},
-	};
+	private isDestroyed: boolean = false;
+	private reconnectTimer: NodeJS.Timeout | null = null;
+	private queueTimeoutTimer: NodeJS.Timeout | null = null;
+	private topicIntervalTimer: NodeJS.Timeout | null = null;
+	private autoMessageIntervalTimer: NodeJS.Timeout | null = null;
 
-	public client: Discord;
-
-	constructor(client: Discord, serverInfo: ServerInfo) {
+	constructor(client: Discord, config: MinecraftServerConfig) {
 		this.client = client;
-		this.config.dev = this.client.dev;
-		this.config.serverInfo = serverInfo;
-		this.config.livechat.channelId = serverInfo.livechat;
+		this.config = config;
 
-		if (this.config.serverInfo.auth === "offline") {
-			this.config.username = process.env.BOT_NAME || "mo0nbot";
-		} else if (this.config.serverInfo.auth === "microsoft") {
-			this.config.username = process.env.EMAIL;
-		}
-
-		this.createBot();
-		this.loadEvents();
-
-		this.client.on("messageCreate", message => {
-			if (message.author.bot || !message.content) return;
-
-			if (message.channel?.id === this.config.livechat.channelId) {
-				if (message.content.startsWith(">")) return;
-
-				if (!this.joined || this.currentServer !== Server.Main) {
-					message.react(this.client.config.emojis.no_chatting);
-					return;
-				}
-
-				this.bot.chat(this.config.livechat.chat
-					.replace(/\{displayName\}/g, message.author.displayName)
-					.replace(/\{message\}/g, message.content));
-				message.react(this.client.config.emojis.tick);
-			}
-		});
-		this.channel = this.client.channels.cache.get(this.config.livechat.channelId) as TextChannel;
 		this.liveChatManager = new LiveChatManager(this);
 		this.playtimeTracker = new PlaytimeTracker(this);
+
+		this.resolveChannel();
+		this.connect();
 	}
 
-	private createBot() {
-		const isMicrosoft = this.config.serverInfo.auth === "microsoft";
+	public resolveChannel(): void {
+		if (this.config.livechat.channelId) {
+			const channel = this.client.channels.cache.get(this.config.livechat.channelId);
+			if (channel && channel.isTextBased()) {
+				this.channel = channel as TextChannel;
+			}
+		}
+	}
+
+	public connect(): void {
+		if (this.isDestroyed) return;
+
+		this.clearAllTimers();
+		this.joined = false;
+		this.spawnCount = 0;
+		this.currentServer = Server.Queue;
+
+		const isMicrosoft = this.config.connection.auth === "microsoft";
 		const username = isMicrosoft
-			? (this.config.username || process.env.EMAIL)
-			: (this.config.username || process.env.BOT_NAME || "mo0nbot");
+			? this.config.connection.microsoftEmail
+			: (this.config.connection.username || "mo0nbot");
 
 		if (!username) {
-			this.client.logger.error("No username or email provided for Minecraft bot!");
+			this.client.logger.error(`No username or email provided for Minecraft bot on ${this.config.connection.host}!`);
 			return;
 		}
 
-		const botOptions: any = {
-			host: this.config.serverInfo.ip,
-			port: 25565,
+		const botOptions: Record<string, any> = {
+			host: this.config.connection.host,
+			port: this.config.connection.port || 25565,
 			username: username,
-			version: this.config.serverInfo.version,
-			auth: this.config.serverInfo.auth,
+			version: this.config.connection.version || "1.19.4",
+			auth: this.config.connection.auth,
 		};
 
 		if (isMicrosoft) {
-			botOptions.profilesFolder = this.config.profilesFolder || "./.ms_cache";
-			if (this.config.password) {
-				botOptions.password = this.config.password;
+			botOptions.profilesFolder = this.config.connection.profilesFolder || "./.ms_cache";
+			if (this.config.connection.microsoftPassword) {
+				botOptions.password = this.config.connection.microsoftPassword;
 			}
 		}
 
-		this.bot = createBot(botOptions);
-		this.bot.loadPlugin(pathfinder);
+		try {
+			this.bot = createBot(botOptions as any);
+			this.bot.loadPlugin(pathfinder);
+			this.loadEvents();
+		} catch (error) {
+			this.client.logger.error(`Error creating Minecraft bot instance: ${error}`);
+			this.reconnect();
+		}
 	}
 
-	private loadEvents() {
-		readdirSync("./dist/events/mineflayer").forEach(async eventFile => {
-			if (!eventFile.endsWith(".js") && !eventFile.endsWith(".ts")) return;
+	public reconnect(delayMs?: number): void {
+		if (this.isDestroyed) return;
+		if (this.reconnectTimer) return; // Reconnection already scheduled
 
-			const EventClass = (await import(`../events/mineflayer/${eventFile}`)).default;
-			const event: MineflayerEvent = new EventClass();
+		this.clearAllTimers();
+		this.playtimeTracker?.stop();
 
-			/* eslint-disable */
+		const waitTime = delayMs ?? this.config.reconnectInterval;
+		this.client.logger.info(`Reconnecting bot for ${this.config.connection.host} in ${waitTime / 1000}s...`);
 
-			if (event.once)
-				this.bot.once(event.name, (...args: any[]) => event.execute(this, ...args));
-			else
-				this.bot.on(event.name, (...args: any[]) => event.execute(this, ...args));
+		this.reconnectTimer = setTimeout(() => {
+			this.reconnectTimer = null;
+			this.cleanupBotInstance();
+			this.connect();
+		}, waitTime);
+	}
 
-		});
+	public sendChatMessage(displayName: string, message: string): void {
+		if (!this.joined || this.currentServer !== Server.Main || !this.bot) {
+			return;
+		}
+
+		const formatted = this.config.livechat.chatTemplate
+			.replace(/\{displayName\}/g, displayName)
+			.replace(/\{message\}/g, message);
+
+		this.bot.chat(formatted);
+	}
+
+	public startQueueTimeout(): void {
+		if (this.queueTimeoutTimer || this.currentServer === Server.Main) return;
+
+		this.queueTimeoutTimer = setTimeout(() => {
+			if (this.currentServer === Server.Queue && this.bot) {
+				this.client.logger.warn(`Queue timeout reached for ${this.config.connection.host}. Quitting bot.`);
+				this.bot.quit();
+			}
+		}, 5 * 60 * 1000);
+	}
+
+	public clearQueueTimeout(): void {
+		if (this.queueTimeoutTimer) {
+			clearTimeout(this.queueTimeoutTimer);
+			this.queueTimeoutTimer = null;
+		}
+	}
+
+	public startTopicTimer(): void {
+		this.stopTopicTimer();
+		const { topic } = this.config.livechat;
+		if (!topic.enabled) return;
+
+		this.topicIntervalTimer = setInterval(() => {
+			if (this.currentServer !== Server.Main || !this.bot || !this.channel) return;
+
+			const clean = (str: string) => str.replace(/\u00A7[0-9A-FK-OR]|-/gi, "");
+			const tlHeader = this.bot.tablist?.header;
+			const tlFooter = this.bot.tablist?.footer;
+			const header = tlHeader?.json?.text ? clean(tlHeader.json.text) : "";
+			const footer = tlFooter?.json?.text ? clean(tlFooter.json.text + (tlFooter.extra?.join("") || "")) : "";
+			let str = "";
+
+			if (this.config.connection.host === "2y2c.org" && footer) {
+				str += footer.split("\n").slice(1, 2).join("\n");
+			}
+			str += `\nConnected <t:${Math.floor(this.uptime / 1000)}:R>, updated <t:${Math.floor(Date.now() / 1000)}:R>` +
+				"\n\n" + header + footer;
+
+			this.channel.setTopic(str).catch(() => {});
+		}, topic.interval);
+	}
+
+	public stopTopicTimer(): void {
+		if (this.topicIntervalTimer) {
+			clearInterval(this.topicIntervalTimer);
+			this.topicIntervalTimer = null;
+		}
+	}
+
+	public startAutoMessageTimer(): void {
+		this.stopAutoMessageTimer();
+		const { autoMessage } = this.config.livechat;
+		if (!autoMessage.enabled || autoMessage.messages.length === 0) return;
+
+		let msgIndex = 0;
+		this.autoMessageIntervalTimer = setInterval(() => {
+			if (this.currentServer !== Server.Main || !this.bot) return;
+
+			const nowStr = new Date(Date.now() + 7 * 60 * 60 * 1000).toLocaleString("vi-VN");
+			const text = autoMessage.messages[msgIndex].replace(/\{time\}/g, nowStr);
+			this.bot.chat(text);
+
+			msgIndex = (msgIndex + 1) % autoMessage.messages.length;
+		}, autoMessage.interval);
+	}
+
+	public stopAutoMessageTimer(): void {
+		if (this.autoMessageIntervalTimer) {
+			clearInterval(this.autoMessageIntervalTimer);
+			this.autoMessageIntervalTimer = null;
+		}
+	}
+
+	public disconnect(): void {
+		this.clearAllTimers();
+		this.playtimeTracker?.stop();
+		this.cleanupBotInstance();
+	}
+
+	public destroy(): void {
+		this.isDestroyed = true;
+		this.disconnect();
+	}
+
+	private cleanupBotInstance(): void {
+		if (this.bot) {
+			try {
+				this.bot.removeAllListeners();
+				this.bot.quit();
+			} catch {}
+		}
+	}
+
+	private clearAllTimers(): void {
+		if (this.reconnectTimer) {
+			clearTimeout(this.reconnectTimer);
+			this.reconnectTimer = null;
+		}
+		this.clearQueueTimeout();
+		this.stopTopicTimer();
+		this.stopAutoMessageTimer();
+	}
+
+	private loadEvents(): void {
+		try {
+			const eventFiles = readdirSync("./dist/events/mineflayer");
+			for (const eventFile of eventFiles) {
+				if (!eventFile.endsWith(".js") && !eventFile.endsWith(".ts")) continue;
+
+				import(`../events/mineflayer/${eventFile}`).then(module => {
+					const EventClass = module.default;
+					const event: MineflayerEvent = new EventClass();
+
+					if (event.once) {
+						this.bot.once(event.name, (...args: any[]) => event.execute(this, ...args));
+					} else {
+						this.bot.on(event.name, (...args: any[]) => event.execute(this, ...args));
+					}
+				}).catch(err => {
+					this.client.logger.error(`Error loading Mineflayer event ${eventFile}: ${err}`);
+				});
+			}
+		} catch (err) {
+			this.client.logger.error(`Failed to read mineflayer events directory: ${err}`);
+		}
 	}
 }

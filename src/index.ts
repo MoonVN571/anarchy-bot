@@ -1,6 +1,7 @@
-import { ActivityType, GatewayIntentBits, Partials } from "discord.js";
-import { Discord, Minecraft } from "./structures";
+import { ActivityType, Events, GatewayIntentBits, Partials } from "discord.js";
+import { Discord, MinecraftBotManager } from "./structures";
 import { ServerIp } from "./typings/types";
+import { createServerConfig } from "./config";
 import { Express } from "./backend";
 import { Database } from "./database";
 import { RedisClient } from "./redis";
@@ -21,12 +22,12 @@ const client = new Discord({
 	partials: [Partials.Message, Partials.GuildMember, Partials.User],
 });
 
-client.on("ready", async () => {
+client.once(Events.ClientReady, async () => {
 	// 1. Connect MongoDB & Redis Cache
 	await Database.connect();
 	await RedisClient.connect();
 
-	// 2. Start Express Web Server (nếu được bật qua ENABLE_BACKEND=true)
+	// 2. Start Express Web Server (if enabled via ENABLE_BACKEND=true)
 	const enableBackend = process.env.ENABLE_BACKEND === "true";
 	if (enableBackend) {
 		new Express(client);
@@ -34,15 +35,18 @@ client.on("ready", async () => {
 		client.logger.info("Backend service is disabled (ENABLE_BACKEND=false).");
 	}
 
-	// 3. Start Minecraft Bot Instance(s)
-	const authMode = (process.env.AUTH_MODE as "microsoft" | "offline") || "offline";
+	// 3. Initialize Minecraft Bot Manager & Register Server Instances
+	const botManager = new MinecraftBotManager(client);
 
-	new Minecraft(client, {
+	const anarchyVNConfig = createServerConfig({
+		id: "anarchyVN",
+		name: "AnarchyVN (2y2c.org)",
 		ip: ServerIp.anarchyVN,
-		auth: authMode,
 		version: "1.19.4",
-		livechat: client.dev ? "987204059838709780" : "1543610895584727080",
+		channelId: client.dev ? "987204059838709780" : "1543610895584727080",
 	});
+
+	botManager.addServer(anarchyVNConfig);
 });
 
-client.start();
+client.start();

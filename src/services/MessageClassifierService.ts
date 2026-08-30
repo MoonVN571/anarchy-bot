@@ -33,7 +33,7 @@ export class MessageClassifierService {
 		parsedChat: any
 	): Promise<ClassifiedCategory> {
 		const cleanText = (rawText || fullMsg || "").trim();
-		const serverIp = main.config.serverInfo.ip;
+		const serverIp = main.config.connection.host;
 
 		if (!cleanText) return ClassifiedCategory.Unclassified;
 
@@ -123,37 +123,37 @@ export class MessageClassifierService {
 		if (!targetChannel) return;
 
 		const embed = new EmbedBuilder()
-			.setTitle("Yeu cau Phan loai Tin nhan Non-Player Moi")
+			.setTitle("Yêu Cầu Phân Loại Tin Nhắn Mới")
 			.setColor(likelyDeath ? 0xffa500 : 0x3498db)
 			.setDescription(
 				"Bot nhận được một tin nhắn hệ thống/server chưa rõ loại. Vui lòng duyệt xem đây là **Thông báo Hệ thống (System)** hay **Thông báo Tử vong (Death)**."
 			)
 			.addFields(
-				{ name: "May chu", value: `\`${serverIp}\``, inline: true },
+				{ name: "Máy chủ", value: `\`${serverIp}\``, inline: true },
 				{
-					name: "Du doan so bo",
+					name: "Dự đoán sơ bộ",
 					value: likelyDeath
-						? `Nghi van Death Message (Phat hien: ${foundPlayers.map(p => `\`${p}\``).join(", ") || "Tu khoa tu vong"})`
-						: "Nghi van System / Server Announcement",
+						? `Nghi vấn Death Message (Phát hiện: ${foundPlayers.map(p => `\`${p}\``).join(", ") || "Từ khóa tử vong"})`
+						: "Nghi vấn System / Thông báo Server",
 					inline: true,
 				},
-				{ name: "Noi dung tin nhan", value: `\`\`\`${cleanText}\`\`\`` }
+				{ name: "Nội dung tin nhắn", value: `\`\`\`${cleanText}\`\`\`` }
 			)
-			.setFooter({ text: `ID: ${promptId} | Chon mot trong cac nut ben duoi` })
+			.setFooter({ text: `ID: ${promptId} | Chọn một trong các nút bên dưới` })
 			.setTimestamp();
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
 				.setCustomId(`classify_system_${promptId}`)
-				.setLabel("Duyet la System")
+				.setLabel("Duyệt là System")
 				.setStyle(ButtonStyle.Primary),
 			new ButtonBuilder()
 				.setCustomId(`classify_death_${promptId}`)
-				.setLabel("Duyet la Death")
+				.setLabel("Duyệt là Death")
 				.setStyle(ButtonStyle.Success),
 			new ButtonBuilder()
 				.setCustomId(`classify_dismiss_${promptId}`)
-				.setLabel("Bo qua")
+				.setLabel("Bỏ qua")
 				.setStyle(ButtonStyle.Secondary)
 		);
 

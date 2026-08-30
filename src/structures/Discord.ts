@@ -2,13 +2,13 @@ import { Client } from "discord.js";
 
 import { logger } from "./";
 import { loadDiscordEvents } from "../typings/DiscordEvent";
-import config from "../config.json";
+import { botConfig } from "../config";
 
 export class Discord extends Client {
 	public logger = logger;
 
 	public dev = process.env.NODE_ENV == "development";
-	public config = config;
+	public config = botConfig;
 
 	public async start(): Promise<string> {
 		await loadDiscordEvents(this);
