@@ -15,8 +15,26 @@ export async function handleCreateDeathModal(client: Discord, interaction: Modal
 	const newRegex = interaction.fields.getTextInputValue("death_regex").trim();
 	const customVictim = interaction.fields.getTextInputValue("death_victim")?.trim();
 	const customKillerOrMob = interaction.fields.getTextInputValue("death_killer")?.trim();
-	const newCause = interaction.fields.getTextInputValue("death_cause").trim().toUpperCase() as DeathCause;
-	const newScope = interaction.fields.getTextInputValue("death_scope").trim();
+	let newCause = DeathCause.UNKNOWN;
+	try {
+		const selectedCauses = interaction.fields.getStringSelectValues("death_cause");
+		if (selectedCauses && selectedCauses.length > 0) {
+			const val = selectedCauses[0].toUpperCase() as DeathCause;
+			if (Object.values(DeathCause).includes(val)) {
+				newCause = val;
+			}
+		}
+	} catch {
+		try {
+			const textCause = interaction.fields.getTextInputValue("death_cause")?.trim().toUpperCase();
+			if (textCause && Object.values(DeathCause).includes(textCause as DeathCause)) {
+				newCause = textCause as DeathCause;
+			}
+		} catch {
+			newCause = DeathCause.UNKNOWN;
+		}
+	}
+	const newScope = interaction.fields.getTextInputValue("death_scope")?.trim() || "global";
 
 	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -24,7 +42,7 @@ export async function handleCreateDeathModal(client: Discord, interaction: Modal
 		new RegExp(newRegex);
 
 		const patternName = `death_${newScope.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`;
-		const cause = Object.values(DeathCause).includes(newCause) ? newCause : DeathCause.UNKNOWN;
+		const cause = newCause;
 
 		const created = await DeathPatternModel.create({
 			serverScope: newScope || "global",

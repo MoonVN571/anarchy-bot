@@ -3,8 +3,10 @@ import {
 	ModalBuilder,
 	TextInputBuilder,
 	TextInputStyle,
-	ActionRowBuilder,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
 } from "discord.js";
+import { LabelBuilder } from "@discordjs/builders";
 import { Discord } from "../../../structures";
 import { escapeRegex } from "../../../utils/regexUtils";
 
@@ -51,49 +53,108 @@ export async function handleClassifyDeathModal(client: Discord, interaction: But
 		let defaultRegex = escapeRegex(rawMsg);
 		defaultRegex = `^${defaultRegex}$`;
 
-		const regexInput = new TextInputBuilder()
-			.setCustomId("death_regex")
+		const regexLabel = new LabelBuilder()
 			.setLabel("Cụm biểu thức Regex")
-			.setStyle(TextInputStyle.Paragraph)
-			.setValue(defaultRegex)
-			.setPlaceholder("VD: ^(?<victim>[a-zA-Z0-9_]{3,16}) đã chết$")
-			.setRequired(true);
+			.setTextInputComponent(
+				new TextInputBuilder({
+					customId: "death_regex",
+					style: TextInputStyle.Paragraph,
+					value: defaultRegex,
+					placeholder: "VD: ^(?<victim>[a-zA-Z0-9_]{3,16}) đã chết$",
+					required: true,
+				})
+			);
 
-		const victimInput = new TextInputBuilder()
-			.setCustomId("death_victim")
+		const victimLabel = new LabelBuilder()
 			.setLabel("Nạn nhân (Victim)")
-			.setStyle(TextInputStyle.Short)
-			.setPlaceholder("Tên người chơi bị chết")
-			.setRequired(false);
+			.setDescription("Tên người chơi bị chết")
+			.setTextInputComponent(
+				new TextInputBuilder({
+					customId: "death_victim",
+					style: TextInputStyle.Short,
+					placeholder: "Tên người chơi bị chết",
+					required: false,
+				})
+			);
 
-		const killerInput = new TextInputBuilder()
-			.setCustomId("death_killer")
+		const killerLabel = new LabelBuilder()
 			.setLabel("Kẻ hạ gục (Killer) hoặc Quái vật")
-			.setStyle(TextInputStyle.Short)
-			.setPlaceholder("Tên kẻ giết hoặc quái vật")
-			.setRequired(false);
+			.setDescription("Tên kẻ giết hoặc quái vật")
+			.setTextInputComponent(
+				new TextInputBuilder({
+					customId: "death_killer",
+					style: TextInputStyle.Short,
+					placeholder: "Tên kẻ giết hoặc quái vật",
+					required: false,
+				})
+			);
 
-		const causeInput = new TextInputBuilder()
-			.setCustomId("death_cause")
-			.setLabel("Nguyên nhân (PVP, MOB, FALL, VOID...)")
-			.setStyle(TextInputStyle.Short)
-			.setValue("PVP")
-			.setRequired(true);
+		const causeLabel = new LabelBuilder()
+			.setLabel("Nguyên nhân tử vong (Death Cause)")
+			.setDescription("Chọn nguyên nhân phù hợp hoặc để UNKNOWN")
+			.setStringSelectMenuComponent(
+				new StringSelectMenuBuilder()
+					.setCustomId("death_cause")
+					.setPlaceholder("Chọn nguyên nhân tử vong (mặc định UNKNOWN)...")
+					.setMinValues(0)
+					.setMaxValues(1)
+					.addOptions(
+						new StringSelectMenuOptionBuilder()
+							.setLabel("UNKNOWN (Chưa xác định / Khác)")
+							.setValue("UNKNOWN")
+							.setDescription("Nguyên nhân chưa rõ")
+							.setDefault(true),
+						new StringSelectMenuOptionBuilder()
+							.setLabel("PVP (Player vs Player)")
+							.setValue("PVP")
+							.setDescription("Người chơi tiêu diệt lẫn nhau"),
+						new StringSelectMenuOptionBuilder()
+							.setLabel("MOB (Quái vật)")
+							.setValue("MOB")
+							.setDescription("Bị quái vật hạ gục"),
+						new StringSelectMenuOptionBuilder()
+							.setLabel("FALL (Rơi ngã)")
+							.setValue("FALL")
+							.setDescription("Rơi từ trên cao xuống đất"),
+						new StringSelectMenuOptionBuilder()
+							.setLabel("VOID (Hư vô)")
+							.setValue("VOID")
+							.setDescription("Rơi vào khoảng trống không gian"),
+						new StringSelectMenuOptionBuilder()
+							.setLabel("EXPLOSION (Cháy nổ)")
+							.setValue("EXPLOSION")
+							.setDescription("Nổ TNT, Crystal, Creeper"),
+						new StringSelectMenuOptionBuilder()
+							.setLabel("FIRE (Lửa / Dung nham)")
+							.setValue("FIRE")
+							.setDescription("Chết cháy hoặc rơi vào dung nham"),
+						new StringSelectMenuOptionBuilder()
+							.setLabel("DROWN (Chết đuối)")
+							.setValue("DROWN")
+							.setDescription("Ngạt nước dưới nước"),
+						new StringSelectMenuOptionBuilder()
+							.setLabel("MAGIC (Phép thuật / Độc)")
+							.setValue("MAGIC")
+							.setDescription("Thuốc độc, Wither effect, phép"),
+						new StringSelectMenuOptionBuilder()
+							.setLabel("SUICIDE (Tự sát)")
+							.setValue("SUICIDE")
+							.setDescription("Tự tử hoặc dùng lệnh kill")
+					)
+			);
 
-		const scopeInput = new TextInputBuilder()
-			.setCustomId("death_scope")
+		const scopeLabel = new LabelBuilder()
 			.setLabel("Server Scope (global / IP)")
-			.setStyle(TextInputStyle.Short)
-			.setValue(serverScope)
-			.setRequired(true);
+			.setTextInputComponent(
+				new TextInputBuilder({
+					customId: "death_scope",
+					style: TextInputStyle.Short,
+					value: serverScope,
+					required: true,
+				})
+			);
 
-		modal.addComponents(
-			new ActionRowBuilder<TextInputBuilder>().addComponents(regexInput),
-			new ActionRowBuilder<TextInputBuilder>().addComponents(victimInput),
-			new ActionRowBuilder<TextInputBuilder>().addComponents(killerInput),
-			new ActionRowBuilder<TextInputBuilder>().addComponents(causeInput),
-			new ActionRowBuilder<TextInputBuilder>().addComponents(scopeInput)
-		);
+		modal.addLabelComponents(regexLabel, victimLabel, killerLabel, causeLabel, scopeLabel);
 
 		await interaction.showModal(modal);
 	} catch (err) {

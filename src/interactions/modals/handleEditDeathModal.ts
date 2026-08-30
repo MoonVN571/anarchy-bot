@@ -16,8 +16,26 @@ export async function handleEditDeathModal(client: Discord, interaction: ModalSu
 	const newRegex = interaction.fields.getTextInputValue("pattern_regex").trim();
 	const customVictim = interaction.fields.getTextInputValue("pattern_victim")?.trim();
 	const customKillerOrMob = interaction.fields.getTextInputValue("pattern_killer")?.trim();
-	const newCause = interaction.fields.getTextInputValue("pattern_cause").trim().toUpperCase() as DeathCause;
-	const newScope = interaction.fields.getTextInputValue("pattern_scope").trim();
+	let newCause = DeathCause.UNKNOWN;
+	try {
+		const selectedCauses = interaction.fields.getStringSelectValues("pattern_cause");
+		if (selectedCauses && selectedCauses.length > 0) {
+			const val = selectedCauses[0].toUpperCase() as DeathCause;
+			if (Object.values(DeathCause).includes(val)) {
+				newCause = val;
+			}
+		}
+	} catch {
+		try {
+			const textCause = interaction.fields.getTextInputValue("pattern_cause")?.trim().toUpperCase();
+			if (textCause && Object.values(DeathCause).includes(textCause as DeathCause)) {
+				newCause = textCause as DeathCause;
+			}
+		} catch {
+			newCause = DeathCause.UNKNOWN;
+		}
+	}
+	const newScope = interaction.fields.getTextInputValue("pattern_scope")?.trim() || "global";
 
 	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
