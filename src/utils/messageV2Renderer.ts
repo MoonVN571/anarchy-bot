@@ -131,14 +131,16 @@ export class MessageV2Renderer {
 		const accentColor = messageColors[parsed.type] || 0x979797;
 
 		// 1. Join Event
-		if (parsed.type === MessageType.Join && parsed.username) {
-			const headUrl = `https://mc-heads.net/avatar/${parsed.username}/64.png`;
+		if (parsed.type === MessageType.Join) {
+			const username = parsed.username || "Player";
+			const headUrl = `https://mc-heads.net/avatar/${username}/64.png`;
+			const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : "";
 
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(`+ **${parsed.username}** đã tham gia server`)
+					new TextDisplayBuilder().setContent(`+ **${rankPrefix}${username}** đã tham gia server\n> \`${parsed.rawText}\``)
 				)
-				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl));
+				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`));
 
 			return new ContainerBuilder()
 				.setAccentColor(accentColor)
@@ -148,14 +150,16 @@ export class MessageV2Renderer {
 		}
 
 		// 2. Quit Event
-		if (parsed.type === MessageType.Quit && parsed.username) {
-			const headUrl = `https://mc-heads.net/avatar/${parsed.username}/64.png`;
+		if (parsed.type === MessageType.Quit) {
+			const username = parsed.username || "Player";
+			const headUrl = `https://mc-heads.net/avatar/${username}/64.png`;
+			const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : "";
 
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(`- **${parsed.username}** đã rời khỏi server`)
+					new TextDisplayBuilder().setContent(`- **${rankPrefix}${username}** đã rời khỏi server\n> \`${parsed.rawText}\``)
 				)
-				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl));
+				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`));
 
 			return new ContainerBuilder()
 				.setAccentColor(accentColor)

@@ -10,22 +10,26 @@ export class MessageRenderer {
 		const timestamp = new Date().toISOString();
 
 		// 1. Join Event
-		if (parsed.type === MessageType.Join && parsed.username) {
+		if (parsed.type === MessageType.Join) {
+			const username = parsed.username || "Player";
+			const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : "";
 			return {
 				color: 0x2ecc71,
-				description: `+ \`${parsed.username}\` đã tham gia server`,
-				thumbnail: { url: `https://mc-heads.net/avatar/${parsed.username}/64.png` },
+				description: `+ **${rankPrefix}${username}** đã tham gia server\n> \`${parsed.rawText}\``,
+				thumbnail: { url: `https://mc-heads.net/avatar/${username}/64.png` },
 				footer: { text: serverHost },
 				timestamp,
 			};
 		}
 
 		// 2. Quit Event
-		if (parsed.type === MessageType.Quit && parsed.username) {
+		if (parsed.type === MessageType.Quit) {
+			const username = parsed.username || "Player";
+			const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : "";
 			return {
 				color: 0xe67e22,
-				description: `- \`${parsed.username}\` đã rời khỏi server`,
-				thumbnail: { url: `https://mc-heads.net/avatar/${parsed.username}/64.png` },
+				description: `- **${rankPrefix}${username}** đã rời khỏi server\n> \`${parsed.rawText}\``,
+				thumbnail: { url: `https://mc-heads.net/avatar/${username}/64.png` },
 				footer: { text: serverHost },
 				timestamp,
 			};

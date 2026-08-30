@@ -317,16 +317,37 @@ export class ChatParser {
 		let mob: string | null = null;
 		let weapon: string | null = null;
 
-		if (!username) {
+		let finalUsername = username;
+		let finalRank = rank;
+
+		if (!finalUsername) {
 			formattedMsg = this.escapeDiscordFormat(cleanText);
 			const serverIp = main.config.connection.host;
 
-			if (this.isWhisperMsg(cleanText)) msgType = MessageType.Whisper;
-			else if (this.isAchievementMsg(cleanText)) msgType = MessageType.Achievement;
-			else if (this.isJoinMessage(cleanText)) msgType = MessageType.Join;
-			else if (this.isLeaveMessage(cleanText)) msgType = MessageType.Quit;
-			else if (this.isQueueMessage(cleanText)) msgType = MessageType.Queue;
-			else {
+			const joinInfo = this.extractJoinUsername(cleanText);
+			const leaveInfo = this.extractLeaveUsername(cleanText);
+			const achieveUser = this.extractAchievementUsername(cleanText);
+
+			if (this.isWhisperMsg(cleanText)) {
+				msgType = MessageType.Whisper;
+			} else if (achieveUser || this.isAchievementMsg(cleanText)) {
+				msgType = MessageType.Achievement;
+				if (achieveUser) finalUsername = achieveUser;
+			} else if (joinInfo) {
+				msgType = MessageType.Join;
+				finalUsername = joinInfo.username;
+				if (joinInfo.rank) finalRank = joinInfo.rank;
+			} else if (leaveInfo) {
+				msgType = MessageType.Quit;
+				finalUsername = leaveInfo.username;
+				if (leaveInfo.rank) finalRank = leaveInfo.rank;
+			} else if (this.isJoinMessage(cleanText)) {
+				msgType = MessageType.Join;
+			} else if (this.isLeaveMessage(cleanText)) {
+				msgType = MessageType.Quit;
+			} else if (this.isQueueMessage(cleanText)) {
+				msgType = MessageType.Queue;
+			} else {
 				const deathInfo = DeathParserService.extractDeathInfoSync(serverIp, cleanText);
 				if (deathInfo) {
 					msgType = MessageType.Dead;
@@ -339,16 +360,16 @@ export class ChatParser {
 				}
 			}
 		} else {
-			let prefix = `**<${this.escapeDiscordFormat(username)}>**`;
-			let rawPrefix = `<${username}>`;
-			if (rank) {
-				prefix = `**<\`[${rank}]\` ${this.escapeDiscordFormat(username)}>**`;
-				rawPrefix = `[${rank}] <${username}>`;
+			let prefix = `**<${this.escapeDiscordFormat(finalUsername)}>**`;
+			let rawPrefix = `<${finalUsername}>`;
+			if (finalRank) {
+				prefix = `**<\`[${finalRank}]\` ${this.escapeDiscordFormat(finalUsername)}>**`;
+				rawPrefix = `[${finalRank}] <${finalUsername}>`;
 			}
 
 			formattedMsg = `${prefix} ${this.escapeDiscordFormat(message)}`;
-			const isBot = (main.bot?.username && username.toLowerCase() === main.bot.username.toLowerCase())
-				|| (main.config.connection.username && username.toLowerCase() === main.config.connection.username.toLowerCase());
+			const isBot = (main.bot?.username && finalUsername.toLowerCase() === main.bot.username.toLowerCase())
+				|| (main.config.connection.username && finalUsername.toLowerCase() === main.config.connection.username.toLowerCase());
 
 			if (isBot) {
 				msgType = MessageType.BotChat;
@@ -361,12 +382,12 @@ export class ChatParser {
 			type: msgType,
 			formattedMsg,
 			rawText,
-			username,
+			username: finalUsername,
 			victim,
 			killer,
 			mob,
 			weapon,
-			rank,
+			rank: finalRank,
 			message,
 		};
 	}
@@ -377,6 +398,69 @@ export class ChatParser {
 
 	public static isAchievementMsg(text: string): boolean {
 		return /^\w+ has (made the advancement|completed the challenge|reached the goal) \[.*\]$/i.test(text);
+	}
+
+	public static extractAchievementUsername(text: string): string | null {
+		if (!text) return null;
+		const clean = this.cleanMinecraftText(text);
+		const match = clean.match(/^(?:\[(?<rank>[^\]]+)\]\s*)?(?<username>[a-zA-Z0-9_]{3,16})\s+has\s+(?:made the advancement|completed the challenge|reached the goal)/i);
+		return match?.groups?.username || null;
+	}
+
+	/**
+	 * Extract username and optional rank from Join message patterns
+	 */
+	public static extractJoinUsername(text: string): { username: string; rank?: string | null } | null {
+		if (!text) return null;
+		const clean = this.cleanMinecraftText(text);
+
+		// Pattern 1: [+] [VIP] Steve or >> [+] Steve
+		const plusMatch = clean.match(/(?:>>\s*)?\[\+\]\s*(?:\[(?<rank>[^\]]+)\]\s*)?(?<username>[a-zA-Z0-9_]{3,16})/i);
+		if (plusMatch && plusMatch.groups) {
+			return {
+				username: plusMatch.groups.username,
+				rank: plusMatch.groups.rank || null,
+			};
+		}
+
+		// Pattern 2: [Rank] Steve joined the game / đã tham gia / đã kết nối / joined
+		const textMatch = clean.match(/^(?:\[(?<rank>[^\]]+)\]\s*)?(?<username>[a-zA-Z0-9_]{3,16})\s+(?:joined the game|đã tham gia(?:\s+trò chơi|\s+máy chủ|\s+server)?|đã kết nối(?:\s+vào máy chủ|\s+vào server)?|joined\b)/i);
+		if (textMatch && textMatch.groups) {
+			return {
+				username: textMatch.groups.username,
+				rank: textMatch.groups.rank || null,
+			};
+		}
+
+		return null;
+	}
+
+	/**
+	 * Extract username and optional rank from Leave/Quit message patterns
+	 */
+	public static extractLeaveUsername(text: string): { username: string; rank?: string | null } | null {
+		if (!text) return null;
+		const clean = this.cleanMinecraftText(text);
+
+		// Pattern 1: [-] [VIP] Steve or >> [-] Steve
+		const minusMatch = clean.match(/(?:>>\s*)?\[\-\]\s*(?:\[(?<rank>[^\]]+)\]\s*)?(?<username>[a-zA-Z0-9_]{3,16})/i);
+		if (minusMatch && minusMatch.groups) {
+			return {
+				username: minusMatch.groups.username,
+				rank: minusMatch.groups.rank || null,
+			};
+		}
+
+		// Pattern 2: [Rank] Steve left the game / đã rời khỏi / đã rời đi / đã mất kết nối / disconnected / left
+		const textMatch = clean.match(/^(?:\[(?<rank>[^\]]+)\]\s*)?(?<username>[a-zA-Z0-9_]{3,16})\s+(?:left the game|đã rời khỏi(?:\s+trò chơi|\s+máy chủ|\s+server)?|đã rời đi|đã mất kết nối|disconnected|left\b)/i);
+		if (textMatch && textMatch.groups) {
+			return {
+				username: textMatch.groups.username,
+				rank: textMatch.groups.rank || null,
+			};
+		}
+
+		return null;
 	}
 
 	public static isJoinMessage(text: string): boolean {
