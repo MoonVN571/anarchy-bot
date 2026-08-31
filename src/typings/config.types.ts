@@ -54,3 +54,15 @@ export interface MinecraftServerConfig {
 	livechat: LiveChatConfig;
 	reconnectInterval: number; // in ms
 }
+
+export interface BotConfig {
+	emojis: {
+		tick: string;
+		no_chatting: string;
+	};
+	prefix: string;
+	developers: string[];
+	guildId: string;
+	deathVerificationChannel: string;
+	defaultReplyColor?: number;
+}

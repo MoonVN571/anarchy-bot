@@ -1,6 +1,13 @@
 import { Minecraft } from "../../structures";
 import { MineflayerEvent } from "../../typings/MineflayerEvent";
 
+interface MinecraftWindow {
+	requiresConfirmation?: boolean;
+	slots: unknown[];
+	type?: string;
+	title?: string;
+}
+
 export default class WindowOpenEvent extends MineflayerEvent {
 	constructor() {
 		super({
@@ -8,15 +15,14 @@ export default class WindowOpenEvent extends MineflayerEvent {
 		});
 	}
 
-	// eslint-disable-next-line
-	async execute(main: Minecraft, window: any): Promise<void> {
+	async execute(main: Minecraft, window: MinecraftWindow): Promise<void> {
 		window.requiresConfirmation = false;
 
 		main.client.logger.info(`Slot: ${window.slots.length}`);
 
 		switch (window.slots.length) {
 			case 63:
-				main.bot.clickWindow(13, 0, 0);
+				main.bot?.clickWindow(13, 0, 0);
 				break;
 		}
 	}

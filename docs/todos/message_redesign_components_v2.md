@@ -3,19 +3,24 @@
 ## 1. Mục tiêu (Objectives)
 - [x] Đánh giá hiện trạng hiển thị tin nhắn qua Embeds truyền thống.
 - [ ] Chuyển đổi cách hiển thị tin nhắn livechat và sự kiện server sang **Discord Components V2** (Containers, Sections, Text Displays, Separators) kết hợp **Canvas Image Rendering (`@napi-rs/canvas`)**.
-- [ ] **Bảng màu định sẵn (Predefined Palette)**: Render Containers/Sections hoàn toàn dựa trên bảng màu chuẩn hóa `messageColors` có sẵn trong `src/utils/chatParser.ts`, **không tạo thêm mã màu mới** hay hardcode mã màu tùy ý.
+- [ ] **Bảng màu định sẵn & Màu mặc định cho Reply Message**:
+  - [ ] Render Containers/Sections livechat hoàn toàn dựa trên bảng màu chuẩn hóa `messageColors` có sẵn trong `src/utils/chatParser.ts`, **không tạo thêm mã màu mới** hay hardcode mã màu tùy ý.
+  - [ ] Thêm cấu hình **Màu mặc định cho Reply Message của Bot** (`defaultReplyColor: 0x3498db` hoặc cấu hình qua `botConfig.json`) cho các phản hồi lệnh và tin nhắn thông báo chung.
+- [ ] **Chính sách Tắt Ping khi Reply (`allowedMentions: { repliedUser: false }`)**:
+  - [ ] Bắt buộc tất cả các phản hồi lệnh (`message.reply`) đều cấu hình `allowedMentions: { repliedUser: false }` để không làm phiền hoặc ping người dùng liên tục.
 - [ ] **Hệ thống Caching đa tầng (Multi-tier Caching)**: Sử dụng Redis Caching (L2) kết hợp In-Memory Cache (L1) để cache Avatar Buffers và Rendered Images, giảm thiểu tối đa CPU load và network I/O.
 - [ ] **Type Safety tuyệt đối**: Loại bỏ triệt để các kiểu dữ liệu `any`, áp dụng type interface chặt chẽ cho toàn bộ module.
 - [ ] **Chính sách Không dùng Custom Discord Emojis**: Sử dụng 100% Unicode emojis tiêu chuẩn (`✅`, `❌`, `❤️`, `🍖`, `🔥`, `🌌`, `🍀`,...), không sử dụng custom bot emojis dạng `<:name:id>` để tránh lỗi phân quyền hoặc hiển thị sai trên các server khác nhau.
 
 ---
 
-## 2. Checklist Quy chuẩn Bảng màu Predefined (`messageColors`)
+## 2. Checklist Quy chuẩn Bảng màu Predefined & Reply Config
 
-Tất cả các Container và Section Components V2 bắt buộc phải sử dụng trực tiếp các giá trị hằng số từ bảng màu sau:
+Tất cả các Container và Section Components V2 sử dụng các giá trị hằng số từ bảng màu sau:
 
 | Loại tin nhắn (`MessageType`) | Màu Accent Hex | Mã Số Nguyên | Ý nghĩa hiển thị |
 | :--- | :--- | :--- | :--- |
+| `Default Reply (Mặc định)` | `#3498db` | `0x3498db` | Màu mặc định cho reply message & thông báo bot |
 | `MessageType.Chat` | `#979797` | `0x979797` | Chat thông thường của người chơi |
 | `MessageType.HighlightChat` | `#2ea711` | `0x2ea711` | Chat Greentext bắt đầu bằng `>` |
 | `MessageType.BotChat` | `#5865f2` | `0x5865f2` | Tin nhắn do chính Bot gửi |
@@ -70,9 +75,13 @@ Tất cả các Container và Section Components V2 bắt buộc phải sử d�
 
 ---
 
-## 4. Checklist Kỹ thuật: Caching & Type Safety
+## 4. Checklist Kỹ thuật: Caching, Mention Control & Type Safety
 
-### 4.1. Kiến trúc Caching Đa tầng (Multi-tier Caching)
+### 4.1. Quy chuẩn Phản hồi Tin nhắn (No Ping Policy)
+- [ ] Mọi lệnh phản hồi (`message.reply`) đều cấu hình `allowedMentions: { repliedUser: false }`.
+- [ ] Hỗ trợ cấu hình `defaultReplyColor` trong `botConfig.json` (ví dụ: `"defaultReplyColor": 3447003`).
+
+### 4.2. Kiến trúc Caching Đa tầng (Multi-tier Caching)
 - [ ] **L1 In-Memory Fast Cache**:
   - [ ] Lưu trữ trực tiếp trong bộ nhớ RAM của ứng dụng (`Map<string, CacheEntry>`).
   - [ ] Truy xuất tức thì với độ trễ ~0ms.
@@ -84,7 +93,7 @@ Tất cả các Container và Section Components V2 bắt buộc phải sử d�
   - [ ] Tự động chuyển sang L1 In-Memory nếu Redis tạm thời mất kết nối.
   - [ ] Tự động ghi lại vào Redis khi kết nối Redis được khôi phục.
 
-### 4.2. Rà soát & Loại bỏ Kiểu `any` (Zero `any` Policy)
+### 4.3. Rà soát & Loại bỏ Kiểu `any` (Zero `any` Policy)
 - [ ] Khai báo interface chặt chẽ cho toàn bộ dữ liệu Parser: `ParsedChatMessage`, `ServerEventPayload`.
 - [ ] Sử dụng types từ `@napi-rs/canvas` (`SKRSContext2D`, `Canvas`, `Image`).
 - [ ] Sử dụng types từ `prismarine-chat` (`ChatMessage`, `JsonMsg`).
@@ -96,6 +105,7 @@ Tất cả các Container và Section Components V2 bắt buộc phải sử d�
 
 - [ ] **Kiểm tra hiển thị Discord**:
   - [ ] Xác nhận mọi tin nhắn livechat đều hiển thị đúng màu từ bảng `messageColors`.
+  - [ ] Kiểm tra phản hồi lệnh `message.reply` không ping người dùng (`repliedUser: false`).
   - [ ] Kiểm tra hiển thị Avatar Head chuẩn xác từ `mc-heads.net` (kèm fallback `minotar.net`).
   - [ ] Không có custom emoji `<:name:id>` nào bị lỗi hình ảnh hoặc thiếu quyền.
 - [ ] **Kiểm tra tải & Caching**:

@@ -20,6 +20,7 @@ const client = new Discord({
 		activities: [{ type: ActivityType.Custom, name: "Livechat anarchy servers" }],
 	},
 	partials: [Partials.Message, Partials.GuildMember, Partials.User],
+	allowedMentions: { repliedUser: false },
 });
 
 client.once(Events.ClientReady, async () => {

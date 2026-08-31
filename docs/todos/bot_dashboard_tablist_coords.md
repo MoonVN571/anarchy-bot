@@ -8,10 +8,11 @@ Tài liệu này theo dõi lộ trình và chi tiết kỹ thuật cho hệ th�
 
 | Module | Phạm vi Triển khai | Trạng thái |
 | :--- | :--- | :--- |
-| **Canvas Image Renderer** | Render HUD Tọa độ & Tablist Card qua `@napi-rs/canvas` | 🚀 Đã tích hợp |
-| **Smart Caching Engine** | Cache Avatar buffers (TTL 10m) & Image buffers (TTL 2-4s) qua Redis (L2) + Memory (L1) | 🚀 Đã cấu hình |
-| **Discord Livechat Commands** | Lệnh `>pos`, `>tab`, `>status` trên kênh Livechat (100% Unicode emojis) | 🚀 Đã tích hợp |
-| **Predefined Color Palette** | Render Components V2 & HUD dựa trên `messageColors`, không tạo màu mới | 🚀 Đã chuẩn hóa |
+| **Canvas Image Renderer** | Render HUD Tọa độ & Tablist Card qua `@napi-rs/canvas` | ✅ Đã hoàn thành |
+| **Smart Caching Engine** | Cache Avatar buffers (TTL 10m) & Image buffers (TTL 2-4s) qua Redis (L2) + Memory (L1) | ✅ Đã hoàn thành |
+| **Discord Livechat Commands** | Lệnh `>pos`, `>tab`, `>status` trên kênh Livechat (100% Unicode emojis, `allowedMentions: { repliedUser: false }`) | ✅ Đã hoàn thành |
+| **Default Reply Accent Color** | Màu mặc định cho reply message của bot (`defaultReplyColor`) & bảng màu `messageColors` | ✅ Đã hoàn thành |
+| **Type Safety & Zero `any`** | Strict typings cho events, window, bot options, canvas rendering | ✅ Đã hoàn thành |
 | **Backend Web Dashboard** | REST API & Web UI (Glassmorphism Dark Dashboard) | ⏳ Kế hoạch giai đoạn sau |
 
 ---
@@ -43,7 +44,11 @@ Tài liệu này theo dõi lộ trình và chi tiết kỹ thuật cho hệ th�
 
 ---
 
-### Giai đoạn 2: Lệnh Discord Livechat Channel (100% Unicode Emojis & Predefined Colors)
+### Giai đoạn 2: Lệnh Discord Livechat Channel (100% Unicode Emojis, No Ping Reply & Predefined Colors)
+- [x] **Quy chuẩn Phản hồi Không Ping (`allowedMentions: { repliedUser: false }`)**:
+  - [x] Tất cả các tin nhắn phản hồi lệnh (`message.reply`) đều cấu hình `allowedMentions: { repliedUser: false }` để tắt ping người dùng.
+- [x] **Màu Phản Hồi Mặc Định (`defaultReplyColor`)**:
+  - [x] Cấu hình màu accent mặc định cho các container reply message của bot khi không chỉ định màu riêng.
 - [x] **Lệnh Tra cứu Tọa độ (`CoordsCommand.ts`)**:
   - [x] Nhận diện các alias: `pos`, `coords`, `vitri`, `toado` (với tiền tố `>` hoặc `!`).
   - [x] Tạo ảnh HUD tọa độ qua `CanvasRendererService` và đính kèm vào tin nhắn Discord (`AttachmentBuilder`).
@@ -66,10 +71,10 @@ Tài liệu này theo dõi lộ trình và chi tiết kỹ thuật cho hệ th�
 ---
 
 ### Giai đoạn 3: Type Safety & Loại bỏ `any`
-- [ ] **Rà soát Type Safety toàn bộ hệ thống**:
-  - [ ] Khai báo interface tường minh cho tất cả các đối tượng sự kiện và cấu hình.
-  - [ ] Sử dụng types chuẩn từ `mineflayer` (`Bot`, `Player`), `prismarine-chat` (`ChatMessage`), `@napi-rs/canvas` (`SKRSContext2D`, `Canvas`).
-  - [ ] Không sử dụng ép kiểu `any` lỏng lẻo ở các tầng logic nghiệp vụ chính.
+- [x] **Rà soát Type Safety toàn bộ hệ thống**:
+  - [x] Khai báo interface tường minh cho tất cả các đối tượng sự kiện và cấu hình (`BotConfig`, `MinecraftWindow`).
+  - [x] Sử dụng types chuẩn từ `mineflayer` (`Bot`, `Player`, `BotOptions`), `prismarine-chat` (`ChatMessage`), `@napi-rs/canvas` (`SKRSContext2D`, `Canvas`).
+  - [x] Không sử dụng ép kiểu `any` lỏng lẻo ở các tầng logic nghiệp vụ chính.
 
 ---
 
