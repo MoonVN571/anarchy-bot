@@ -1,12 +1,11 @@
-import { Bot, createBot } from "mineflayer";
-import { readdirSync } from "fs";
+import { Bot, createBot, BotOptions } from "mineflayer";
 import { TextChannel } from "discord.js";
 import { pathfinder } from "mineflayer-pathfinder";
 import { Discord } from "./Discord";
 import { LiveChatManager } from "./LiveChatManager";
 import { PlaytimeTracker } from "../services/PlaytimeTracker";
 import { MinecraftServerConfig, Server } from "../typings/types";
-import { MineflayerEvent } from "../typings/MineflayerEvent";
+import { mineflayerEventClasses } from "../events/mineflayer";
 
 export class Minecraft {
 	public client: Discord;
@@ -50,6 +49,7 @@ export class Minecraft {
 	public connect(): void {
 		if (this.isDestroyed) return;
 
+		this.cleanupBotInstance();
 		this.clearAllTimers();
 		this.joined = false;
 		this.spawnCount = 0;
@@ -65,7 +65,7 @@ export class Minecraft {
 			return;
 		}
 
-		const botOptions: Record<string, any> = {
+		const botOptions: BotOptions = {
 			host: this.config.connection.host,
 			port: this.config.connection.port || 25565,
 			username: username,
@@ -81,7 +81,7 @@ export class Minecraft {
 		}
 
 		try {
-			this.bot = createBot(botOptions as any);
+			this.bot = createBot(botOptions);
 			this.bot.loadPlugin(pathfinder);
 			this.loadEvents();
 		} catch (error) {
@@ -210,6 +210,7 @@ export class Minecraft {
 				this.bot.removeAllListeners();
 				this.bot.quit();
 			} catch {}
+			(this as any).bot = null;
 		}
 	}
 
@@ -225,25 +226,16 @@ export class Minecraft {
 
 	private loadEvents(): void {
 		try {
-			const eventFiles = readdirSync("./dist/events/mineflayer");
-			for (const eventFile of eventFiles) {
-				if (!eventFile.endsWith(".js") && !eventFile.endsWith(".ts")) continue;
-
-				import(`../events/mineflayer/${eventFile}`).then(module => {
-					const EventClass = module.default;
-					const event: MineflayerEvent = new EventClass();
-
-					if (event.once) {
-						this.bot.once(event.name, (...args: any[]) => event.execute(this, ...args));
-					} else {
-						this.bot.on(event.name, (...args: any[]) => event.execute(this, ...args));
-					}
-				}).catch(err => {
-					this.client.logger.error(`Error loading Mineflayer event ${eventFile}: ${err}`);
-				});
+			for (const EventClass of mineflayerEventClasses) {
+				const event = new EventClass();
+				if (event.once) {
+					this.bot.once(event.name, (...args: unknown[]) => event.execute(this, ...args));
+				} else {
+					this.bot.on(event.name, (...args: unknown[]) => event.execute(this, ...args));
+				}
 			}
 		} catch (err) {
-			this.client.logger.error(`Failed to read mineflayer events directory: ${err}`);
+			this.client.logger.error(`Failed to bind mineflayer events: ${err}`);
 		}
 	}
 }

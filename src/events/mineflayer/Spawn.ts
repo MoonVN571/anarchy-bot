@@ -6,7 +6,7 @@ export default class SpawnEvent extends MineflayerEvent {
 	constructor() {
 		super({
 			name: "spawn",
-			once: true,
+			once: false,
 		});
 	}
 

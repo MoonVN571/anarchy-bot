@@ -68,6 +68,8 @@ export function createServerConfig(options: CreateServerConfigOptions): Minecraf
 			topic: { ...defaultTopicConfig },
 			autoMessage: { ...defaultAutoMessageConfig },
 		},
-		reconnectInterval: options.reconnectInterval || 5 * 60 * 1000,
+		reconnectInterval:
+			options.reconnectInterval ??
+			(process.env.RECONNECT_INTERVAL_MS ? parseInt(process.env.RECONNECT_INTERVAL_MS, 10) : 10 * 1000),
 	};
 }

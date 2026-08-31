@@ -1,7 +1,7 @@
 {
 	"emojis": {
-		"tick": "<:yes:1356852600514936943>",
-		"no_chatting": "<:nochatting:1356852604034089080>"
+		"tick": "✅",
+		"no_chatting": "❌"
 	},
 	"prefix": "!",
 	"developers": [

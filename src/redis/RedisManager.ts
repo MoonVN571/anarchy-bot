@@ -208,4 +208,66 @@ export class RedisManager {
 			return [];
 		}
 	}
+
+	// 5. Binary Buffer & Image Caching
+	public static async setBuffer(key: string, buffer: Buffer, ttlSeconds?: number): Promise<void> {
+		const client = RedisClient.getClient();
+		if (!client || !RedisClient.ready) return;
+
+		try {
+			const fullKey = `${this.prefix}:${key}`;
+			const base64 = buffer.toString("base64");
+			if (ttlSeconds && ttlSeconds > 0) {
+				await client.set(fullKey, base64, "EX", ttlSeconds);
+			} else {
+				await client.set(fullKey, base64);
+			}
+		} catch {
+			// Ignore cache failure
+		}
+	}
+
+	public static async getBuffer(key: string): Promise<Buffer | null> {
+		const client = RedisClient.getClient();
+		if (!client || !RedisClient.ready) return null;
+
+		try {
+			const fullKey = `${this.prefix}:${key}`;
+			const base64 = await client.get(fullKey);
+			return base64 ? Buffer.from(base64, "base64") : null;
+		} catch {
+			return null;
+		}
+	}
+
+	// 6. Generic JSON Caching
+	public static async setJson<T>(key: string, data: T, ttlSeconds?: number): Promise<void> {
+		const client = RedisClient.getClient();
+		if (!client || !RedisClient.ready) return;
+
+		try {
+			const fullKey = `${this.prefix}:${key}`;
+			const jsonStr = JSON.stringify(data);
+			if (ttlSeconds && ttlSeconds > 0) {
+				await client.set(fullKey, jsonStr, "EX", ttlSeconds);
+			} else {
+				await client.set(fullKey, jsonStr);
+			}
+		} catch {
+			// Ignore cache failure
+		}
+	}
+
+	public static async getJson<T>(key: string): Promise<T | null> {
+		const client = RedisClient.getClient();
+		if (!client || !RedisClient.ready) return null;
+
+		try {
+			const fullKey = `${this.prefix}:${key}`;
+			const data = await client.get(fullKey);
+			return data ? (JSON.parse(data) as T) : null;
+		} catch {
+			return null;
+		}
+	}
 }

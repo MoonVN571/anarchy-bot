@@ -7,6 +7,9 @@ import { PlaytimeCommand } from "./PlaytimeCommand";
 import { QuoteCommand } from "./QuoteCommand";
 import { TopCommand } from "./TopCommand";
 import { OnlineCommand } from "./OnlineCommand";
+import { CoordsCommand } from "./CoordsCommand";
+import { TablistCommand } from "./TablistCommand";
+import { BotStatusCommand } from "./BotStatusCommand";
 import { HelpCommand } from "./HelpCommand";
 
 export class CommandManager {
@@ -70,6 +73,9 @@ export class CommandManager {
 		this.registerCommand(new QuoteCommand());
 		this.registerCommand(new TopCommand());
 		this.registerCommand(new OnlineCommand());
+		this.registerCommand(new CoordsCommand());
+		this.registerCommand(new TablistCommand());
+		this.registerCommand(new BotStatusCommand());
 		this.registerCommand(new HelpCommand(this));
 	}
 }

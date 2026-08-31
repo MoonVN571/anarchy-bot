@@ -6,4 +6,7 @@ export * from "./PlaytimeCommand";
 export * from "./QuoteCommand";
 export * from "./TopCommand";
 export * from "./OnlineCommand";
+export * from "./CoordsCommand";
+export * from "./TablistCommand";
+export * from "./BotStatusCommand";
 export * from "./HelpCommand";
