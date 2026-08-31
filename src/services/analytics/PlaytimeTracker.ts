@@ -64,6 +64,7 @@ export class PlaytimeTracker {
 					$setOnInsert: {
 						server: this.serverIp,
 						username: lowerUser,
+						displayName: cleanUser,
 						firstSeen: nowDate,
 						playtime: 0,
 						kills: 0,
@@ -72,7 +73,6 @@ export class PlaytimeTracker {
 						leaveCount: 0,
 					},
 					$set: {
-						displayName: cleanUser,
 						lastSeen: nowDate,
 						lastJoin: nowDate,
 						isOnline: true,

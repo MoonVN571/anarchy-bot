@@ -48,7 +48,7 @@ export class ViewerManagerService {
 	 * Start the central HTTP server for all bot viewers on a single port
 	 */
 	public startServer(): void {
-		if (this.isRunning || process.env.VIEWER_ENABLED !== "true") return;
+		if (this.isRunning || process.env.VIEWER_ENABLED === "false") return;
 
 		this.server = http.createServer(this.app);
 		this.server.listen(this.port, () => {
@@ -69,7 +69,7 @@ export class ViewerManagerService {
 	 * Register and attach a Minecraft bot to the central viewer server
 	 */
 	public registerBot(botInstance: Minecraft): void {
-		if (process.env.VIEWER_ENABLED !== "true") return;
+		if (process.env.VIEWER_ENABLED === "false") return;
 
 		const serverId = botInstance.config.id;
 		const bot = botInstance.bot;

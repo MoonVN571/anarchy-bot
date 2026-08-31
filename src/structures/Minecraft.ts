@@ -187,7 +187,7 @@ export class Minecraft {
 	}
 
 	public startViewer(): void {
-		if (process.env.VIEWER_ENABLED !== "true" || !this.bot) return;
+		if (process.env.VIEWER_ENABLED === "false" || !this.bot) return;
 		viewerManager.registerBot(this);
 	}
 

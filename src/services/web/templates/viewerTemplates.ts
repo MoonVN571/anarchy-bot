@@ -137,7 +137,7 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
 	<style>
-		* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+		* { box-sizing: border-box; margin: 0; padding: 0; }
 		html, body { width: 100%; height: 100%; overflow: hidden; background: #030712; font-family: 'Inter', sans-serif; color: #f8fafc; }
 		canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; outline: none; }
 
@@ -147,17 +147,18 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 			top: 16px;
 			left: 16px;
 			right: 16px;
-			z-index: 10;
+			z-index: 1000;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			background: rgba(15, 23, 42, 0.75);
+			background: rgba(15, 23, 42, 0.85);
 			backdrop-filter: blur(16px);
 			-webkit-backdrop-filter: blur(16px);
-			border: 1px solid rgba(255, 255, 255, 0.12);
+			border: 1px solid rgba(255, 255, 255, 0.15);
 			border-radius: 16px;
 			padding: 10px 20px;
-			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+			pointer-events: auto;
 		}
 
 		.bot-meta { display: flex; align-items: center; gap: 14px; }
@@ -195,22 +196,27 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 		.stat-pill.coords { color: #38bdf8; font-family: monospace; }
 
 		/* Action Controls */
-		.action-btns { display: flex; align-items: center; gap: 8px; }
+		.action-btns { display: flex; align-items: center; gap: 8px; pointer-events: auto; }
 		.btn-action {
 			display: flex;
 			align-items: center;
 			gap: 6px;
-			background: rgba(30, 41, 59, 0.9);
+			background: rgba(30, 41, 59, 0.95);
 			color: #e2e8f0;
-			border: 1px solid rgba(255, 255, 255, 0.15);
+			border: 1px solid rgba(255, 255, 255, 0.2);
 			padding: 8px 14px;
 			border-radius: 10px;
 			font-size: 0.85rem;
 			font-weight: 600;
 			cursor: pointer;
+			pointer-events: auto !important;
+			user-select: none;
 			transition: all 0.2s ease;
+			position: relative;
+			z-index: 1001;
 		}
-		.btn-action:hover { background: #334155; transform: translateY(-1px); }
+		.btn-action:hover { background: #334155; transform: translateY(-1px); border-color: #38bdf8; }
+		.btn-action:active { transform: translateY(1px); }
 		.btn-action.stop { background: #e11d48; color: #fff; border-color: #be123c; }
 		.btn-action.stop:hover { background: #be123c; box-shadow: 0 0 15px rgba(225, 29, 72, 0.5); }
 		.btn-action.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
@@ -220,16 +226,17 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 			position: absolute;
 			bottom: 16px;
 			left: 16px;
-			z-index: 10;
-			background: rgba(15, 23, 42, 0.65);
+			z-index: 1000;
+			background: rgba(15, 23, 42, 0.75);
 			backdrop-filter: blur(12px);
-			border: 1px solid rgba(255, 255, 255, 0.08);
+			border: 1px solid rgba(255, 255, 255, 0.1);
 			border-radius: 12px;
 			padding: 8px 14px;
 			font-size: 0.75rem;
 			color: #94a3b8;
 			display: flex;
 			gap: 12px;
+			pointer-events: auto;
 		}
 		.hint-item strong { color: #38bdf8; }
 
@@ -239,14 +246,14 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 			top: 50%;
 			left: 50%;
 			transform: translate(-50%, -50%) scale(0.95);
-			z-index: 20;
-			background: rgba(17, 24, 39, 0.88);
+			z-index: 2000;
+			background: rgba(17, 24, 39, 0.95);
 			backdrop-filter: blur(20px);
 			-webkit-backdrop-filter: blur(20px);
-			border: 1px solid rgba(255, 255, 255, 0.18);
+			border: 1px solid rgba(255, 255, 255, 0.2);
 			border-radius: 20px;
 			padding: 24px;
-			box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+			box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
 			opacity: 0;
 			pointer-events: none;
 			transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -255,7 +262,7 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 		}
 		.inventory-modal.open {
 			opacity: 1;
-			pointer-events: auto;
+			pointer-events: auto !important;
 			transform: translate(-50%, -50%) scale(1);
 		}
 
@@ -338,7 +345,7 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 		/* Minecraft Hover Tooltip */
 		.mc-tooltip {
 			position: fixed;
-			z-index: 100;
+			z-index: 3000;
 			background: #100010;
 			border: 2px solid #2b0c54;
 			border-radius: 6px;
@@ -359,7 +366,7 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 			bottom: 60px;
 			left: 50%;
 			transform: translateX(-50%) translateY(20px);
-			background: rgba(15, 23, 42, 0.9);
+			background: rgba(15, 23, 42, 0.95);
 			border: 1px solid #38bdf8;
 			border-radius: 10px;
 			padding: 10px 20px;
@@ -369,7 +376,7 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 			box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 			opacity: 0;
 			transition: all 0.3s ease;
-			z-index: 30;
+			z-index: 3000;
 			pointer-events: none;
 		}
 		.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -450,12 +457,16 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 	<!-- Toast -->
 	<div class="toast" id="toast"></div>
 
+	<!-- Socket.IO Client Library -->
+	<script type="text/javascript" src="/viewer/${serverId}/socket.io/socket.io.js"></script>
+
 	<!-- Prismarine Viewer Scripts -->
 	<script type="text/javascript" src="/viewer/${serverId}/index.js"></script>
 
 	<!-- Interactive Client Logic -->
 	<script>
-		const socket = io({ path: "/viewer/${serverId}/socket.io" });
+		// Initialize Socket.IO connection
+		const socket = typeof io === "function" ? io({ path: "/viewer/${serverId}/socket.io" }) : null;
 		const invModal = document.getElementById("inventory-modal");
 		const btnInv = document.getElementById("btn-inv");
 		const btnCloseInv = document.getElementById("btn-close-inv");
@@ -467,6 +478,7 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 		const toast = document.getElementById("toast");
 
 		function showToast(msg) {
+			if (!toast) return;
 			toast.innerText = msg;
 			toast.classList.add("show");
 			setTimeout(() => toast.classList.remove("show"), 2500);
@@ -474,6 +486,7 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 
 		// Inventory toggle
 		function toggleInventory(open) {
+			if (!invModal) return;
 			const isOpen = typeof open === "boolean" ? open : !invModal.classList.contains("open");
 			if (isOpen) {
 				invModal.classList.add("open");
@@ -484,13 +497,13 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 			}
 		}
 
-		btnInv.addEventListener("click", () => toggleInventory());
-		btnCloseInv.addEventListener("click", () => toggleInventory(false));
+		if (btnInv) btnInv.addEventListener("click", (e) => { e.stopPropagation(); toggleInventory(); });
+		if (btnCloseInv) btnCloseInv.addEventListener("click", (e) => { e.stopPropagation(); toggleInventory(false); });
 
 		// Keyboard shortcut E
 		window.addEventListener("keydown", (e) => {
 			if (e.key === "e" || e.key === "E") {
-				if (document.activeElement.tagName !== "INPUT") {
+				if (document.activeElement && document.activeElement.tagName !== "INPUT") {
 					toggleInventory();
 				}
 			} else if (e.key === "Escape") {
@@ -504,44 +517,65 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 		}
 
 		// Buttons actions
-		btnStop.addEventListener("click", () => {
-			socket.emit("emergency_stop");
-			showToast("🛑 Đã dừng khẩn cấp!");
-		});
+		if (btnStop) {
+			btnStop.addEventListener("click", (e) => {
+				e.stopPropagation();
+				if (socket) socket.emit("emergency_stop");
+				showToast("🛑 Đã dừng khẩn cấp!");
+			});
+		}
 
-		btnAfk.addEventListener("click", () => {
-			socket.emit("toggle_anti_afk");
-		});
+		if (btnAfk) {
+			btnAfk.addEventListener("click", (e) => {
+				e.stopPropagation();
+				if (socket) socket.emit("toggle_anti_afk");
+			});
+		}
 
-		btnTotem.addEventListener("click", () => {
-			socket.emit("trigger_totem");
-		});
+		if (btnTotem) {
+			btnTotem.addEventListener("click", (e) => {
+				e.stopPropagation();
+				if (socket) socket.emit("trigger_totem");
+			});
+		}
 
-		btnEat.addEventListener("click", () => {
-			socket.emit("trigger_eat");
-		});
+		if (btnEat) {
+			btnEat.addEventListener("click", (e) => {
+				e.stopPropagation();
+				if (socket) socket.emit("trigger_eat");
+			});
+		}
 
-		socket.on("action_feedback", (data) => {
-			if (data && data.message) showToast(data.message);
-		});
+		if (socket) {
+			socket.on("action_feedback", (data) => {
+				if (data && data.message) showToast(data.message);
+			});
 
-		// Live Stats Update
-		socket.on("stats_update", (data) => {
-			if (!data) return;
-			document.getElementById("stat-hp").innerText = data.health ?? 0;
-			document.getElementById("stat-food").innerText = data.food ?? 0;
-			document.getElementById("stat-totem").innerText = data.totemCount ?? 0;
-			if (data.pos) {
-				document.getElementById("stat-coords").innerText = data.pos.x + ", " + data.pos.y + ", " + data.pos.z;
-			}
-			if (data.antiAfk) {
-				btnAfk.classList.add("active");
-				btnAfk.innerText = "💤 Anti-AFK: Bật";
-			} else {
-				btnAfk.classList.remove("active");
-				btnAfk.innerText = "💤 Anti-AFK: Tắt";
-			}
-		});
+			// Live Stats Update
+			socket.on("stats_update", (data) => {
+				if (!data) return;
+				const elHp = document.getElementById("stat-hp");
+				const elFood = document.getElementById("stat-food");
+				const elTotem = document.getElementById("stat-totem");
+				const elCoords = document.getElementById("stat-coords");
+
+				if (elHp) elHp.innerText = data.health ?? 0;
+				if (elFood) elFood.innerText = data.food ?? 0;
+				if (elTotem) elTotem.innerText = data.totemCount ?? 0;
+				if (elCoords && data.pos) {
+					elCoords.innerText = data.pos.x + ", " + data.pos.y + ", " + data.pos.z;
+				}
+				if (btnAfk) {
+					if (data.antiAfk) {
+						btnAfk.classList.add("active");
+						btnAfk.innerText = "💤 Anti-AFK: Bật";
+					} else {
+						btnAfk.classList.remove("active");
+						btnAfk.innerText = "💤 Anti-AFK: Tắt";
+					}
+				}
+			});
+		}
 
 		// Render Item Slot
 		function renderSlot(item, placeholder) {
@@ -562,7 +596,7 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 				html += '<span class="item-count">' + item.count + '</span>';
 			}
 
-			if (item.durabilityPct !== null) {
+			if (item.durabilityPct !== null && item.durabilityPct !== undefined) {
 				const pct = item.durabilityPct;
 				const color = pct > 50 ? '#22c55e' : (pct > 20 ? '#eab308' : '#ef4444');
 				html += '<div class="durability-bar"><div class="durability-fill" style="width:' + pct + '%; background:' + color + '"></div></div>';
@@ -580,36 +614,44 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 
 		// Tooltip Logic
 		function showTooltip(item, e) {
-			document.getElementById("tt-title").innerText = item.displayName || item.name;
+			if (!tooltip) return;
+			const ttTitle = document.getElementById("tt-title");
+			if (ttTitle) ttTitle.innerText = item.displayName || item.name;
 			
 			const enchDiv = document.getElementById("tt-enchants");
-			enchDiv.innerHTML = "";
-			if (item.enchantments && item.enchantments.length > 0) {
-				for (const enc of item.enchantments) {
-					const p = document.createElement("div");
-					p.className = "ench-item";
-					p.innerText = enc.name + " " + enc.lvl;
-					enchDiv.appendChild(p);
+			if (enchDiv) {
+				enchDiv.innerHTML = "";
+				if (item.enchantments && item.enchantments.length > 0) {
+					for (const enc of item.enchantments) {
+						const p = document.createElement("div");
+						p.className = "ench-item";
+						p.innerText = enc.name + " " + enc.lvl;
+						enchDiv.appendChild(p);
+					}
 				}
 			}
 
 			const durDiv = document.getElementById("tt-durability");
-			if (item.maxDurability) {
-				durDiv.innerText = "Độ bền: " + item.durabilityLeft + " / " + item.maxDurability;
-				durDiv.style.display = "block";
-			} else {
-				durDiv.style.display = "none";
+			if (durDiv) {
+				if (item.maxDurability) {
+					durDiv.innerText = "Độ bền: " + item.durabilityLeft + " / " + item.maxDurability;
+					durDiv.style.display = "block";
+				} else {
+					durDiv.style.display = "none";
+				}
 			}
 
 			const tipDiv = document.getElementById("tt-tip");
-			if (item.name === "totem_of_undying") {
-				tipDiv.innerText = "🌟 Đang được giữ ở tay phụ bảo vệ mạng";
-				tipDiv.style.display = "block";
-			} else if (item.name.includes("golden_carrot") || item.name.includes("cooked_")) {
-				tipDiv.innerText = "🍖 Thức ăn hồi máu & độ bão hòa cao";
-				tipDiv.style.display = "block";
-			} else {
-				tipDiv.style.display = "none";
+			if (tipDiv) {
+				if (item.name === "totem_of_undying") {
+					tipDiv.innerText = "🌟 Đang được giữ ở tay phụ bảo vệ mạng";
+					tipDiv.style.display = "block";
+				} else if (item.name.includes("golden_carrot") || item.name.includes("cooked_")) {
+					tipDiv.innerText = "🍖 Thức ăn hồi máu & độ bão hòa cao";
+					tipDiv.style.display = "block";
+				} else {
+					tipDiv.style.display = "none";
+				}
 			}
 
 			tooltip.style.display = "block";
@@ -617,45 +659,56 @@ export function renderViewerPageHtml(botInstance: Minecraft): string {
 		}
 
 		function moveTooltip(e) {
+			if (!tooltip) return;
 			tooltip.style.left = (e.clientX + 14) + "px";
 			tooltip.style.top = (e.clientY + 14) + "px";
 		}
 
 		function hideTooltip() {
-			tooltip.style.display = "none";
+			if (tooltip) tooltip.style.display = "none";
 		}
 
 		// Inventory Sync
-		socket.on("inventory_update", (data) => {
-			if (!data) return;
+		if (socket) {
+			socket.on("inventory_update", (data) => {
+				if (!data) return;
 
-			// Armor
-			const armorContainer = document.getElementById("armor-slots");
-			armorContainer.innerHTML = "";
-			const armorLabels = ["Mũ", "Áo", "Quần", "Giày"];
-			for (let i = 0; i < 4; i++) {
-				armorContainer.appendChild(renderSlot(data.armor ? data.armor[i] : null, armorLabels[i]));
-			}
+				// Armor
+				const armorContainer = document.getElementById("armor-slots");
+				if (armorContainer) {
+					armorContainer.innerHTML = "";
+					const armorLabels = ["Mũ", "Áo", "Quần", "Giày"];
+					for (let i = 0; i < 4; i++) {
+						armorContainer.appendChild(renderSlot(data.armor ? data.armor[i] : null, armorLabels[i]));
+					}
+				}
 
-			// Offhand
-			const offhandContainer = document.getElementById("offhand-slot");
-			offhandContainer.innerHTML = "";
-			offhandContainer.appendChild(renderSlot(data.offhand, "Tay Phụ"));
+				// Offhand
+				const offhandContainer = document.getElementById("offhand-slot");
+				if (offhandContainer) {
+					offhandContainer.innerHTML = "";
+					offhandContainer.appendChild(renderSlot(data.offhand, "Tay Phụ"));
+				}
 
-			// Main
-			const mainContainer = document.getElementById("main-slots");
-			mainContainer.innerHTML = "";
-			for (let i = 0; i < 27; i++) {
-				mainContainer.appendChild(renderSlot(data.main ? data.main[i] : null, ""));
-			}
+				// Main
+				const mainContainer = document.getElementById("main-slots");
+				if (mainContainer) {
+					mainContainer.innerHTML = "";
+					for (let i = 0; i < 27; i++) {
+						mainContainer.appendChild(renderSlot(data.main ? data.main[i] : null, ""));
+					}
+				}
 
-			// Hotbar
-			const hotbarContainer = document.getElementById("hotbar-slots");
-			hotbarContainer.innerHTML = "";
-			for (let i = 0; i < 9; i++) {
-				hotbarContainer.appendChild(renderSlot(data.hotbar ? data.hotbar[i] : null, (i + 1).toString()));
-			}
-		});
+				// Hotbar
+				const hotbarContainer = document.getElementById("hotbar-slots");
+				if (hotbarContainer) {
+					hotbarContainer.innerHTML = "";
+					for (let i = 0; i < 9; i++) {
+						hotbarContainer.appendChild(renderSlot(data.hotbar ? data.hotbar[i] : null, (i + 1).toString()));
+					}
+				}
+			});
+		}
 	</script>
 </body>
 </html>`;

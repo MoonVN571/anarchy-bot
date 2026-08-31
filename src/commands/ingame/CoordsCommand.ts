@@ -24,7 +24,7 @@ export class CoordsCommand extends Command {
 		try {
 			const imageBuffer = await CanvasRendererService.renderCoordinates(bot);
 			const attachment = new AttachmentBuilder(imageBuffer, { name: "bot-coords.png" });
-			const viewerUrl = process.env.VIEWER_ENABLED === "true"
+			const viewerUrl = process.env.VIEWER_ENABLED !== "false"
 				? viewerManager.getViewerUrl(bot.config.id)
 				: undefined;
 
