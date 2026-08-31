@@ -6,6 +6,7 @@ import {
 	MessageFlags,
 } from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
+import { isToggleOn, isToggleOff, removeVietnameseDiacritics } from "../utils/vietnameseUtils";
 
 export class AutoEatCommand extends Command {
 	constructor() {
@@ -13,8 +14,8 @@ export class AutoEatCommand extends Command {
 			name: "autoeat",
 			aliases: ["eat"],
 			description: "Bật/Tắt chế độ tự động ăn hoặc ép bot ăn ngay lập tức",
-			usage: ">autoeat <on|off> hoặc >eat",
-			inGameUsage: "!autoeat <on|off> hoặc !eat",
+			usage: ">autoeat <on|off|bật|tắt> hoặc >eat / >ăn",
+			inGameUsage: "!autoeat <on|off|bật|tắt> hoặc !eat / !ăn",
 		});
 	}
 
@@ -26,7 +27,8 @@ export class AutoEatCommand extends Command {
 			return;
 		}
 
-		if (commandName === "eat" || (args.length > 0 && args[0].toLowerCase() === "now")) {
+		const cleanCmd = removeVietnameseDiacritics(commandName.toLowerCase());
+		if (cleanCmd === "eat" || cleanCmd === "an" || (args.length > 0 && ["now", "ngay", "luon", "ngaylapuc"].includes(removeVietnameseDiacritics(args[0].toLowerCase())))) {
 			const success = await bot.autoEatService.checkAndEat(true);
 			const container = new ContainerBuilder()
 				.setAccentColor(success ? 0x22c55e : 0xf59e0b)
@@ -46,10 +48,9 @@ export class AutoEatCommand extends Command {
 		}
 
 		if (args.length > 0) {
-			const mode = args[0].toLowerCase();
-			if (mode === "on" || mode === "enable" || mode === "bat") {
+			if (isToggleOn(args[0])) {
 				bot.autoEatService.isEnabled = true;
-			} else if (mode === "off" || mode === "disable" || mode === "tat") {
+			} else if (isToggleOff(args[0])) {
 				bot.autoEatService.isEnabled = false;
 			}
 		}
@@ -85,22 +86,22 @@ export class AutoEatCommand extends Command {
 			return "[AutoEat] Bot chua ket noi.";
 		}
 
-		if (commandName === "eat" || (args.length > 0 && args[0].toLowerCase() === "now")) {
+		const cleanCmd = removeVietnameseDiacritics(commandName.toLowerCase());
+		if (cleanCmd === "eat" || cleanCmd === "an" || (args.length > 0 && ["now", "ngay", "luon"].includes(removeVietnameseDiacritics(args[0].toLowerCase())))) {
 			const success = await bot.autoEatService.checkAndEat(true);
-			return success ? `[AutoEat] Dang an thuc an...` : `[AutoEat] Khong tim thay thuc an phu hop.`;
+			return success ? `[AutoEat] Đang ăn thức ăn...` : `[AutoEat] Không tìm thấy thức ăn phù hợp.`;
 		}
 
 		if (args.length > 0) {
-			const mode = args[0].toLowerCase();
-			if (mode === "on" || mode === "enable" || mode === "bat") {
+			if (isToggleOn(args[0])) {
 				bot.autoEatService.isEnabled = true;
-				return `[AutoEat] Da BAT che do tu dong an.`;
-			} else if (mode === "off" || mode === "disable" || mode === "tat") {
+				return `[AutoEat] Đã BẬT chế độ tự động ăn.`;
+			} else if (isToggleOff(args[0])) {
 				bot.autoEatService.isEnabled = false;
-				return `[AutoEat] Da TAT che do tu dong an.`;
+				return `[AutoEat] Đã TẮT chế độ tự động ăn.`;
 			}
 		}
 
-		return `[AutoEat] Trang thai: ${bot.autoEatService.isEnabled ? "ON" : "OFF"} (Threshold: ${bot.autoEatService.threshold}/20)`;
+		return `[AutoEat] Trạng thái: ${bot.autoEatService.isEnabled ? "BẬT" : "TẮT"} (Mức đói: ${bot.autoEatService.threshold}/20)`;
 	}
 }

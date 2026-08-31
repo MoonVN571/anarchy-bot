@@ -6,6 +6,7 @@ import {
 	MessageFlags,
 } from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
+import { isToggleOn, isToggleOff } from "../utils/vietnameseUtils";
 
 export class TotemCommand extends Command {
 	constructor() {
@@ -13,8 +14,8 @@ export class TotemCommand extends Command {
 			name: "totem",
 			aliases: ["autototem", "offhand"],
 			description: "Tự động kiểm tra balo và lắp Totem of Undying vào tay phụ (Offhand)",
-			usage: ">totem [on|off]",
-			inGameUsage: "!totem [on|off]",
+			usage: ">totem [on|off|bật|tắt]",
+			inGameUsage: "!totem [on|off|bật|tắt]",
 		});
 	}
 
@@ -27,10 +28,9 @@ export class TotemCommand extends Command {
 		}
 
 		if (args.length > 0) {
-			const mode = args[0].toLowerCase();
-			if (mode === "on" || mode === "enable") {
+			if (isToggleOn(args[0])) {
 				bot.autoEatService.isTotemEnabled = true;
-			} else if (mode === "off" || mode === "disable") {
+			} else if (isToggleOff(args[0])) {
 				bot.autoEatService.isTotemEnabled = false;
 			}
 		}
@@ -65,18 +65,18 @@ export class TotemCommand extends Command {
 		const { bot, args } = ctx;
 
 		if (!bot || !bot.bot) {
-			return "[Totem] Bot chua ket noi.";
+			return "[Totem] Bot chưa kết nối.";
 		}
 
 		if (args.length > 0) {
-			const mode = args[0].toLowerCase();
-			if (mode === "on") bot.autoEatService.isTotemEnabled = true;
-			if (mode === "off") bot.autoEatService.isTotemEnabled = false;
+			if (isToggleOn(args[0])) bot.autoEatService.isTotemEnabled = true;
+			if (isToggleOff(args[0])) bot.autoEatService.isTotemEnabled = false;
 		}
 
 		const equipped = await bot.autoEatService.checkAndEquipTotem();
 		const totemCount = bot.bot.inventory.items().filter((i) => i.name === "totem_of_undying").length;
 
-		return `[Totem] Auto: ${bot.autoEatService.isTotemEnabled ? "ON" : "OFF"} | Kho: ${totemCount} Totems | Result: ${equipped ? "Da lap Totem vao tay phu" : "Khong co Totem"}`;
+		return `[Totem] Tự động: ${bot.autoEatService.isTotemEnabled ? "BẬT" : "TẮT"} | Kho: ${totemCount} Totems | Kết quả: ${equipped ? "Đã lắp Totem vào tay phụ" : "Không có Totem"}`;
 	}
 }
+

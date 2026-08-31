@@ -24,8 +24,9 @@ import { HighwayCommand } from "./HighwayCommand";
 import { StopCommand } from "./StopCommand";
 import { AutoEatCommand } from "./AutoEatCommand";
 import { TotemCommand } from "./TotemCommand";
-import { AntiAfkCommand } from "./AntiAfkCommand";
 import { FollowCommand } from "./FollowCommand";
+
+import { removeVietnameseDiacritics } from "../utils/vietnameseUtils";
 
 export class CommandManager {
 	private commands: Map<string, Command> = new Map();
@@ -36,15 +37,37 @@ export class CommandManager {
 	}
 
 	public registerCommand(command: Command): void {
-		this.commands.set(command.name.toLowerCase(), command);
+		const nameLower = command.name.toLowerCase().trim();
+		this.commands.set(nameLower, command);
+		const nameStripped = removeVietnameseDiacritics(nameLower);
+		if (nameStripped !== nameLower) {
+			this.aliases.set(nameStripped, command);
+		}
+
 		for (const alias of command.aliases) {
-			this.aliases.set(alias.toLowerCase(), command);
+			const aliasLower = alias.toLowerCase().trim();
+			this.aliases.set(aliasLower, command);
+			const aliasStripped = removeVietnameseDiacritics(aliasLower);
+			if (aliasStripped !== aliasLower) {
+				this.aliases.set(aliasStripped, command);
+			}
 		}
 	}
 
 	public getCommand(nameOrAlias: string): Command | undefined {
-		const lower = nameOrAlias.toLowerCase();
-		return this.commands.get(lower) || this.aliases.get(lower);
+		if (!nameOrAlias) return undefined;
+		const lower = nameOrAlias.toLowerCase().trim();
+		const direct = this.commands.get(lower) || this.aliases.get(lower);
+		if (direct) return direct;
+
+		// Try removing Vietnamese diacritics (e.g. "trợgiúp" -> "trogiup", "dừng" -> "dung")
+		const stripped = removeVietnameseDiacritics(lower);
+		const strippedMatch = this.commands.get(stripped) || this.aliases.get(stripped);
+		if (strippedMatch) return strippedMatch;
+
+		// Try stripping underscores / dashes
+		const cleanUnderscores = stripped.replace(/[_-]/g, "");
+		return this.commands.get(cleanUnderscores) || this.aliases.get(cleanUnderscores);
 	}
 
 	public getAllCommands(): Command[] {
@@ -104,7 +127,6 @@ export class CommandManager {
 		this.registerCommand(new StopCommand());
 		this.registerCommand(new AutoEatCommand());
 		this.registerCommand(new TotemCommand());
-		this.registerCommand(new AntiAfkCommand());
 		this.registerCommand(new FollowCommand());
 		this.registerCommand(new HelpCommand(this));
 	}

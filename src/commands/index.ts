@@ -22,6 +22,5 @@ export * from "./HighwayCommand";
 export * from "./StopCommand";
 export * from "./AutoEatCommand";
 export * from "./TotemCommand";
-export * from "./AntiAfkCommand";
 export * from "./FollowCommand";
 export * from "./HelpCommand";
