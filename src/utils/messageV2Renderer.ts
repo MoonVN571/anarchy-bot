@@ -224,7 +224,34 @@ export class MessageV2Renderer {
 				.addTextDisplayComponents(new TextDisplayBuilder().setContent(timeTag));
 		}
 
-		// 6. Default Server / Queue / Announcement / Whisper
+		// 6. Queue Position Event
+		if (parsed.type === MessageType.Queue) {
+			return new ContainerBuilder()
+				.setAccentColor(messageColors[MessageType.Queue]) // 0xf1c40f
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`⏳ **Thông Báo Hàng Đợi (Queue)**\n` +
+						`> ${parsed.formattedMsg || parsed.rawText}`
+					)
+				)
+				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+				.addTextDisplayComponents(new TextDisplayBuilder().setContent(timeTag));
+		}
+
+		// 7. Server Announcement / Broadcast Event
+		if (parsed.type === MessageType.Server) {
+			return new ContainerBuilder()
+				.setAccentColor(messageColors[MessageType.Server]) // 0x3498db
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`> ${parsed.formattedMsg || parsed.rawText}`
+					)
+				)
+				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+				.addTextDisplayComponents(new TextDisplayBuilder().setContent(timeTag));
+		}
+
+		// 8. Whisper / Default
 		return new ContainerBuilder()
 			.setAccentColor(accentColor)
 			.addTextDisplayComponents(
@@ -234,5 +261,28 @@ export class MessageV2Renderer {
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(timeTag)
 			);
+	}
+
+	/**
+	 * Render standard Bot Command Reply Container with defaultReplyColor (0x3498db)
+	 */
+	public static renderBotReplyContainer(
+		title: string,
+		content: string,
+		footer?: string,
+		accentColor: number = 0x3498db
+	): ContainerBuilder {
+		const container = new ContainerBuilder()
+			.setAccentColor(accentColor)
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(`**${title}**\n\n${content}`)
+			);
+
+		if (footer) {
+			container.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1));
+			container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`*${footer}*`));
+		}
+
+		return container;
 	}
 }

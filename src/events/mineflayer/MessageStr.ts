@@ -119,6 +119,9 @@ export default class MessageStrEvent extends MineflayerEvent {
 				parsed.username,
 				parsed.message
 			).catch(() => {});
+
+			// 4. Trigger auto message count increment
+			bot.autoMessageService.onPlayerChat();
 			return;
 		}
 

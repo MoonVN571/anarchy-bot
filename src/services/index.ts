@@ -4,4 +4,5 @@ export * from "./QuoteService";
 export * from "./StatsService";
 export * from "./SystemPatternService";
 export * from "./MessageClassifierService";
+export * from "./AutoMessageService";
 

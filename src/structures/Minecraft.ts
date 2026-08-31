@@ -4,6 +4,7 @@ import { pathfinder } from "mineflayer-pathfinder";
 import { Discord } from "./Discord";
 import { LiveChatManager } from "./LiveChatManager";
 import { PlaytimeTracker } from "../services/PlaytimeTracker";
+import { AutoMessageService } from "../services/AutoMessageService";
 import { MinecraftServerConfig, Server } from "../typings/types";
 import { mineflayerEventClasses } from "../events/mineflayer";
 
@@ -19,12 +20,12 @@ export class Minecraft {
 	public bot!: Bot;
 	public liveChatManager: LiveChatManager;
 	public playtimeTracker: PlaytimeTracker;
+	public autoMessageService: AutoMessageService;
 
 	private isDestroyed: boolean = false;
 	private reconnectTimer: NodeJS.Timeout | null = null;
 	private queueTimeoutTimer: NodeJS.Timeout | null = null;
 	private topicIntervalTimer: NodeJS.Timeout | null = null;
-	private autoMessageIntervalTimer: NodeJS.Timeout | null = null;
 
 	constructor(client: Discord, config: MinecraftServerConfig) {
 		this.client = client;
@@ -32,6 +33,7 @@ export class Minecraft {
 
 		this.liveChatManager = new LiveChatManager(this);
 		this.playtimeTracker = new PlaytimeTracker(this);
+		this.autoMessageService = new AutoMessageService(this);
 
 		this.resolveChannel();
 		this.connect();
@@ -170,27 +172,11 @@ export class Minecraft {
 	}
 
 	public startAutoMessageTimer(): void {
-		this.stopAutoMessageTimer();
-		const { autoMessage } = this.config.livechat;
-		if (!autoMessage.enabled || autoMessage.messages.length === 0) return;
-
-		let msgIndex = 0;
-		this.autoMessageIntervalTimer = setInterval(() => {
-			if (this.currentServer !== Server.Main || !this.bot) return;
-
-			const nowStr = new Date(Date.now() + 7 * 60 * 60 * 1000).toLocaleString("vi-VN");
-			const text = autoMessage.messages[msgIndex].replace(/\{time\}/g, nowStr);
-			this.bot.chat(text);
-
-			msgIndex = (msgIndex + 1) % autoMessage.messages.length;
-		}, autoMessage.interval);
+		this.autoMessageService.reset();
 	}
 
 	public stopAutoMessageTimer(): void {
-		if (this.autoMessageIntervalTimer) {
-			clearInterval(this.autoMessageIntervalTimer);
-			this.autoMessageIntervalTimer = null;
-		}
+		this.autoMessageService.stopLegacyTimer();
 	}
 
 	public disconnect(): void {

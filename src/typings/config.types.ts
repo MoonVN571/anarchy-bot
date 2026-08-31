@@ -34,7 +34,11 @@ export interface LiveChatTopicConfig {
 
 export interface AutoMessageConfig {
 	enabled: boolean;
-	interval: number; // in ms
+	minMessages?: number;
+	maxMessages?: number;
+	minIntervalMs?: number; // Cooldown between auto messages in ms
+	mode?: "random" | "sequential";
+	interval?: number; // Optional fallback for legacy time-based interval in ms
 	messages: string[];
 }
 

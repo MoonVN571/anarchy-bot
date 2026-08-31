@@ -23,9 +23,20 @@ export const defaultTopicConfig: LiveChatTopicConfig = {
 };
 
 export const defaultAutoMessageConfig: AutoMessageConfig = {
-	enabled: false,
-	interval: 15 * 60 * 1000,
-	messages: [],
+	enabled: true,
+	minMessages: 25,
+	maxMessages: 50,
+	minIntervalMs: 60 * 1000,
+	mode: "random",
+	messages: [
+		"> [Bot Tip] Dùng \"!help\" để xem danh sách toàn bộ các lệnh in-game hữu ích!",
+		"> [Bot Tip] Xem chỉ số K/D của bạn hoặc người chơi khác với lệnh \"!kd <tên>\" hoặc \"!stats <tên>\".",
+		"> [Bot Tip] Kiểm tra bảng xếp hạng top K/D, số mạng hạ gục và playtime với lệnh \"!top kd\" hoặc \"!top playtime\".",
+		"> [Bot Tip] Xem thời gian đã chơi của bạn trên server bằng lệnh \"!playtime <tên>\".",
+		"> [Bot Tip] Xem những tin nhắn người chơi đã từng nhắn bằng lệnh \"!quote\" hoặc \"!quote <tên>\".",
+		"> [Bot Tip] Xem tọa độ và tình trạng bot hiện tại bằng lệnh \"!coords\" hoặc \"!status\".",
+		"> [LiveChat] Tham gia Discord server để xem LiveChat và nhận thông báo tử trận real-time: bit.ly/mo0nbot",
+	],
 };
 
 export interface CreateServerConfigOptions {
