@@ -6,3 +6,5 @@ package-lock.json
 dist/
 logs/
 .ms_cache/*
+.canvas/
+.canvas_cache/

@@ -71,12 +71,21 @@ export class CoordinatesRenderer {
 		// Header
 		ctx.fillStyle = "#ffffff";
 		ctx.font = FontManager.getFont(17, true);
-		ctx.fillText(`📍 BOT COORDINATES & RADAR - ${botInstance.config.name || host}`, 20, 32);
+		ctx.fillText(`[POS] BOT COORDINATES & RADAR - ${botInstance.config.name || host}`, 20, 32);
 
-		// Status Badge
+		// Status Badge with Glowing Dot
 		const isMain = botInstance.currentServer === Server.Main;
-		const statusText = isMain ? "🟢 MAIN SERVER" : "🟡 IN QUEUE";
+		const statusText = isMain ? "MAIN SERVER" : "IN QUEUE";
 		const statusColor = isMain ? "#22c55e" : "#f59e0b";
+
+		ctx.save();
+		ctx.fillStyle = statusColor;
+		ctx.shadowColor = statusColor;
+		ctx.shadowBlur = 8;
+		ctx.beginPath();
+		ctx.arc(width - 110, 27, 4.5, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.restore();
 
 		ctx.fillStyle = statusColor;
 		ctx.font = FontManager.getFont(12, true);
@@ -97,10 +106,10 @@ export class CoordinatesRenderer {
 		// Bot Name & Dimension Info
 		const rawDimension = String(bot?.game?.dimension || "minecraft:overworld");
 		const dimName = rawDimension.includes("nether")
-			? "🔥 The Nether"
+			? "[NETHER]"
 			: rawDimension.includes("end")
-				? "🌌 The End"
-				: "🍀 Overworld";
+				? "[THE END]"
+				: "[OVERWORLD]";
 		const dimColor = rawDimension.includes("nether")
 			? "#ef4444"
 			: rawDimension.includes("end")
@@ -165,7 +174,7 @@ export class CoordinatesRenderer {
 		// Health Bar
 		ctx.fillStyle = "#94a3b8";
 		ctx.font = FontManager.getFont(11, false);
-		ctx.fillText(`❤️ HP: ${Math.round(health)}/20`, 20, 264);
+		ctx.fillText(`HP: ${Math.round(health)}/20`, 20, 264);
 
 		ctx.fillStyle = "#1e293b";
 		CanvasHelpers.roundRect(ctx, 20, 272, barWidth, 12, 6);
@@ -177,7 +186,7 @@ export class CoordinatesRenderer {
 		// Food Bar
 		ctx.fillStyle = "#94a3b8";
 		ctx.font = FontManager.getFont(11, false);
-		ctx.fillText(`🍖 Food: ${Math.round(food)}/20`, 200, 264);
+		ctx.fillText(`HUNGER: ${Math.round(food)}/20`, 200, 264);
 
 		ctx.fillStyle = "#1e293b";
 		CanvasHelpers.roundRect(ctx, 200, 272, barWidth, 12, 6);
@@ -193,7 +202,7 @@ export class CoordinatesRenderer {
 
 		ctx.fillStyle = "#94a3b8";
 		ctx.font = FontManager.getFont(11, false);
-		ctx.fillText(`🧭 Facing: ${facing.label} | Yaw: ${Math.round(yaw)}° | Pitch: ${Math.round(pitch)}°`, 20, 314);
+		ctx.fillText(`FACING: ${facing.label} | Yaw: ${Math.round(yaw)}° | Pitch: ${Math.round(pitch)}°`, 20, 314);
 
 		// Footer Uptime
 		const connectedSince = botInstance.uptime
