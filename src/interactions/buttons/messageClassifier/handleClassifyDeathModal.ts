@@ -96,7 +96,7 @@ export async function handleClassifyDeathModal(client: Discord, interaction: But
 				new StringSelectMenuBuilder()
 					.setCustomId("death_cause")
 					.setPlaceholder("Chọn nguyên nhân tử vong (mặc định UNKNOWN)...")
-					.setMinValues(0)
+					.setMinValues(1)
 					.setMaxValues(1)
 					.addOptions(
 						new StringSelectMenuOptionBuilder()

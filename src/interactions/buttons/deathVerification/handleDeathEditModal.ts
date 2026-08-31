@@ -84,7 +84,7 @@ export async function handleDeathEditModal(client: Discord, interaction: ButtonI
 				new StringSelectMenuBuilder()
 					.setCustomId("pattern_cause")
 					.setPlaceholder("Chọn nguyên nhân tử vong (mặc định UNKNOWN)...")
-					.setMinValues(0)
+					.setMinValues(1)
 					.setMaxValues(1)
 					.addOptions(
 						new StringSelectMenuOptionBuilder()
