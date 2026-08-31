@@ -19,15 +19,16 @@ export class MessageV2Renderer {
 	/**
 	 * Render player chat into Discord Component V2 Container with Skin Head thumbnail
 	 */
-	public static renderPlayerChatContainer(parsed: ParsedChatMessage): ContainerBuilder {
+	public static renderPlayerChatContainer(parsed: ParsedChatMessage, repeatCount?: number): ContainerBuilder {
 		const accentColor = messageColors[parsed.type] || 0x979797;
 
 		const username = parsed.username || "Player";
 		const headUrl = parsed.avatarUrl || `https://mc-heads.net/avatar/${username}/64.png`;
 		const timeTag = this.getDiscordTimestamp("F");
+		const countTag = repeatCount && repeatCount > 1 ? ` \`[x${repeatCount}]\`` : "";
 
 		const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : "";
-		const userTitle = `**${rankPrefix}${username}**`;
+		const userTitle = `**${rankPrefix}${username}**${countTag}`;
 
 		const section = new SectionBuilder()
 			.addTextDisplayComponents(
@@ -86,10 +87,11 @@ export class MessageV2Renderer {
 	/**
 	 * Render PvP Kill Event into Container with Dual Player Skin Heads
 	 */
-	public static renderPvPDeathContainer(parsed: ParsedChatMessage, _serverHost: string): ContainerBuilder {
+	public static renderPvPDeathContainer(parsed: ParsedChatMessage, _serverHost: string, repeatCount?: number): ContainerBuilder {
 		const killer = parsed.killer || "Unknown";
 		const victim = parsed.victim || "Unknown";
 		const timeTag = this.getDiscordTimestamp("F");
+		const countTag = repeatCount && repeatCount > 1 ? ` \`[x${repeatCount}]\`` : "";
 
 		const killerHead = `https://mc-heads.net/avatar/${killer}/64.png`;
 		const victimHead = `https://mc-heads.net/avatar/${victim}/64.png`;
@@ -98,7 +100,7 @@ export class MessageV2Renderer {
 		const sectionKiller = new SectionBuilder()
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
-					`**${killer}** đã hạ gục **${victim}**${parsed.weapon ? `\n- Vũ khí: **${parsed.weapon}**` : ""}`
+					`**${killer}** đã hạ gục **${victim}**${countTag}${parsed.weapon ? `\n- Vũ khí: **${parsed.weapon}**` : ""}`
 				)
 			)
 			.setThumbnailAccessory(new ThumbnailBuilder().setURL(killerHead).setDescription(`Killer: ${killer}`));
@@ -126,9 +128,10 @@ export class MessageV2Renderer {
 	/**
 	 * Render non-chat event (Join, Quit, Mob Death, Server, Queue, Achievement, Whisper) into Component V2 Container
 	 */
-	public static renderEventContainer(parsed: ParsedChatMessage, _serverHost: string): ContainerBuilder {
+	public static renderEventContainer(parsed: ParsedChatMessage, _serverHost: string, repeatCount?: number): ContainerBuilder {
 		const timeTag = this.getDiscordTimestamp("F");
 		const accentColor = messageColors[parsed.type] || 0x979797;
+		const countTag = repeatCount && repeatCount > 1 ? ` \`[x${repeatCount}]\`` : "";
 
 		// 1. Join Event
 		if (parsed.type === MessageType.Join) {
@@ -138,7 +141,7 @@ export class MessageV2Renderer {
 
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(`+ **${rankPrefix}${username}** đã tham gia server\n> \`${parsed.rawText}\``)
+					new TextDisplayBuilder().setContent(`+ **${rankPrefix}${username}** đã tham gia server${countTag}\n> \`${parsed.rawText}\``)
 				)
 				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`));
 
@@ -157,7 +160,7 @@ export class MessageV2Renderer {
 
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(`- **${rankPrefix}${username}** đã rời khỏi server\n> \`${parsed.rawText}\``)
+					new TextDisplayBuilder().setContent(`- **${rankPrefix}${username}** đã rời khỏi server${countTag}\n> \`${parsed.rawText}\``)
 				)
 				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`));
 
@@ -175,7 +178,7 @@ export class MessageV2Renderer {
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`**${parsed.victim}** đã bị tiêu diệt\n- Quái vật: **${parsed.mob}**\n> \`${parsed.rawText}\``
+						`**${parsed.victim}** đã bị tiêu diệt${countTag}\n- Quái vật: **${parsed.mob}**\n> \`${parsed.rawText}\``
 					)
 				)
 				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl));
@@ -195,7 +198,7 @@ export class MessageV2Renderer {
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`**${victimName}** đã tử vong\n> \`${parsed.rawText}\``
+						`**${victimName}** đã tử vong${countTag}\n> \`${parsed.rawText}\``
 					)
 				)
 				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl));
@@ -213,7 +216,7 @@ export class MessageV2Renderer {
 
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(`**${parsed.username}** đã đạt thành tựu\n> \`${parsed.formattedMsg || parsed.rawText}\``)
+					new TextDisplayBuilder().setContent(`**${parsed.username}** đã đạt thành tựu${countTag}\n> \`${parsed.formattedMsg || parsed.rawText}\``)
 				)
 				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl));
 
@@ -230,7 +233,7 @@ export class MessageV2Renderer {
 				.setAccentColor(messageColors[MessageType.Queue]) // 0xf1c40f
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`**Queue Message**\n` +
+						`**Queue Message**${countTag}\n` +
 						`> ${parsed.formattedMsg || parsed.rawText}`
 					)
 				)
@@ -244,7 +247,7 @@ export class MessageV2Renderer {
 				.setAccentColor(messageColors[MessageType.Server]) // 0x3498db
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`> ${parsed.formattedMsg || parsed.rawText}`
+						`> ${parsed.formattedMsg || parsed.rawText}${countTag}`
 					)
 				)
 				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
@@ -255,7 +258,7 @@ export class MessageV2Renderer {
 		return new ContainerBuilder()
 			.setAccentColor(accentColor)
 			.addTextDisplayComponents(
-				new TextDisplayBuilder().setContent(parsed.formattedMsg || parsed.rawText)
+				new TextDisplayBuilder().setContent(`${parsed.formattedMsg || parsed.rawText}${countTag}`)
 			)
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
 			.addTextDisplayComponents(
@@ -285,4 +288,24 @@ export class MessageV2Renderer {
 
 		return container;
 	}
+
+	/**
+	 * Unified container renderer for any parsed chat message
+	 */
+	public static renderContainer(parsed: ParsedChatMessage, serverHost: string, repeatCount?: number): ContainerBuilder {
+		if (
+			(parsed.type === MessageType.Chat || parsed.type === MessageType.HighlightChat) &&
+			parsed.username
+		) {
+			return this.renderPlayerChatContainer(parsed, repeatCount);
+		}
+
+		if (parsed.type === MessageType.Dead && parsed.killer && parsed.victim) {
+			return this.renderPvPDeathContainer(parsed, serverHost, repeatCount);
+		}
+
+		return this.renderEventContainer(parsed, serverHost, repeatCount);
+	}
 }
+
+

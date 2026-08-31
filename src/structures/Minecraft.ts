@@ -193,6 +193,7 @@ export class Minecraft {
 		this.clearAllTimers();
 		this.stopViewer();
 		this.playtimeTracker?.stop();
+		this.liveChatManager?.clear();
 		this.cleanupBotInstance();
 	}
 

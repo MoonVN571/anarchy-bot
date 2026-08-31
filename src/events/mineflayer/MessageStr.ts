@@ -8,6 +8,7 @@ import { RedisManager } from "../../redis/RedisManager";
 import { QuoteService } from "../../services/QuoteService";
 import { MessageClassifierService } from "../../services/MessageClassifierService";
 import { inGameCommandManager } from "../../commands";
+import { globalSpamDetector } from "../../utils/spamDetector";
 
 export default class MessageStrEvent extends MineflayerEvent {
 	constructor() {
@@ -38,8 +39,13 @@ export default class MessageStrEvent extends MineflayerEvent {
 		// Ignore messages sent by the bot itself
 		if (parsed.type === MessageType.BotChat) return;
 
-		// Count valid incoming server messages/events for auto tip trigger
-		bot.autoMessageService.onServerMessage();
+		// Check spam / duplicate detection
+		const { isSpam } = globalSpamDetector.checkDuplicate(parsed, serverIp);
+
+		// Count valid incoming server messages/events for auto tip trigger (skip spam/duplicate messages)
+		if (!isSpam) {
+			bot.autoMessageService.onServerMessage();
+		}
 
 		// 2. In-Game Minecraft Commands Handler (Prefix "!")
 		if (parsed.username && parsed.message && parsed.message.startsWith("!")) {

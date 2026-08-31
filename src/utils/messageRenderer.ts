@@ -5,9 +5,10 @@ export class MessageRenderer {
 	/**
 	 * Build rich embed representation for non-chat events (Join, Quit, Death, Server, Queue)
 	 */
-	public static renderEventEmbed(parsed: ParsedChatMessage, serverHost: string): APIEmbed {
+	public static renderEventEmbed(parsed: ParsedChatMessage, serverHost: string, repeatCount?: number): APIEmbed {
 		const baseColor = messageColors[parsed.type] || 0x979797;
 		const timestamp = new Date().toISOString();
+		const countTag = repeatCount && repeatCount > 1 ? ` [x${repeatCount}]` : "";
 
 		// 1. Join Event
 		if (parsed.type === MessageType.Join) {
@@ -15,7 +16,7 @@ export class MessageRenderer {
 			const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : "";
 			return {
 				color: 0x2ecc71,
-				description: `+ **${rankPrefix}${username}** đã tham gia server\n> \`${parsed.rawText}\``,
+				description: `+ **${rankPrefix}${username}** đã tham gia server${countTag}\n> \`${parsed.rawText}\``,
 				thumbnail: { url: `https://mc-heads.net/avatar/${username}/64.png` },
 				footer: { text: serverHost },
 				timestamp,
@@ -28,7 +29,7 @@ export class MessageRenderer {
 			const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : "";
 			return {
 				color: 0xe67e22,
-				description: `- **${rankPrefix}${username}** đã rời khỏi server\n> \`${parsed.rawText}\``,
+				description: `- **${rankPrefix}${username}** đã rời khỏi server${countTag}\n> \`${parsed.rawText}\``,
 				thumbnail: { url: `https://mc-heads.net/avatar/${username}/64.png` },
 				footer: { text: serverHost },
 				timestamp,
@@ -50,10 +51,10 @@ export class MessageRenderer {
 				return {
 					color: 0xe74c3c,
 					author: {
-						name: `PvP Kill | ${parsed.killer}`,
+						name: `PvP Kill | ${parsed.killer}${countTag}`,
 						icon_url: `https://mc-heads.net/avatar/${parsed.killer}/64.png`,
 					},
-					description: `**${parsed.killer}** đã hạ gục **${parsed.victim}**${parsed.weapon ? ` bằng **${parsed.weapon}**` : ""}\n> \`${parsed.rawText}\``,
+					description: `**${parsed.killer}** đã hạ gục **${parsed.victim}**${countTag}${parsed.weapon ? ` bằng **${parsed.weapon}**` : ""}\n> \`${parsed.rawText}\``,
 					thumbnail: { url: `https://mc-heads.net/avatar/${parsed.victim}/128.png` },
 					fields,
 					footer: { text: serverHost },
@@ -66,9 +67,9 @@ export class MessageRenderer {
 				return {
 					color: 0xc0392b,
 					author: {
-						name: `Mob Death | ${parsed.mob}`,
+						name: `Mob Death | ${parsed.mob}${countTag}`,
 					},
-					description: `**${parsed.victim}** đã bị **${parsed.mob}** tiêu diệt\n> \`${parsed.rawText}\``,
+					description: `**${parsed.victim}** đã bị **${parsed.mob}** tiêu diệt${countTag}\n> \`${parsed.rawText}\``,
 					thumbnail: { url: `https://mc-heads.net/avatar/${parsed.victim}/128.png` },
 					fields: [
 						{ name: "Nạn nhân", value: `\`${parsed.victim}\``, inline: true },
@@ -86,10 +87,10 @@ export class MessageRenderer {
 			return {
 				color: 0x95a5a6,
 				author: {
-					name: victimName ? `Tử vong | ${victimName}` : "Thông báo Tử vong",
+					name: victimName ? `Tử vong | ${victimName}${countTag}` : `Thông báo Tử vong${countTag}`,
 					icon_url: victimHead,
 				},
-				description: `> \`${parsed.rawText}\``,
+				description: `> \`${parsed.rawText}\`${countTag}`,
 				thumbnail: victimHead ? { url: victimHead } : undefined,
 				footer: { text: serverHost },
 				timestamp,
@@ -103,7 +104,7 @@ export class MessageRenderer {
 
 			return {
 				color: 0x9b59b6,
-				description: `${parsed.formattedMsg || parsed.rawText}`,
+				description: `${parsed.formattedMsg || parsed.rawText}${countTag}`,
 				thumbnail: head ? { url: head } : undefined,
 				footer: { text: serverHost },
 				timestamp,
@@ -113,9 +114,45 @@ export class MessageRenderer {
 		// 5. Default Server / Queue / Announcement
 		return {
 			color: baseColor,
-			description: parsed.formattedMsg || parsed.rawText,
+			description: `${parsed.formattedMsg || parsed.rawText}${countTag}`,
 			footer: { text: serverHost },
 			timestamp,
 		};
 	}
+
+	/**
+	 * Build rich embed representation for player chat
+	 */
+	public static renderPlayerChatEmbed(parsed: ParsedChatMessage, serverHost: string, repeatCount?: number): APIEmbed {
+		const baseColor = messageColors[parsed.type] || 0x979797;
+		const username = parsed.username || "Player";
+		const headUrl = parsed.avatarUrl || `https://mc-heads.net/avatar/${username}/64.png`;
+		const rankPrefix = parsed.rank ? `[${parsed.rank}] ` : "";
+		const countTag = repeatCount && repeatCount > 1 ? ` [x${repeatCount}]` : "";
+
+		return {
+			color: baseColor,
+			author: {
+				name: `${rankPrefix}${username}${countTag}`,
+				icon_url: headUrl,
+			},
+			description: parsed.message || parsed.rawText,
+			footer: { text: serverHost },
+			timestamp: new Date().toISOString(),
+		};
+	}
+
+	/**
+	 * Unified embed renderer for any parsed chat message
+	 */
+	public static renderEmbed(parsed: ParsedChatMessage, serverHost: string, repeatCount?: number): APIEmbed {
+		if (
+			(parsed.type === MessageType.Chat || parsed.type === MessageType.HighlightChat) &&
+			parsed.username
+		) {
+			return this.renderPlayerChatEmbed(parsed, serverHost, repeatCount);
+		}
+		return this.renderEventEmbed(parsed, serverHost, repeatCount);
+	}
 }
+
