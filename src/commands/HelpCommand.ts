@@ -65,7 +65,7 @@ export class HelpCommand extends Command {
 					"📊 **Thống Kê & Xếp Hạng:**\n" +
 					"- `>kd [player]` (In-game: `!kd`) — Xem tỉ lệ hạ gục K/D & Killstreak\n" +
 					"- `>stats [player]` (In-game: `!stats`) — Thống kê tổng hợp toàn diện người chơi\n" +
-					"- `>top <playtime|kills|deaths|messages>` (In-game: `!top`) — Bảng xếp hạng server\n" +
+					"- `>top <playtime|kills|deaths|messages|kd>` (In-game: `!top`) — Bảng xếp hạng server\n" +
 					"- `>playtime [player]` (In-game: `!playtime`) — Xem thời gian online tích lũy\n" +
 					"- `>quote [player]` (In-game: `!quote`) — Trích dẫn câu chat ngẫu nhiên\n" +
 					"- `>online` (In-game: `!online`) — Danh sách người chơi đang online\n\n" +

@@ -27,15 +27,20 @@ export const defaultAutoMessageConfig: AutoMessageConfig = {
 	minMessages: 25,
 	maxMessages: 50,
 	minIntervalMs: 60 * 1000,
-	mode: "random",
+	mode: "sequential",
 	messages: [
-		"> [Bot Tip] Dùng \"!help\" để xem danh sách toàn bộ các lệnh in-game hữu ích!",
+		"> [Bot Tip] Dùng \"!help\" để xem danh sách toàn bộ các lệnh của mình.",
+		"> [Discord] Tham gia Discord để trò chuyện 2 chiều in-game & nhận thông báo tử nạn tại: bit.ly/mo0nbot",
 		"> [Bot Tip] Xem chỉ số K/D của bạn hoặc người chơi khác với lệnh \"!kd <tên>\" hoặc \"!stats <tên>\".",
 		"> [Bot Tip] Kiểm tra bảng xếp hạng top K/D, số mạng hạ gục và playtime với lệnh \"!top kd\" hoặc \"!top playtime\".",
+		"> [Discord] Dùng lệnh \"!discord\" hoặc \"!dc\" để lấy link mời tham gia Discord Server bot!",
+		"> [Bot Tip] Tra cứu lần đầu và lần cuối người chơi xuất hiện trên server bằng lệnh \"!seen <tên>\" hoặc \"!joindate <tên>\".",
+		"> [Discord] Xem Kill Feed, bảng xếp hạng PVP và giao lưu cộng đồng tại Discord: bit.ly/mo0nbot",
 		"> [Bot Tip] Xem thời gian đã chơi của bạn trên server bằng lệnh \"!playtime <tên>\".",
+		"> [Bot Tip] Tra cứu tin nhắn đầu tiên & gần nhất của người chơi bằng \"!firstmsg <tên>\" và \"!lastmsg <tên>\".",
 		"> [Bot Tip] Xem những tin nhắn người chơi đã từng nhắn bằng lệnh \"!quote\" hoặc \"!quote <tên>\".",
+		"> [Discord] Trò chuyện cùng mọi người trong server Minecraft ngay cả khi đang offline tại: bit.ly/mo0nbot2",
 		"> [Bot Tip] Xem tọa độ và tình trạng bot hiện tại bằng lệnh \"!coords\" hoặc \"!status\".",
-		"> [LiveChat] Tham gia Discord server để xem LiveChat và nhận thông báo tử trận real-time: bit.ly/mo0nbot",
 	],
 };
 

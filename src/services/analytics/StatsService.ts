@@ -55,9 +55,9 @@ export class StatsService {
 	 */
 	public static async getLeaderboard(
 		server: string,
-		board: "playtime" | "kills" | "deaths" | "messages",
+		board: "playtime" | "kills" | "deaths" | "messages" | "kd",
 		limit: number = 10
-	): Promise<{ username: string; score: number }[]> {
+	): Promise<{ username: string; score: number; kills?: number; deaths?: number }[]> {
 		// 1. Try Redis cache ZSET
 		const cached = await RedisManager.getTopLeaderboard(server, board, limit);
 		if (cached && cached.length > 0) {
@@ -66,21 +66,25 @@ export class StatsService {
 
 		// 2. Fallback to MongoDB
 		try {
-			const sortField = board === "messages" ? "messageCount" : board;
+			const sortField = board === "messages" ? "messageCount" : (board === "kd" ? "kdRatio" : board);
 			const filter: any = {};
 			if (server !== "global") {
 				filter.server = server;
 			}
 
+			const sortQuery: any = board === "kd" ? { kdRatio: -1, kills: -1 } : { [sortField]: -1 };
+
 			const topPlayers = await PlayerModel.find(filter)
-				.sort({ [sortField]: -1 })
+				.sort(sortQuery)
 				.limit(limit)
-				.select(`username displayName ${sortField}`)
+				.select(`username displayName kills deaths ${sortField}`)
 				.lean();
 
 			return topPlayers.map((p: any) => ({
 				username: p.displayName || p.username,
 				score: p[sortField] || 0,
+				kills: p.kills || 0,
+				deaths: p.deaths || 0,
 			}));
 		} catch {
 			return [];

@@ -65,7 +65,7 @@ export async function handleClassifySystem(client: Discord, interaction: ButtonI
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
 					`**Đã Phân Loại Là Tin Nhắn Hệ Thống (System)**\n\n` +
-					`**System Regex Đã Lưu:**\n\`\`\`regex\n${pattern}\n\`\`\`\n` +
+					`**System Regex Đã Lưu:**\n\`regex\n${pattern}\n\`\n` +
 					`**Tin nhắn mẫu:**\n\`\`\`\n${rawMsg}\n\`\`\``
 				)
 			)

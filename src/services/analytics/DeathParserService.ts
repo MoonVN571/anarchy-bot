@@ -272,6 +272,7 @@ export class DeathParserService {
 			if (victimDoc) {
 				const kd = victimDoc.deaths > 0 ? parseFloat((victimDoc.kills / victimDoc.deaths).toFixed(2)) : victimDoc.kills;
 				await PlayerModel.updateOne({ _id: victimDoc._id }, { $set: { kdRatio: kd } });
+				await RedisManager.setLeaderboardScore(server, "kd", victimLower, kd);
 				if (logger) logger.debug("Death/KD", `[${server}] Victim "${parsed.victim}" stats updated: Deaths=${victimDoc.deaths}, K/D=${kd}`);
 			}
 
@@ -317,6 +318,7 @@ export class DeathParserService {
 							},
 						}
 					);
+					await RedisManager.setLeaderboardScore(server, "kd", killerLower, kd);
 					if (logger) logger.debug("Death/KD", `[${server}] Killer "${parsed.killer}" stats updated: Kills=${killerDoc.kills}, Streak=${newStreak}, K/D=${kd}`);
 				}
 			}

@@ -165,7 +165,7 @@ export class RedisManager {
 	// 4. Leaderboards (ZSET)
 	public static async incrementLeaderboard(
 		server: string,
-		board: "playtime" | "kills" | "deaths" | "messages",
+		board: "playtime" | "kills" | "deaths" | "messages" | "kd",
 		username: string,
 		amount: number = 1
 	): Promise<void> {
@@ -183,9 +183,29 @@ export class RedisManager {
 		}
 	}
 
+	public static async setLeaderboardScore(
+		server: string,
+		board: "playtime" | "kills" | "deaths" | "messages" | "kd",
+		username: string,
+		score: number
+	): Promise<void> {
+		const client = RedisClient.getClient();
+		if (!client || !RedisClient.ready) return;
+
+		try {
+			const serverKey = this.key(server, `leaderboard:${board}`);
+			const globalKey = `${this.prefix}:global:leaderboard:${board}`;
+
+			await client.zadd(serverKey, score, username.toLowerCase());
+			await client.zadd(globalKey, score, username.toLowerCase());
+		} catch {
+			// Ignore cache failure
+		}
+	}
+
 	public static async getTopLeaderboard(
 		server: string,
-		board: "playtime" | "kills" | "deaths" | "messages",
+		board: "playtime" | "kills" | "deaths" | "messages" | "kd",
 		limit: number = 10
 	): Promise<{ username: string; score: number }[]> {
 		const client = RedisClient.getClient();

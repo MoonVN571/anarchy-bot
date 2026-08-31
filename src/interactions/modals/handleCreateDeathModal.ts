@@ -73,7 +73,7 @@ export async function handleCreateDeathModal(client: Discord, interaction: Modal
 						`- **Nguyên nhân (Cause):** \`${cause}\`\n` +
 						(customVictim ? `- **Nạn nhân:** \`${customVictim}\`\n` : "") +
 						(customKillerOrMob ? `- **Kẻ hạ gục / Mob:** \`${customKillerOrMob}\`\n` : "") +
-						`\n**Death Regex Đã Lưu:**\n\`\`\`regex\n${newRegex}\n\`\`\``
+						`\n**Death Regex Đã Lưu:**\n\`regex\n${newRegex}\n\``
 					)
 				)
 				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))

@@ -74,7 +74,7 @@ export async function handleEditDeathModal(client: Discord, interaction: ModalSu
 						`- **Server Scope:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`${pattern.cause}\`\n` +
 						(customVictim ? `- **Nạn nhân:** \`${customVictim}\`\n` : "") +
 						(customKillerOrMob ? `- **Kẻ hạ gục / Mob:** \`${customKillerOrMob}\`\n` : "") +
-						`\n**Regex Đã Sửa:**\n\`\`\`regex\n${pattern.pattern}\n\`\`\`\n` +
+						`\n**Regex Đã Sửa:**\`\n${pattern.pattern}\n\`` +
 						`**Tin nhắn gốc:**\n\`\`\`\n${pattern.sampleMessage || "N/A"}\n\`\`\``
 					)
 				)

@@ -14,8 +14,8 @@ export class TopCommand extends Command {
 			name: "top",
 			aliases: ["lb", "leaderboard", "bxh"],
 			description: "Xem bảng xếp hạng Top 10 của server",
-			usage: ">top [playtime | kills | deaths | messages]",
-			inGameUsage: "!top [playtime | kills | deaths | messages]",
+			usage: ">top [playtime | kills | deaths | messages | kd]",
+			inGameUsage: "!top [playtime | kills | deaths | messages | kd]",
 		});
 	}
 
@@ -23,18 +23,21 @@ export class TopCommand extends Command {
 		const { message, args, serverHost } = ctx;
 		const rawCategory = (args[0] || "playtime").toLowerCase();
 
-		let category: "playtime" | "kills" | "deaths" | "messages" = "playtime";
+		let category: "playtime" | "kills" | "deaths" | "messages" | "kd" = "playtime";
 		let categoryTitle = "Playtime (Thời gian chơi)";
 
 		if (rawCategory === "kills" || rawCategory === "kill" || rawCategory === "k") {
 			category = "kills";
-			categoryTitle = "Kills";
+			categoryTitle = "Kills (Hạ gục)";
 		} else if (rawCategory === "deaths" || rawCategory === "death" || rawCategory === "d") {
 			category = "deaths";
-			categoryTitle = "Deaths";
+			categoryTitle = "Deaths (Số lần chết)";
 		} else if (rawCategory === "messages" || rawCategory === "msg" || rawCategory === "chat" || rawCategory === "m") {
 			category = "messages";
-			categoryTitle = "Messages";
+			categoryTitle = "Messages (Tin nhắn)";
+		} else if (rawCategory === "kd" || rawCategory === "kda" || rawCategory === "k/d" || rawCategory === "ratio" || rawCategory === "pvp") {
+			category = "kd";
+			categoryTitle = "K/D Ratio (Tỉ lệ K/D)";
 		}
 
 		const leaderboard = await StatsService.getLeaderboard(serverHost, category, 10);
@@ -51,6 +54,9 @@ export class TopCommand extends Command {
 
 			if (category === "playtime") {
 				formattedScore = formatDuration(entry.score);
+			} else if (category === "kd") {
+				const extra = entry.kills !== undefined && entry.deaths !== undefined ? ` *(${entry.kills} K / ${entry.deaths} D)*` : "";
+				return `\`#${index + 1}\` **${entry.username}** — \`${Number(entry.score).toFixed(2)} K/D\`${extra}`;
 			}
 
 			return `\`#${index + 1}\` **${entry.username}** — \`${formattedScore}\``;
@@ -63,7 +69,7 @@ export class TopCommand extends Command {
 			)
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
 			.addTextDisplayComponents(
-				new TextDisplayBuilder().setContent(`Dùng >top [kills|deaths|playtime|messages]\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+				new TextDisplayBuilder().setContent(`Dùng >top [playtime|kills|deaths|messages|kd]\n<t:${Math.floor(Date.now() / 1000)}:F>`)
 			);
 
 		await message.reply({
@@ -75,7 +81,7 @@ export class TopCommand extends Command {
 	public async executeInGame(ctx: InGameCommandContext): Promise<string[] | string | void> {
 		const rawCategory = (ctx.args[0] || "playtime").toLowerCase();
 
-		let category: "playtime" | "kills" | "deaths" | "messages" = "playtime";
+		let category: "playtime" | "kills" | "deaths" | "messages" | "kd" = "playtime";
 		let label = "Playtime";
 
 		if (rawCategory === "kills" || rawCategory === "kill" || rawCategory === "k") {
@@ -87,6 +93,9 @@ export class TopCommand extends Command {
 		} else if (rawCategory === "messages" || rawCategory === "msg" || rawCategory === "chat" || rawCategory === "m") {
 			category = "messages";
 			label = "Tin nhắn";
+		} else if (rawCategory === "kd" || rawCategory === "kda" || rawCategory === "k/d" || rawCategory === "ratio" || rawCategory === "pvp") {
+			category = "kd";
+			label = "Tỉ lệ K/D";
 		}
 
 		const leaderboard = await StatsService.getLeaderboard(ctx.serverHost, category, 5);
@@ -98,8 +107,16 @@ export class TopCommand extends Command {
 		return [
 			`[Top 5 ${label}] Bảng xếp hạng máy chủ:`,
 			...leaderboard.map((e, idx) => {
-				const score = category === "playtime" ? formatDuration(e.score) : e.score.toLocaleString();
-				return `#${idx + 1}. ${e.username}: ${score}`;
+				let scoreStr: string;
+				if (category === "playtime") {
+					scoreStr = formatDuration(e.score);
+				} else if (category === "kd") {
+					const kdStr = Number(e.score).toFixed(2);
+					scoreStr = e.kills !== undefined && e.deaths !== undefined ? `${kdStr} (${e.kills}K/${e.deaths}D)` : `${kdStr} K/D`;
+				} else {
+					scoreStr = e.score.toLocaleString();
+				}
+				return `#${idx + 1}. ${e.username}: ${scoreStr}`;
 			})
 		];
 	}

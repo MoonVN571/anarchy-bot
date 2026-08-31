@@ -70,6 +70,7 @@ PlayerSchema.index({ server: 1, username: 1 }, { unique: true });
 PlayerSchema.index({ server: 1, playtime: -1 });
 PlayerSchema.index({ server: 1, kills: -1 });
 PlayerSchema.index({ server: 1, deaths: -1 });
+PlayerSchema.index({ server: 1, kdRatio: -1 });
 PlayerSchema.index({ server: 1, messageCount: -1 });
 PlayerSchema.index({ server: 1, firstSeen: 1 });
 PlayerSchema.index({ server: 1, lastSeen: -1 });
