@@ -6,6 +6,9 @@ import { LiveChatManager } from "./LiveChatManager";
 import { PlaytimeTracker } from "../services/PlaytimeTracker";
 import { AutoMessageService } from "../services/AutoMessageService";
 import { AntiAfkService } from "../services/AntiAfkService";
+import { SmartPathfinderService } from "../services/SmartPathfinderService";
+import { HighwayNavigationService } from "../services/HighwayNavigationService";
+import { AutoEatService } from "../services/AutoEatService";
 import { viewerManager } from "../services/ViewerManagerService";
 import { MinecraftServerConfig, Server } from "../typings/types";
 import { mineflayerEventClasses } from "../events/mineflayer";
@@ -24,6 +27,9 @@ export class Minecraft {
 	public playtimeTracker: PlaytimeTracker;
 	public autoMessageService: AutoMessageService;
 	public antiAfkService: AntiAfkService;
+	public smartPathfinderService: SmartPathfinderService;
+	public highwayNavigationService: HighwayNavigationService;
+	public autoEatService: AutoEatService;
 
 	private isDestroyed: boolean = false;
 	private reconnectTimer: NodeJS.Timeout | null = null;
@@ -38,6 +44,9 @@ export class Minecraft {
 		this.playtimeTracker = new PlaytimeTracker(this);
 		this.autoMessageService = new AutoMessageService(this);
 		this.antiAfkService = new AntiAfkService(this);
+		this.smartPathfinderService = new SmartPathfinderService(this);
+		this.highwayNavigationService = new HighwayNavigationService(this);
+		this.autoEatService = new AutoEatService(this);
 
 		this.resolveChannel();
 		this.connect();
@@ -194,6 +203,9 @@ export class Minecraft {
 
 	public disconnect(): void {
 		this.clearAllTimers();
+		this.smartPathfinderService?.stop();
+		this.highwayNavigationService?.stop();
+		this.autoEatService?.stop();
 		this.antiAfkService?.stop();
 		this.stopViewer();
 		this.playtimeTracker?.stop();
@@ -207,6 +219,9 @@ export class Minecraft {
 	}
 
 	private cleanupBotInstance(): void {
+		this.smartPathfinderService?.stop();
+		this.highwayNavigationService?.stop();
+		this.autoEatService?.stop();
 		this.antiAfkService?.stop();
 		if (this.bot) {
 			this.stopViewer();

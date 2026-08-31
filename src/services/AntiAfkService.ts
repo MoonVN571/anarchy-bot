@@ -7,6 +7,7 @@ export class AntiAfkService {
 	private timer: NodeJS.Timeout | null = null;
 	private isRunning: boolean = false;
 	private isActionExecuting: boolean = false;
+	private isPaused: boolean = false;
 
 	public isEnabled: boolean;
 	public minIntervalMs: number;
@@ -29,8 +30,41 @@ export class AntiAfkService {
 		if (!this.isEnabled || this.isRunning) return;
 
 		this.isRunning = true;
+		this.isPaused = false;
 		this.main.client.logger.info(`[Anti-AFK] Started for ${this.main.config.connection.host} (Interval: ${this.minIntervalMs / 1000}s - ${this.maxIntervalMs / 1000}s)`);
 		this.scheduleNextAction();
+	}
+
+	/**
+	 * Temporarily pause anti-afk (e.g. while moving or eating)
+	 */
+	public pause(): void {
+		this.isPaused = true;
+		if (this.timer) {
+			clearTimeout(this.timer);
+			this.timer = null;
+		}
+	}
+
+	/**
+	 * Resume anti-afk if enabled
+	 */
+	public resume(): void {
+		if (!this.isPaused || !this.isEnabled || !this.isRunning) return;
+		this.isPaused = false;
+		this.scheduleNextAction();
+	}
+
+	/**
+	 * Set enabled state dynamically
+	 */
+	public setEnabled(enabled: boolean): void {
+		this.isEnabled = enabled;
+		if (!enabled) {
+			this.stop();
+		} else {
+			this.start();
+		}
 	}
 
 	/**
@@ -43,6 +77,7 @@ export class AntiAfkService {
 		}
 
 		this.isRunning = false;
+		this.isPaused = false;
 		this.isActionExecuting = false;
 
 		if (this.main.bot) {

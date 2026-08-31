@@ -19,6 +19,13 @@ import { DiscordInviteCommand } from "./DiscordInviteCommand";
 import { KillCommand } from "./KillCommand";
 import { PingCommand } from "./PingCommand";
 import { TpsCommand } from "./TpsCommand";
+import { GotoCommand } from "./GotoCommand";
+import { HighwayCommand } from "./HighwayCommand";
+import { StopCommand } from "./StopCommand";
+import { AutoEatCommand } from "./AutoEatCommand";
+import { TotemCommand } from "./TotemCommand";
+import { AntiAfkCommand } from "./AntiAfkCommand";
+import { FollowCommand } from "./FollowCommand";
 
 export class CommandManager {
 	private commands: Map<string, Command> = new Map();
@@ -92,6 +99,13 @@ export class CommandManager {
 		this.registerCommand(new KillCommand());
 		this.registerCommand(new PingCommand());
 		this.registerCommand(new TpsCommand());
+		this.registerCommand(new GotoCommand());
+		this.registerCommand(new HighwayCommand());
+		this.registerCommand(new StopCommand());
+		this.registerCommand(new AutoEatCommand());
+		this.registerCommand(new TotemCommand());
+		this.registerCommand(new AntiAfkCommand());
+		this.registerCommand(new FollowCommand());
 		this.registerCommand(new HelpCommand(this));
 	}
 }

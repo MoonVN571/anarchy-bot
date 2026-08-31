@@ -16,6 +16,7 @@ export default class SpawnEvent extends MineflayerEvent {
 			main.currentServer = Server.Main;
 			main.clearQueueTimeout();
 			main.antiAfkService?.start();
+			main.autoEatService?.start();
 		}
 
 		if (main.joined) return;
@@ -31,5 +32,7 @@ export default class SpawnEvent extends MineflayerEvent {
 		main.startTopicTimer();
 		main.startViewer();
 		main.antiAfkService?.start();
+		main.autoEatService?.start();
+		main.smartPathfinderService?.initMovements();
 	}
 }

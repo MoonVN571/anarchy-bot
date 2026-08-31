@@ -74,6 +74,14 @@ export class HelpCommand extends Command {
 					"- `>seen [player]` (In-game: `!seen`) — Trạng thái online hoặc lần cuối nhìn thấy\n" +
 					"- `>fm [player]` (In-game: `!fm`) — Tra cứu câu tin nhắn đầu tiên\n" +
 					"- `>lm [player]` (In-game: `!lm`) — Tra cứu câu tin nhắn gần nhất\n\n" +
+					"🤖 **Tự Động Hóa & Di Chuyển (Automation & Navigation):**\n" +
+					"- `>goto <x> [y] <z>` (In-game: `!goto`) — Tự động tìm đường đi an toàn (né lava/portal)\n" +
+					"- `>highway <trục> <mốc>` (In-game: `!highway`) — Bám làn cao tốc & sprint-jumping trên Ice\n" +
+					"- `>stop` (In-game: `!stop`) — Phanh khẩn cấp, hủy toàn bộ di chuyển\n" +
+					"- `>autoeat [on|off]` (In-game: `!autoeat` / `!eat`) — Tự động ăn theo bảng ưu tiên dinh dưỡng\n" +
+					"- `>totem [on|off]` (In-game: `!totem`) — Tự động giữ Totem of Undying ở tay phụ\n" +
+					"- `>antiafk [on|off]` (In-game: `!antiafk`) — Chế độ mô phỏng hành vi chống kick AFK\n" +
+					"- `!follow <player>` — Bot tự tìm đường đi theo bảo vệ người chơi\n\n" +
 					"🛠️ **Tiện Ích & Hệ Thống:**\n" +
 					"- `>discord` (In-game: `!discord`) — Link tham gia máy chủ Discord của Bot\n" +
 					"- `>kill` (In-game: `!kill`) — Bot tự sát /kill giải cứu khi kẹt bẫy (Cooldown 60s)\n" +
@@ -99,6 +107,7 @@ export class HelpCommand extends Command {
 		return [
 			"[Help - Thống kê] !kd, !stats, !top, !playtime, !quote, !online",
 			"[Help - Tra cứu] !jd, !seen, !fm, !lm",
+			"[Help - Tự động] !goto, !highway, !stop, !autoeat, !eat, !totem, !antiafk, !follow",
 			"[Help - Tiện ích] !discord, !kill, !ping, !tps, !pos, !tab, !status",
 		];
 	}

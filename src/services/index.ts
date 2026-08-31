@@ -8,4 +8,7 @@ export * from "./AutoMessageService";
 export * from "./canvas";
 export * from "./ViewerManagerService";
 export * from "./AntiAfkService";
+export * from "./SmartPathfinderService";
+export * from "./HighwayNavigationService";
+export * from "./AutoEatService";
 
