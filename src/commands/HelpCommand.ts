@@ -23,7 +23,7 @@ export class HelpCommand extends Command {
 	}
 
 	public async execute(ctx: CommandContext): Promise<void> {
-		const { message, args, serverHost } = ctx;
+		const { message, args } = ctx;
 		const query = args[0]?.toLowerCase();
 
 		if (query) {
@@ -38,7 +38,7 @@ export class HelpCommand extends Command {
 				.setAccentColor(messageColors.server)
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`**Chi tiết Lệnh: >${cmd.name}**\n\n` +
+						`**Chi Tiết Lệnh: >${cmd.name}**\n\n` +
 						`- **Mô tả:** ${cmd.description}\n` +
 						`- **Cú pháp Discord:** \`${cmd.usage}\`\n` +
 						`- **Cú pháp In-game:** \`${cmd.inGameUsage}\`\n` +
@@ -57,24 +57,36 @@ export class HelpCommand extends Command {
 			return;
 		}
 
-		const uniqueCommands = this.manager.getAllCommands();
-		const lines = uniqueCommands.map(cmd => {
-			const aliasStr = cmd.aliases.length > 0 ? ` *(${cmd.aliases.map(a => `>${a}`).join(", ")})*` : "";
-			return `- \`${cmd.usage}\`${aliasStr} (In-game: \`${cmd.inGameUsage}\`)\n  └ ${cmd.description}`;
-		});
-
 		const container = new ContainerBuilder()
 			.setAccentColor(messageColors.achievement)
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
-					"**Danh Sách Lệnh (Discord: Prefix `>` | In-game: Prefix `!`)**\n\n" +
-					"Bạn có thể nhập trực tiếp các lệnh này trên kênh livechat Discord hoặc trong game Minecraft:\n\n" +
-					lines.join("\n\n")
+					"**Bảng Lệnh Bot (Discord: Prefix `>` | In-game: Prefix `!`)**\n\n" +
+					"📊 **Thống Kê & Xếp Hạng:**\n" +
+					"- `>kd [player]` (In-game: `!kd`) — Xem tỉ lệ hạ gục K/D & Killstreak\n" +
+					"- `>stats [player]` (In-game: `!stats`) — Thống kê tổng hợp toàn diện người chơi\n" +
+					"- `>top <playtime|kills|deaths|messages>` (In-game: `!top`) — Bảng xếp hạng server\n" +
+					"- `>playtime [player]` (In-game: `!playtime`) — Xem thời gian online tích lũy\n" +
+					"- `>quote [player]` (In-game: `!quote`) — Trích dẫn câu chat ngẫu nhiên\n" +
+					"- `>online` (In-game: `!online`) — Danh sách người chơi đang online\n\n" +
+					"🔍 **Tra Cứu Thông Tin & Lịch Sử:**\n" +
+					"- `>jd [player]` (In-game: `!jd`) — Ngày đầu tiên người chơi vào server\n" +
+					"- `>seen [player]` (In-game: `!seen`) — Trạng thái online hoặc lần cuối nhìn thấy\n" +
+					"- `>fm [player]` (In-game: `!fm`) — Tra cứu câu tin nhắn đầu tiên\n" +
+					"- `>lm [player]` (In-game: `!lm`) — Tra cứu câu tin nhắn gần nhất\n\n" +
+					"🛠️ **Tiện Ích & Hệ Thống:**\n" +
+					"- `>discord` (In-game: `!discord`) — Link tham gia máy chủ Discord của Bot\n" +
+					"- `>kill` (In-game: `!kill`) — Bot tự sát /kill giải cứu khi kẹt bẫy (Cooldown 60s)\n" +
+					"- `>ping` (In-game: `!ping`) — Đo độ trễ mạng và thời gian uptime bot\n" +
+					"- `>tps` (In-game: `!tps`) — Đo tốc độ xử lý TPS & độ mượt server\n" +
+					"- `>pos` (In-game: `!pos`) — Tọa độ hiện tại của bot\n" +
+					"- `>tab` (In-game: `!tab`) — Header & Footer Tablist server\n" +
+					"- `>status` (In-game: `!status`) — Trạng thái kết nối bot"
 				)
 			)
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
 			.addTextDisplayComponents(
-				new TextDisplayBuilder().setContent(`Dùng >help <lệnh> để xem chi tiết\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+				new TextDisplayBuilder().setContent(`Dùng >help <lệnh> để xem chi tiết | <t:${Math.floor(Date.now() / 1000)}:F>`)
 			);
 
 		await message.reply({
@@ -83,7 +95,11 @@ export class HelpCommand extends Command {
 		});
 	}
 
-	public async executeInGame(_ctx: InGameCommandContext): Promise<string | void> {
-		return `[Commands] !kd, !stats, !playtime, !quote, !top, !online, !pos, !tab, !status, !help`;
+	public async executeInGame(_ctx: InGameCommandContext): Promise<string[] | void> {
+		return [
+			"[Help - Thống kê] !kd, !stats, !top, !playtime, !quote, !online",
+			"[Help - Tra cứu] !jd, !seen, !fm, !lm",
+			"[Help - Tiện ích] !discord, !kill, !ping, !tps, !pos, !tab, !status",
+		];
 	}
 }

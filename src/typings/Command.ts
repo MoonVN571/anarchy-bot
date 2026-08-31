@@ -43,5 +43,7 @@ export abstract class Command {
 
 	public abstract execute(ctx: CommandContext): Promise<void> | void;
 
-	public abstract executeInGame(ctx: InGameCommandContext): Promise<string | void> | string | void;
+	public abstract executeInGame(
+		ctx: InGameCommandContext
+	): Promise<string | string[] | void> | string | string[] | void;
 }

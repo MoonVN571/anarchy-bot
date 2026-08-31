@@ -79,7 +79,7 @@ export class StatsCommand extends Command {
 		});
 	}
 
-	public async executeInGame(ctx: InGameCommandContext): Promise<string | void> {
+	public async executeInGame(ctx: InGameCommandContext): Promise<string[] | string | void> {
 		const targetUser = ctx.args[0] || ctx.sender;
 		const stats = await StatsService.getPlayerStats(ctx.serverHost, targetUser);
 
@@ -93,6 +93,10 @@ export class StatsCommand extends Command {
 		const ptStr = formatDuration(stats.playtime || 0);
 		const status = stats.isOnline ? "Online" : "Offline";
 
-		return `[Stats] ${stats.displayName || stats.username} (${status}): Playtime: ${ptStr} | K/D: ${kdRatio} (${stats.kills || 0} Kills / ${stats.deaths || 0} Deaths) | Messages: ${stats.messageCount || 0}`;
+		return [
+			`[Stats] ${stats.displayName || stats.username} (${status})`,
+			`Playtime: ${ptStr} | K/D: ${kdRatio} (${stats.kills || 0} K / ${stats.deaths || 0} D)`,
+			`Tin nhắn: ${stats.messageCount || 0} | Tham gia: ${stats.joinCount || 1} lần`,
+		];
 	}
 }

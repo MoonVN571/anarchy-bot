@@ -11,6 +11,14 @@ import { CoordsCommand } from "./CoordsCommand";
 import { TablistCommand } from "./TablistCommand";
 import { BotStatusCommand } from "./BotStatusCommand";
 import { HelpCommand } from "./HelpCommand";
+import { JoinDateCommand } from "./JoinDateCommand";
+import { SeenCommand } from "./SeenCommand";
+import { FirstMessageCommand } from "./FirstMessageCommand";
+import { LastMessageCommand } from "./LastMessageCommand";
+import { DiscordInviteCommand } from "./DiscordInviteCommand";
+import { KillCommand } from "./KillCommand";
+import { PingCommand } from "./PingCommand";
+import { TpsCommand } from "./TpsCommand";
 
 export class CommandManager {
 	private commands: Map<string, Command> = new Map();
@@ -76,6 +84,14 @@ export class CommandManager {
 		this.registerCommand(new CoordsCommand());
 		this.registerCommand(new TablistCommand());
 		this.registerCommand(new BotStatusCommand());
+		this.registerCommand(new JoinDateCommand());
+		this.registerCommand(new SeenCommand());
+		this.registerCommand(new FirstMessageCommand());
+		this.registerCommand(new LastMessageCommand());
+		this.registerCommand(new DiscordInviteCommand());
+		this.registerCommand(new KillCommand());
+		this.registerCommand(new PingCommand());
+		this.registerCommand(new TpsCommand());
 		this.registerCommand(new HelpCommand(this));
 	}
 }

@@ -72,7 +72,7 @@ export class TopCommand extends Command {
 		});
 	}
 
-	public async executeInGame(ctx: InGameCommandContext): Promise<string | void> {
+	public async executeInGame(ctx: InGameCommandContext): Promise<string[] | string | void> {
 		const rawCategory = (ctx.args[0] || "playtime").toLowerCase();
 
 		let category: "playtime" | "kills" | "deaths" | "messages" = "playtime";
@@ -83,10 +83,10 @@ export class TopCommand extends Command {
 			label = "Kills";
 		} else if (rawCategory === "deaths" || rawCategory === "death" || rawCategory === "d") {
 			category = "deaths";
-			label = "Deaths";
+			label = "Số lần chết";
 		} else if (rawCategory === "messages" || rawCategory === "msg" || rawCategory === "chat" || rawCategory === "m") {
 			category = "messages";
-			label = "Messages";
+			label = "Tin nhắn";
 		}
 
 		const leaderboard = await StatsService.getLeaderboard(ctx.serverHost, category, 5);
@@ -95,11 +95,12 @@ export class TopCommand extends Command {
 			return `[Top 5 ${label}] Chưa có dữ liệu bảng xếp hạng.`;
 		}
 
-		const entriesStr = leaderboard.map((e, idx) => {
-			const score = category === "playtime" ? formatDuration(e.score) : e.score.toLocaleString();
-			return `#${idx + 1} ${e.username} (${score})`;
-		}).join(" | ");
-
-		return `[Top 5 ${label}] ${entriesStr}`;
+		return [
+			`[Top 5 ${label}] Bảng xếp hạng máy chủ:`,
+			...leaderboard.map((e, idx) => {
+				const score = category === "playtime" ? formatDuration(e.score) : e.score.toLocaleString();
+				return `#${idx + 1}. ${e.username}: ${score}`;
+			})
+		];
 	}
 }
