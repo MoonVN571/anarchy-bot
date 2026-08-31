@@ -45,17 +45,24 @@ export default class MessageStrEvent extends MineflayerEvent {
 		}
 
 		// 2. In-Game Minecraft Commands Handler (Prefix "!")
-		if (parsed.username && parsed.message && parsed.message.startsWith("!")) {
-			const isHandled = await inGameCommandManager.handleInGameMessage(bot, parsed.username, parsed.message);
-			if (isHandled) {
-				// Still push to discord livechat or save if needed, but command is handled
-			}
+		const userMsg = (parsed.message || "").trim();
+		if (parsed.username && userMsg.startsWith("!")) {
+			await inGameCommandManager.handleInGameMessage(bot, parsed.username, userMsg);
 		} else if (parsed.type === MessageType.Whisper || ChatParser.isWhisperMsg(fullMsg)) {
 			// Extract whisper sender and message if sent as direct whisper
 			const whisperMatch = fullMsg.match(/^([a-zA-Z0-9_]{3,16})\s+(?:thì\s+thầm|whispers|tells\s+you|whispered\s+to\s+you|nhắn\s+cho\s+bạn):\s*(.*)$/i)
 				|| fullMsg.match(/^\[([a-zA-Z0-9_]{3,16})\s*->\s*(?:me|tôi|bạn)\]\s*(.*)$/i);
-			if (whisperMatch && whisperMatch[2].startsWith("!")) {
-				await inGameCommandManager.handleInGameMessage(bot, whisperMatch[1], whisperMatch[2]);
+			if (whisperMatch) {
+				const wMsg = whisperMatch[2].trim();
+				if (wMsg.startsWith("!")) {
+					await inGameCommandManager.handleInGameMessage(bot, whisperMatch[1], wMsg);
+				}
+			}
+		} else {
+			// Fallback: Check if message contains an in-game command prefixed with "!" from any player
+			const cmdMatch = fullMsg.match(/(?:^|[\s<\[\(])(?<user>[a-zA-Z0-9_]{3,16})[>\]\)]?\s*[:»> ]\s*(?<cmd>![a-zA-Z0-9_]+.*)$/);
+			if (cmdMatch && cmdMatch.groups) {
+				await inGameCommandManager.handleInGameMessage(bot, cmdMatch.groups.user, cmdMatch.groups.cmd.trim());
 			}
 		}
 

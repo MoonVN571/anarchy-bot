@@ -45,20 +45,21 @@ export class FirstMessageCommand extends Command {
 			return;
 		}
 
+		const playerName = firstMsg.displayName || firstMsg.username || targetUser;
 		const formattedDate = new Date(firstMsg.timestamp).toLocaleString("vi-VN");
 		const timeAgo = formatTimeAgo(new Date(firstMsg.timestamp));
-		const avatarUrl = `https://mc-heads.net/avatar/${firstMsg.displayName}/64.png`;
+		const avatarUrl = `https://mc-heads.net/avatar/${firstMsg.username || playerName}/64.png`;
 
 		const section = new SectionBuilder()
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
-					`**Tin Nhắn Đầu Tiên: ${firstMsg.displayName}**\n\n` +
+					`**Tin Nhắn Đầu Tiên: ${playerName}**\n\n` +
 					`- **Server:** \`${serverHost}\`\n` +
 					`- **Thời gian:** \`${formattedDate}\` (*${timeAgo}*)\n` +
 					`- **Nội dung:**\n> ${ChatParser.escapeDiscordFormat(firstMsg.message)}`
 				)
 			)
-			.setThumbnailAccessory(new ThumbnailBuilder().setURL(avatarUrl).setDescription(`Avatar của ${firstMsg.displayName}`));
+			.setThumbnailAccessory(new ThumbnailBuilder().setURL(avatarUrl).setDescription(`Avatar của ${playerName}`));
 
 		const container = new ContainerBuilder()
 			.setAccentColor(messageColors.chat)

@@ -6,7 +6,7 @@ export class TablistCommand extends Command {
 	constructor() {
 		super({
 			name: "tablist",
-			aliases: ["tab", "players", "list"],
+			aliases: ["tab", "tabview", "xemtab"],
 			description: "Xem danh sách Tablist người chơi online, ping và avatar trên máy chủ",
 			usage: ">tablist hoặc >tab",
 			inGameUsage: "!tablist hoặc !tab",

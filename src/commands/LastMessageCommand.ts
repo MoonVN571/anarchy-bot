@@ -46,20 +46,21 @@ export class LastMessageCommand extends Command {
 			return;
 		}
 
+		const playerName = lastMsg.displayName || lastMsg.username || targetUser;
 		const formattedDate = new Date(lastMsg.timestamp).toLocaleString("vi-VN");
 		const timeAgo = formatTimeAgo(new Date(lastMsg.timestamp));
-		const avatarUrl = `https://mc-heads.net/avatar/${lastMsg.displayName}/64.png`;
+		const avatarUrl = `https://mc-heads.net/avatar/${lastMsg.username || playerName}/64.png`;
 
 		const section = new SectionBuilder()
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
-					`**Tin Nhắn Gần Nhất: ${lastMsg.displayName}**\n\n` +
+					`**Tin Nhắn Gần Nhất: ${playerName}**\n\n` +
 					`- **Server:** \`${serverHost}\`\n` +
 					`- **Thời gian:** \`${formattedDate}\` (*${timeAgo}*)\n` +
 					`- **Nội dung:**\n> ${ChatParser.escapeDiscordFormat(lastMsg.message)}`
 				)
 			)
-			.setThumbnailAccessory(new ThumbnailBuilder().setURL(avatarUrl).setDescription(`Avatar của ${lastMsg.displayName}`));
+			.setThumbnailAccessory(new ThumbnailBuilder().setURL(avatarUrl).setDescription(`Avatar của ${playerName}`));
 
 		const container = new ContainerBuilder()
 			.setAccentColor(messageColors.chat)

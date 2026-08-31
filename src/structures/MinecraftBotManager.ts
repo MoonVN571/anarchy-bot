@@ -56,14 +56,18 @@ export class MinecraftBotManager {
 		this.client.on("messageCreate", async (message: Message) => {
 			if (message.author.bot || !message.content) return;
 
+			// 1. Handle bot prefix commands (e.g. >kd, !kd, >stats, !stats, >top, >help, etc.) in ANY channel
+			if (message.content.startsWith(">") || message.content.startsWith("!")) {
+				const botInstance = this.channelToBotMap.get(message.channel.id) || this.bots.values().next().value;
+				if (botInstance) {
+					const handled = await commandManager.handleMessage(this.client, botInstance, message);
+					if (handled) return;
+				}
+			}
+
+			// 2. LiveChat Relay: Only relay normal chat from designated livechat channels
 			const botInstance = this.channelToBotMap.get(message.channel.id);
 			if (!botInstance) return;
-
-			// Handle livechat prefix commands (e.g. >kd, !kd, >stats, !stats, >top, >playtime, etc.)
-			if (message.content.startsWith(">") || message.content.startsWith("!")) {
-				const handled = await commandManager.handleMessage(this.client, botInstance, message);
-				if (handled) return;
-			}
 
 			if (!botInstance.joined || botInstance.currentServer !== Server.Main) {
 				message.react(this.client.config.emojis.no_chatting).catch(() => { });

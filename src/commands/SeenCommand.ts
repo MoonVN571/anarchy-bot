@@ -22,7 +22,7 @@ export class SeenCommand extends Command {
 	}
 
 	public async execute(ctx: CommandContext): Promise<void> {
-		const { message, args, serverHost } = ctx;
+		const { message, args, serverHost, bot } = ctx;
 		const targetUser = args[0];
 
 		if (!targetUser) {
@@ -33,35 +33,38 @@ export class SeenCommand extends Command {
 		}
 
 		const stats = await StatsService.getPlayerStats(serverHost, targetUser);
-		if (!stats) {
+		const lowerUser = targetUser.toLowerCase().trim();
+		const isCurrentlyOnline = stats?.isOnline || (bot?.bot?.players ? Object.keys(bot.bot.players).some(p => p.toLowerCase() === lowerUser) : false);
+
+		if (!stats && !isCurrentlyOnline) {
 			await message.reply({
 				content: `Không tìm thấy dữ liệu người chơi **${targetUser}** trên server \`${serverHost}\`.`,
 			});
 			return;
 		}
 
-		const isOnline = stats.isOnline;
-		const lastSeenDate = stats.lastSeen ? new Date(stats.lastSeen).toLocaleString("vi-VN") : "Không rõ";
-		const timeAgo = stats.lastSeen ? formatTimeAgo(new Date(stats.lastSeen)) : "N/A";
-		const avatarUrl = `https://mc-heads.net/avatar/${stats.displayName}/64.png`;
+		const playerName = stats?.displayName || stats?.username || targetUser;
+		const lastSeenDate = stats?.lastSeen ? new Date(stats.lastSeen).toLocaleString("vi-VN") : "Vừa xong";
+		const timeAgo = stats?.lastSeen ? formatTimeAgo(new Date(stats.lastSeen)) : "ngay lúc này";
+		const avatarUrl = `https://mc-heads.net/avatar/${stats?.username || targetUser}/64.png`;
 
-		const statusText = isOnline
+		const statusText = isCurrentlyOnline
 			? "🟢 **Hiện đang ONLINE trên máy chủ**"
 			: `🔴 **Offline** (Lần cuối: \`${lastSeenDate}\` - *${timeAgo}*)`;
 
 		const section = new SectionBuilder()
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
-					`**Trạng Thái Hoạt Động: ${stats.displayName}**\n\n` +
+					`**Trạng Thái Hoạt Động: ${playerName}**\n\n` +
 					`- **Server:** \`${serverHost}\`\n` +
 					`- **Trạng thái:** ${statusText}\n` +
-					`- **Tổng số lần rời server:** \`${stats.leaveCount || 0}\` lần`
+					`- **Tổng số lần rời server:** \`${stats?.leaveCount || 0}\` lần`
 				)
 			)
-			.setThumbnailAccessory(new ThumbnailBuilder().setURL(avatarUrl).setDescription(`Avatar của ${stats.displayName}`));
+			.setThumbnailAccessory(new ThumbnailBuilder().setURL(avatarUrl).setDescription(`Avatar của ${playerName}`));
 
 		const container = new ContainerBuilder()
-			.setAccentColor(isOnline ? messageColors.join : messageColors.quit)
+			.setAccentColor(isCurrentlyOnline ? messageColors.join : messageColors.quit)
 			.addSectionComponents(section)
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
 			.addTextDisplayComponents(
@@ -75,21 +78,26 @@ export class SeenCommand extends Command {
 	}
 
 	public async executeInGame(ctx: InGameCommandContext): Promise<string | void> {
-		const { sender, args, serverHost } = ctx;
+		const { sender, args, serverHost, bot } = ctx;
 		const targetUser = args[0] || sender;
+		const lowerUser = targetUser.toLowerCase().trim();
 
 		const stats = await StatsService.getPlayerStats(serverHost, targetUser);
-		if (!stats) {
+		const isCurrentlyOnline = stats?.isOnline || (bot?.bot?.players ? Object.keys(bot.bot.players).some(p => p.toLowerCase() === lowerUser) : false);
+
+		if (!stats && !isCurrentlyOnline) {
 			return `[Seen] Không tìm thấy dữ liệu người chơi "${targetUser}"!`;
 		}
 
-		if (stats.isOnline) {
-			return `[Seen] ${stats.displayName} hiện đang ONLINE trên server!`;
+		const playerName = stats?.displayName || stats?.username || targetUser;
+
+		if (isCurrentlyOnline) {
+			return `[Seen] ${playerName} hiện đang ONLINE trên server!`;
 		}
 
-		const formattedDate = stats.lastSeen ? new Date(stats.lastSeen).toLocaleString("vi-VN") : "N/A";
-		const timeAgo = stats.lastSeen ? formatTimeAgo(new Date(stats.lastSeen)) : "N/A";
+		const formattedDate = stats?.lastSeen ? new Date(stats.lastSeen).toLocaleString("vi-VN") : "N/A";
+		const timeAgo = stats?.lastSeen ? formatTimeAgo(new Date(stats.lastSeen)) : "N/A";
 
-		return `[Seen] ${stats.displayName} online lần cuối vào: ${formattedDate} (${timeAgo})`;
+		return `[Seen] ${playerName} online lần cuối vào: ${formattedDate} (${timeAgo})`;
 	}
 }

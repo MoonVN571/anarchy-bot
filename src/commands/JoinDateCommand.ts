@@ -14,7 +14,7 @@ export class JoinDateCommand extends Command {
 	constructor() {
 		super({
 			name: "joindate",
-			aliases: ["jd", "firstseen"],
+			aliases: ["jd", "firstseen", "firstjoin"],
 			description: "Xem ngày giờ đầu tiên người chơi tham gia vào máy chủ",
 			usage: ">joindate <tên_người_chơi>",
 			inGameUsage: "!jd [tên_người_chơi]",
@@ -40,20 +40,21 @@ export class JoinDateCommand extends Command {
 			return;
 		}
 
+		const playerName = stats.displayName || stats.username || targetUser;
 		const formattedDate = stats.firstSeen ? new Date(stats.firstSeen).toLocaleString("vi-VN") : "Không rõ";
 		const timeAgo = stats.firstSeen ? formatTimeAgo(new Date(stats.firstSeen)) : "N/A";
-		const avatarUrl = `https://mc-heads.net/avatar/${stats.displayName}/64.png`;
+		const avatarUrl = `https://mc-heads.net/avatar/${stats.username || playerName}/64.png`;
 
 		const section = new SectionBuilder()
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
-					`**Ngày Đầu Tiên Tham Gia: ${stats.displayName}**\n\n` +
+					`**Ngày Đầu Tiên Tham Gia: ${playerName}**\n\n` +
 					`- **Server:** \`${serverHost}\`\n` +
 					`- **Lần đầu vào:** \`${formattedDate}\` (*${timeAgo}*)\n` +
 					`- **Tổng số lần vào:** \`${stats.joinCount || 1}\` lần`
 				)
 			)
-			.setThumbnailAccessory(new ThumbnailBuilder().setURL(avatarUrl).setDescription(`Avatar của ${stats.displayName}`));
+			.setThumbnailAccessory(new ThumbnailBuilder().setURL(avatarUrl).setDescription(`Avatar của ${playerName}`));
 
 		const container = new ContainerBuilder()
 			.setAccentColor(messageColors.join)
@@ -78,9 +79,10 @@ export class JoinDateCommand extends Command {
 			return `[JoinDate] Không tìm thấy dữ liệu người chơi "${targetUser}"!`;
 		}
 
+		const playerName = stats.displayName || stats.username || targetUser;
 		const formattedDate = stats.firstSeen ? new Date(stats.firstSeen).toLocaleDateString("vi-VN") : "N/A";
 		const timeAgo = stats.firstSeen ? formatTimeAgo(new Date(stats.firstSeen)) : "N/A";
 
-		return `[JoinDate] ${stats.displayName} tham gia lần đầu vào: ${formattedDate} (${timeAgo})`;
+		return `[JoinDate] ${playerName} tham gia lần đầu vào: ${formattedDate} (${timeAgo})`;
 	}
 }

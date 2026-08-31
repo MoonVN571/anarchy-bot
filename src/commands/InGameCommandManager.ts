@@ -3,9 +3,9 @@ import { commandManager } from "./CommandManager";
 
 export class InGameCommandManager {
 	private cooldowns: Map<string, number> = new Map();
-	private readonly COOLDOWN_MS = 3000; // 3 seconds per player
+	private readonly COOLDOWN_MS = 1000; // 1 second per player
 	private readonly MAX_CHUNK_LENGTH = 160; // Max safe characters per whisper message
-	private readonly MESSAGE_DELAY_MS = 300; // Delay between multiple whisper packets
+	private readonly MESSAGE_DELAY_MS = 700; // Safe delay to avoid server spam-drops
 
 	/**
 	 * Handle in-game command (messages starting with "!")
@@ -21,12 +21,16 @@ export class InGameCommandManager {
 		const trimmed = message.trim();
 		if (!trimmed.startsWith("!")) return false;
 
+		// Extract clean username (alphanumeric + underscore, 3-16 chars)
+		const userMatch = sender.match(/[a-zA-Z0-9_]{3,16}/);
+		const cleanSender = userMatch ? userMatch[0] : sender.replace(/[^a-zA-Z0-9_]/g, "");
+		if (!cleanSender) return false;
+
 		// Don't execute commands from the bot itself
-		if (bot.bot?.username && sender.toLowerCase() === bot.bot.username.toLowerCase()) {
+		if (bot.bot?.username && cleanSender.toLowerCase() === bot.bot.username.toLowerCase()) {
 			return false;
 		}
 
-		const cleanSender = sender.trim();
 		const lowerSender = cleanSender.toLowerCase();
 
 		// Cooldown check per player
@@ -58,9 +62,8 @@ export class InGameCommandManager {
 
 			if (response && bot.bot) {
 				await this.sendWhisperResponses(bot, cleanSender, response);
-				bot.client.logger.debug(
-					"InGameCommand",
-					`[${bot.config.connection.host}] Executed !${cmdName} for ${cleanSender} -> Whispered reply.`
+				bot.client.logger.info(
+					`[InGameCommand] Executed !${cmdName} for ${cleanSender} on ${bot.config.connection.host}`
 				);
 			}
 
@@ -104,11 +107,19 @@ export class InGameCommandManager {
 			}
 		}
 
-		// Send each whisper with a slight interval
+		// Send each whisper with safe delay
 		for (let i = 0; i < linesToSend.length; i++) {
 			try {
-				bot.bot.chat(`/w ${recipient} ${linesToSend[i]}`);
-			} catch { }
+				if (typeof (bot.bot as any).whisper === "function") {
+					(bot.bot as any).whisper(recipient, linesToSend[i]);
+				} else {
+					bot.bot.chat(`/tell ${recipient} ${linesToSend[i]}`);
+				}
+			} catch {
+				try {
+					bot.bot.chat(`/w ${recipient} ${linesToSend[i]}`);
+				} catch { }
+			}
 
 			if (i < linesToSend.length - 1) {
 				await new Promise(r => setTimeout(r, this.MESSAGE_DELAY_MS));
