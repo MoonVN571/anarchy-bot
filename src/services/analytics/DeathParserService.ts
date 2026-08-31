@@ -5,6 +5,7 @@ import { PlayerModel } from "../../database/models/PlayerModel";
 import { RedisManager } from "../../redis/RedisManager";
 import { Discord } from "../../structures/Discord";
 import { Minecraft } from "../../structures/Minecraft";
+import { isMinecraftMob } from "../../utils/minecraft/minecraftMobs";
 import { defaultDeathPatterns, DeathRegexLearner } from "../../utils";
 
 export interface ParsedDeath {
@@ -17,33 +18,15 @@ export interface ParsedDeath {
 }
 
 export class DeathParserService {
-	private static isSeeded = false;
-
-	/**
-	 * Seed initial default patterns into MongoDB if empty
-	 */
-	public static async seedDefaultPatterns(): Promise<void> {
-		if (this.isSeeded) return;
-
-		try {
-			const count = await DeathPatternModel.countDocuments();
-			if (count === 0) {
-				await DeathPatternModel.insertMany(defaultDeathPatterns);
-			}
-			this.isSeeded = true;
-		} catch {
-			// Ignore if MongoDB not yet ready
-		}
-	}
-
 	private static memoryCache: Map<string, { regex: RegExp; patternDoc: IDeathPattern }[]> = new Map();
 
 	/**
-	 * Invalidate memory cache for a server
+	 * Invalidate memory cache and Redis cache for a server
 	 */
 	public static invalidateCache(server: string): void {
 		this.memoryCache.delete(server.toLowerCase());
 		this.memoryCache.delete("global");
+		RedisManager.invalidateDeathPatterns(server).catch(() => { });
 	}
 
 	/**
@@ -90,12 +73,23 @@ export class DeathParserService {
 			for (const { regex, patternDoc } of cached) {
 				const m = clean.match(regex);
 				if (m && m.groups && m.groups.victim) {
+					let killer = m.groups.killer ? m.groups.killer.trim() : null;
+					let mob = m.groups.mob ? m.groups.mob.trim() : null;
+					let cause = patternDoc.cause || DeathCause.UNKNOWN;
+
+					// If killer is actually a known Minecraft mob, correct it to MOB cause
+					if (killer && isMinecraftMob(killer)) {
+						mob = killer;
+						killer = null;
+						cause = DeathCause.MOB;
+					}
+
 					return {
 						victim: m.groups.victim.trim(),
-						killer: m.groups.killer ? m.groups.killer.trim() : null,
-						mob: m.groups.mob ? m.groups.mob.trim() : null,
+						killer,
+						mob,
 						weapon: m.groups.weapon ? m.groups.weapon.trim() : null,
-						cause: patternDoc.cause || DeathCause.UNKNOWN,
+						cause,
 					};
 				}
 			}
@@ -105,12 +99,23 @@ export class DeathParserService {
 			try {
 				const m = clean.match(new RegExp(p.pattern, "i"));
 				if (m && m.groups && m.groups.victim) {
+					let killer = m.groups.killer ? m.groups.killer.trim() : null;
+					let mob = m.groups.mob ? m.groups.mob.trim() : null;
+					let cause = p.cause || DeathCause.UNKNOWN;
+
+					// If killer is actually a known Minecraft mob, correct it to MOB cause
+					if (killer && isMinecraftMob(killer)) {
+						mob = killer;
+						killer = null;
+						cause = DeathCause.MOB;
+					}
+
 					return {
 						victim: m.groups.victim.trim(),
-						killer: m.groups.killer ? m.groups.killer.trim() : null,
-						mob: m.groups.mob ? m.groups.mob.trim() : null,
+						killer,
+						mob,
 						weapon: m.groups.weapon ? m.groups.weapon.trim() : null,
-						cause: p.cause || DeathCause.UNKNOWN,
+						cause,
 					};
 				}
 			} catch {
@@ -122,34 +127,69 @@ export class DeathParserService {
 	}
 
 	/**
-	 * Get compiled regex patterns for a server (scoped + global)
+	 * Get compiled regex patterns for a server (Runtime Merge: DB Verified Patterns + Default Patterns)
 	 */
 	public static async getPatternsForServer(server: string): Promise<{ regex: RegExp; patternDoc: IDeathPattern }[]> {
-		await this.seedDefaultPatterns();
 		const s = server.toLowerCase();
 
 		if (this.memoryCache.has(s) && this.memoryCache.get(s)!.length > 0) {
 			return this.memoryCache.get(s)!;
 		}
 
-		// 1. Try Redis cache
-		let rawPatterns = await RedisManager.getCachedDeathPatterns(server);
+		// 1. Try Redis cache for merged patterns
+		let mergedPatterns: any[] | null = await RedisManager.getCachedDeathPatterns(server);
 
-		// 2. Fallback to MongoDB query
-		if (!rawPatterns || rawPatterns.length === 0) {
-			rawPatterns = await DeathPatternModel.find({
-				$or: [{ serverScope: "global" }, { serverScope: server }],
+		// 2. If not in Redis, load verified patterns from MongoDB and merge with default patterns
+		if (!mergedPatterns || mergedPatterns.length === 0) {
+			let dbPatterns: any[] = [];
+			try {
+				dbPatterns = await DeathPatternModel.find({
+					$or: [{ serverScope: "global" }, { serverScope: server }],
+					enabled: true,
+				}).sort({ priority: -1, createdAt: -1 }).lean();
+			} catch {
+				dbPatterns = [];
+			}
+
+			// Map default patterns to match pattern structure
+			const defaultsMapped: any[] = defaultDeathPatterns.map(d => ({
+				_id: `default_${d.name}`,
+				serverScope: d.serverScope,
+				name: d.name,
+				pattern: d.pattern,
+				cause: d.cause,
+				priority: d.priority,
 				enabled: true,
-			}).sort({ priority: -1, createdAt: -1 }).lean();
+			}));
 
-			if (rawPatterns && rawPatterns.length > 0) {
-				await RedisManager.cacheDeathPatterns(server, rawPatterns as any);
+			// Merge: DB verified patterns take priority, avoid duplicates by name or exact pattern
+			const seenNames = new Set<string>();
+			const seenRegex = new Set<string>();
+			mergedPatterns = [];
+
+			for (const p of dbPatterns) {
+				seenNames.add(p.name);
+				seenRegex.add(p.pattern);
+				mergedPatterns.push(p);
+			}
+
+			for (const d of defaultsMapped) {
+				if (!seenNames.has(d.name) && !seenRegex.has(d.pattern)) {
+					seenNames.add(d.name);
+					seenRegex.add(d.pattern);
+					mergedPatterns.push(d);
+				}
+			}
+
+			// Cache merged patterns into Redis (1 hour TTL)
+			if (mergedPatterns.length > 0) {
+				await RedisManager.cacheDeathPatterns(server, mergedPatterns as any);
 			}
 		}
 
-		// Compile regex patterns
+		// 3. Compile regex patterns into memory
 		const compiled: { regex: RegExp; patternDoc: IDeathPattern }[] = [];
-		for (const p of rawPatterns || []) {
+		for (const p of mergedPatterns || []) {
 			try {
 				const regex = new RegExp(p.pattern, "i");
 				compiled.push({ regex, patternDoc: p as IDeathPattern });
@@ -603,5 +643,119 @@ export class DeathParserService {
 			lower.includes("burned to death") ||
 			lower.includes("drowned")
 		);
+	}
+
+	/**
+	 * Re-verify all death patterns and death logs stored in Database against latest regex patterns
+	 */
+	public static async reverifyAllDeathsInDb(serverFilter?: string): Promise<{
+		totalPatterns: number;
+		verifiedPatterns: number;
+		patternIssues: { id: string; name: string; issue: string }[];
+		totalDeaths: number;
+		matchedDeaths: number;
+		updatedDeaths: number;
+		unmatchedDeaths: number;
+	}> {
+		// Invalidate memory and Redis caches
+		this.invalidateCache("global");
+		if (serverFilter) this.invalidateCache(serverFilter);
+
+		// Preload merged patterns
+		await this.getPatternsForServer(serverFilter || "global");
+
+		// 1. Re-verify DeathPatternModel
+		const patternQuery = serverFilter ? { $or: [{ serverScope: "global" }, { serverScope: serverFilter }] } : {};
+		const allPatterns = await DeathPatternModel.find(patternQuery);
+		let verifiedPatterns = 0;
+		const patternIssues: { id: string; name: string; issue: string }[] = [];
+
+		for (const p of allPatterns) {
+			try {
+				const reg = new RegExp(p.pattern, "i");
+				if (p.sampleMessage) {
+					const m = p.sampleMessage.match(reg);
+					if (m && m.groups && m.groups.victim) {
+						verifiedPatterns++;
+					} else {
+						patternIssues.push({
+							id: String(p._id),
+							name: p.name,
+							issue: `Sample message "${p.sampleMessage}" does not match regex "${p.pattern}"`,
+						});
+					}
+				} else {
+					verifiedPatterns++;
+				}
+			} catch (err: any) {
+				patternIssues.push({
+					id: String(p._id),
+					name: p.name,
+					issue: `Invalid regex pattern: ${err.message}`,
+				});
+			}
+		}
+
+		// 2. Re-verify DeathModel (Historical death messages in DB)
+		const deathQuery = serverFilter ? { server: serverFilter } : {};
+		const allDeaths = await DeathModel.find(deathQuery);
+
+		let matchedDeaths = 0;
+		let updatedDeaths = 0;
+		let unmatchedDeaths = 0;
+
+		for (const death of allDeaths) {
+			const server = death.server || "global";
+			const raw = death.rawMessage;
+			if (!raw) {
+				unmatchedDeaths++;
+				continue;
+			}
+
+			const info = this.extractDeathInfoSync(server, raw);
+			if (info) {
+				matchedDeaths++;
+				const victimLower = info.victim.toLowerCase();
+				const killerLower = info.killer ? info.killer.toLowerCase() : null;
+
+				const hasChanged =
+					death.victim !== victimLower ||
+					death.cause !== info.cause ||
+					(death.killer || null) !== killerLower ||
+					(death.mob || null) !== (info.mob || null) ||
+					(death.weapon || null) !== (info.weapon || null);
+
+				if (hasChanged) {
+					death.victim = victimLower;
+					death.victimDisplayName = info.victim;
+					death.killer = killerLower;
+					death.killerDisplayName = info.killer || null;
+					death.mob = info.mob || null;
+					death.weapon = info.weapon || null;
+					death.cause = info.cause;
+					await death.save();
+					updatedDeaths++;
+				}
+			} else {
+				unmatchedDeaths++;
+			}
+		}
+
+		// Refresh caches for all servers
+		this.memoryCache.clear();
+		await RedisManager.invalidateDeathPatterns("global");
+		if (serverFilter) {
+			await RedisManager.invalidateDeathPatterns(serverFilter);
+		}
+
+		return {
+			totalPatterns: allPatterns.length,
+			verifiedPatterns,
+			patternIssues,
+			totalDeaths: allDeaths.length,
+			matchedDeaths,
+			updatedDeaths,
+			unmatchedDeaths,
+		};
 	}
 }

@@ -143,6 +143,8 @@ export class DeathRegexLearner {
 			generatedPattern = generatedPattern.replace(new RegExp(escapeRegex(detectedMob), "g"), "(?<mob>.+?)");
 		}
 
+		// Normalize spaces to \\s+
+		generatedPattern = generatedPattern.replace(/\\\s+/g, "\\s+").replace(/\s+/g, "\\s+");
 		generatedPattern = `^${generatedPattern}${weaponRegexClause}$`;
 
 		try {
