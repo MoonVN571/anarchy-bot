@@ -1,14 +1,14 @@
 import {
 	ButtonInteraction,
-	MessageFlags,
 	ContainerBuilder,
-	TextDisplayBuilder,
+	MessageFlags,
 	SeparatorBuilder,
+	TextDisplayBuilder,
 } from "discord.js";
-import { Discord } from "../../../structures";
 import { SystemPatternModel } from "../../../database/models/SystemPatternModel";
-import { SystemPatternService } from "../../../services/SystemPatternService";
-import { escapeRegex } from "../../../utils/regexUtils";
+import { SystemPatternService } from "../../../services";
+import { Discord } from "../../../structures";
+import { escapeRegex } from "../../../utils";
 
 export async function handleClassifySystem(client: Discord, interaction: ButtonInteraction): Promise<void> {
 	await interaction.deferUpdate();

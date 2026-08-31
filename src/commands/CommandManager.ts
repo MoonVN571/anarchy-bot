@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { Command } from "../typings/Command";
+import { Command } from "../typings";
 import { Discord, Minecraft } from "../structures";
 import { KdCommand } from "./KdCommand";
 import { StatsCommand } from "./StatsCommand";
@@ -26,7 +26,7 @@ import { AutoEatCommand } from "./AutoEatCommand";
 import { TotemCommand } from "./TotemCommand";
 import { FollowCommand } from "./FollowCommand";
 
-import { removeVietnameseDiacritics } from "../utils/vietnameseUtils";
+import { removeVietnameseDiacritics } from "../utils";
 
 export class CommandManager {
 	private commands: Map<string, Command> = new Map();
@@ -99,7 +99,7 @@ export class CommandManager {
 			return true;
 		} catch (error) {
 			client.logger.error(`[CommandManager] Error executing command >${cmdName}: ${error}`);
-			await message.reply({ content: `Đã xảy ra lỗi khi thực thi lệnh \`>${cmdName}\`.` }).catch(() => {});
+			await message.reply({ content: `Đã xảy ra lỗi khi thực thi lệnh \`>${cmdName}\`.` }).catch(() => { });
 			return true;
 		}
 	}

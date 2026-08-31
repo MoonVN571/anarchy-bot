@@ -1,12 +1,12 @@
 import {
 	ContainerBuilder,
-	SectionBuilder,
-	TextDisplayBuilder,
-	SeparatorBuilder,
 	MessageFlags,
+	SectionBuilder,
+	SeparatorBuilder,
+	TextDisplayBuilder,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { isToggleOn, isToggleOff, removeVietnameseDiacritics } from "../utils/vietnameseUtils";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { isToggleOff, isToggleOn, removeVietnameseDiacritics } from "../utils";
 
 export class AutoEatCommand extends Command {
 	constructor() {

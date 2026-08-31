@@ -1,13 +1,13 @@
 import {
 	ContainerBuilder,
-	SectionBuilder,
-	TextDisplayBuilder,
-	SeparatorBuilder,
-	ThumbnailBuilder,
 	MessageFlags,
+	SectionBuilder,
+	SeparatorBuilder,
+	TextDisplayBuilder,
+	ThumbnailBuilder,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { StatsService } from "../services/StatsService";
+import { StatsService } from "../services";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
 
 export class KdCommand extends Command {
 	constructor() {

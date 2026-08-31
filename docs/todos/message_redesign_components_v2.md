@@ -4,7 +4,7 @@
 - [x] Đánh giá hiện trạng hiển thị tin nhắn qua Embeds truyền thống.
 - [x] Chuyển đổi cách hiển thị tin nhắn livechat và sự kiện server sang **Discord Components V2** (Containers, Sections, Text Displays, Separators) kết hợp **Canvas Image Rendering (`@napi-rs/canvas`)**.
 - [x] **Bảng màu định sẵn & Màu mặc định cho Reply Message**:
-  - [x] Render Containers/Sections livechat hoàn toàn dựa trên bảng màu chuẩn hóa `messageColors` có sẵn trong `src/utils/chatParser.ts`, **không tạo thêm mã màu mới** hay hardcode mã màu tùy ý.
+  - [x] Render Containers/Sections livechat hoàn toàn dựa trên bảng màu chuẩn hóa `messageColors` có sẵn trong `src/utils.ts`, **không tạo thêm mã màu mới** hay hardcode mã màu tùy ý.
   - [x] Thêm cấu hình **Màu mặc định cho Reply Message của Bot** (`defaultReplyColor: 0x3498db` hoặc cấu hình qua `botConfig.json`) cho các phản hồi lệnh và tin nhắn thông báo chung.
 - [x] **Chính sách Tắt Ping khi Reply (`allowedMentions: { repliedUser: false }`)**:
   - [x] Bắt buộc tất cả các phản hồi lệnh (`message.reply`) đều cấu hình `allowedMentions: { repliedUser: false }` để không làm phiền hoặc ping người dùng liên tục.

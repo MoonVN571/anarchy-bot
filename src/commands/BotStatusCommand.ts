@@ -6,9 +6,9 @@ import {
 	ThumbnailBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { Server } from "../typings/types";
-import { messageColors } from "../utils/chatParser";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { Server } from "../typings";
+import { messageColors } from "../utils";
 
 export class BotStatusCommand extends Command {
 	constructor() {
@@ -38,8 +38,8 @@ export class BotStatusCommand extends Command {
 		const statusBadge = !isConnected
 			? "🔴 Mất kết nối (Đang chờ reconnect)"
 			: isMain
-			? "🟢 Đã vào thế giới chính (Main Server)"
-			: "🟡 Đang ở hàng chờ (Queue)";
+				? "🟢 Đã vào thế giới chính (Main Server)"
+				: "🟡 Đang ở hàng chờ (Queue)";
 
 		const uptimeMs = bot.uptime ? Date.now() - bot.uptime : 0;
 		const hours = Math.floor(uptimeMs / (1000 * 60 * 60));

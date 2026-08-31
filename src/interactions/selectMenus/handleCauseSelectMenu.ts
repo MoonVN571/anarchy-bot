@@ -1,14 +1,14 @@
 import {
-	StringSelectMenuInteraction,
-	MessageFlags,
 	ContainerBuilder,
-	TextDisplayBuilder,
+	MessageFlags,
 	SeparatorBuilder,
+	StringSelectMenuInteraction,
+	TextDisplayBuilder,
 } from "discord.js";
-import { Discord } from "../../structures";
-import { DeathPatternModel } from "../../database/models/DeathPatternModel";
 import { DeathCause } from "../../database/models/DeathModel";
-import { DeathParserService } from "../../services/DeathParserService";
+import { DeathPatternModel } from "../../database/models/DeathPatternModel";
+import { DeathParserService } from "../../services";
+import { Discord } from "../../structures";
 
 export async function handleCauseSelectMenu(client: Discord, interaction: StringSelectMenuInteraction): Promise<void> {
 	const patternId = interaction.customId.replace("select_death_cause_", "");

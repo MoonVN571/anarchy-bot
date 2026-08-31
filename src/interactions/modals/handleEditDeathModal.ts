@@ -1,15 +1,14 @@
 import {
-	ModalSubmitInteraction,
-	MessageFlags,
 	ContainerBuilder,
-	TextDisplayBuilder,
+	MessageFlags,
+	ModalSubmitInteraction,
 	SeparatorBuilder,
+	TextDisplayBuilder,
 } from "discord.js";
-import { Discord } from "../../structures";
-import { DeathPatternModel } from "../../database/models/DeathPatternModel";
 import { DeathCause } from "../../database/models/DeathModel";
-import { RedisManager } from "../../redis/RedisManager";
-import { DeathParserService } from "../../services/DeathParserService";
+import { DeathPatternModel } from "../../database/models/DeathPatternModel";
+import { DeathParserService } from "../../services";
+import { Discord } from "../../structures";
 
 export async function handleEditDeathModal(client: Discord, interaction: ModalSubmitInteraction): Promise<void> {
 	const patternId = interaction.customId.replace("death_modal_", "");

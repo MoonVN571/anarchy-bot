@@ -1,13 +1,13 @@
 import {
 	ContainerBuilder,
-	SectionBuilder,
-	TextDisplayBuilder,
-	SeparatorBuilder,
-	ThumbnailBuilder,
 	MessageFlags,
+	SectionBuilder,
+	SeparatorBuilder,
+	TextDisplayBuilder,
+	ThumbnailBuilder,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { QuoteService } from "../services/QuoteService";
+import { QuoteService } from "../services";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
 
 export class QuoteCommand extends Command {
 	constructor() {

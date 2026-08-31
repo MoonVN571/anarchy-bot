@@ -5,7 +5,7 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
 
 export class StopCommand extends Command {
 	constructor() {

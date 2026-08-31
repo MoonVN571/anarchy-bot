@@ -5,8 +5,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { Server } from "../typings/types";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { Server } from "../typings";
 
 export class GotoCommand extends Command {
 	constructor() {
@@ -57,10 +57,10 @@ export class GotoCommand extends Command {
 					new TextDisplayBuilder().setContent(
 						success
 							? `🧭 **Đang điều hướng di chuyển...**\n` +
-							  `- Điểm đích: \`${targetStr}\`\n` +
-							  `- Vị trí hiện tại: \`(${Math.round(bot.bot.entity.position.x)}, ${Math.round(bot.bot.entity.position.y)}, ${Math.round(bot.bot.entity.position.z)})\`\n` +
-							  `- Trạng thái: **Đang di chuyển thông minh (Né lava & portal)**\n\n` +
-							  `*Gõ \`>stop\` để dừng di chuyển bất kỳ lúc nào.*`
+							`- Điểm đích: \`${targetStr}\`\n` +
+							`- Vị trí hiện tại: \`(${Math.round(bot.bot.entity.position.x)}, ${Math.round(bot.bot.entity.position.y)}, ${Math.round(bot.bot.entity.position.z)})\`\n` +
+							`- Trạng thái: **Đang di chuyển thông minh (Né lava & portal)**\n\n` +
+							`*Gõ \`>stop\` để dừng di chuyển bất kỳ lúc nào.*`
 							: `❌ **Không thể thiết lập đường đi tới \`${targetStr}\`!**`
 					)
 				)

@@ -14,7 +14,7 @@ Module.prototype.require = function (id: string): any {
 
 import { ActivityType, Events, GatewayIntentBits, Partials } from "discord.js";
 import { Discord, MinecraftBotManager } from "./structures";
-import { ServerIp } from "./typings/types";
+import { ServerIp } from "./typings";
 import { createServerConfig } from "./config";
 import { Express } from "./backend";
 import { Database } from "./database";

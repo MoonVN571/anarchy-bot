@@ -6,10 +6,10 @@ import {
 	ThumbnailBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
 import { MessageModel } from "../database/models/MessageModel";
-import { formatTimeAgo } from "../utils/timeFormat";
-import { messageColors, ChatParser } from "../utils/chatParser";
+import { formatTimeAgo } from "../utils";
+import { messageColors, ChatParser } from "../utils";
 
 export class LastMessageCommand extends Command {
 	constructor() {

@@ -1,8 +1,8 @@
 import { Message } from "discord.js";
 import { Discord } from "./Discord";
 import { Minecraft } from "./Minecraft";
-import { MinecraftServerConfig } from "../typings/config.types";
-import { Server } from "../typings/types";
+import { MinecraftServerConfig } from "../typings";
+import { Server } from "../typings";
 import { commandManager } from "../commands";
 
 export class MinecraftBotManager {
@@ -66,12 +66,12 @@ export class MinecraftBotManager {
 			}
 
 			if (!botInstance.joined || botInstance.currentServer !== Server.Main) {
-				message.react(this.client.config.emojis.no_chatting).catch(() => {});
+				message.react(this.client.config.emojis.no_chatting).catch(() => { });
 				return;
 			}
 
 			botInstance.sendChatMessage(message.author.displayName, message.content);
-			message.react(this.client.config.emojis.tick).catch(() => {});
+			message.react(this.client.config.emojis.tick).catch(() => { });
 		});
 	}
 }

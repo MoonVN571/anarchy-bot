@@ -4,8 +4,8 @@ import {
 	LiveChatTopicConfig,
 	AutoMessageConfig,
 	AuthType,
-} from "../typings/config.types";
-import { ServerIp } from "../typings/types";
+} from "../typings";
+import { ServerIp } from "../typings";
 
 export const defaultRateLimitConfig: RateLimitConfig = {
 	enabled: true,

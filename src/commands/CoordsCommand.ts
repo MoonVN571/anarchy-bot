@@ -1,8 +1,6 @@
 import { AttachmentBuilder } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { CanvasRendererService } from "../services/CanvasRendererService";
-import { viewerManager } from "../services/ViewerManagerService";
-
+import { CanvasRendererService, viewerManager } from "../services";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
 export class CoordsCommand extends Command {
 	constructor() {
 		super({

@@ -1,14 +1,14 @@
+import { LabelBuilder } from "@discordjs/builders";
 import {
 	ButtonInteraction,
 	ModalBuilder,
-	TextInputBuilder,
-	TextInputStyle,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
+	TextInputBuilder,
+	TextInputStyle,
 } from "discord.js";
-import { LabelBuilder } from "@discordjs/builders";
 import { Discord } from "../../../structures";
-import { escapeRegex } from "../../../utils/regexUtils";
+import { escapeRegex } from "../../../utils";
 
 export async function handleClassifyDeathModal(client: Discord, interaction: ButtonInteraction): Promise<void> {
 	try {

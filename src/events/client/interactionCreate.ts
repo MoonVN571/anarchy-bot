@@ -1,6 +1,6 @@
 import { Events, Interaction } from "discord.js";
 import { Discord } from "../../structures";
-import { DiscordEvent } from "../../typings/DiscordEvent";
+import { DiscordEvent } from "../../typings";
 import { handleInteraction } from "../../interactions";
 
 export default class InteractionCreateEvent extends DiscordEvent {

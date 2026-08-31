@@ -4,9 +4,9 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
 import { CommandManager } from "./CommandManager";
-import { messageColors } from "../utils/chatParser";
+import { messageColors } from "../utils";
 
 export class HelpCommand extends Command {
 	private manager: CommandManager;

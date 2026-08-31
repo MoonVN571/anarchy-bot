@@ -1,17 +1,11 @@
-import { Bot, createBot, BotOptions } from "mineflayer";
 import { TextChannel } from "discord.js";
+import { Bot, BotOptions, createBot } from "mineflayer";
 import { pathfinder } from "mineflayer-pathfinder";
+import { mineflayerEventClasses } from "../events/mineflayer";
+import { AntiAfkService, AutoEatService, AutoMessageService, HighwayNavigationService, PlaytimeTracker, SmartPathfinderService, viewerManager } from "../services";
+import { MinecraftServerConfig, Server } from "../typings";
 import { Discord } from "./Discord";
 import { LiveChatManager } from "./LiveChatManager";
-import { PlaytimeTracker } from "../services/PlaytimeTracker";
-import { AutoMessageService } from "../services/AutoMessageService";
-import { AntiAfkService } from "../services/AntiAfkService";
-import { SmartPathfinderService } from "../services/SmartPathfinderService";
-import { HighwayNavigationService } from "../services/HighwayNavigationService";
-import { AutoEatService } from "../services/AutoEatService";
-import { viewerManager } from "../services/ViewerManagerService";
-import { MinecraftServerConfig, Server } from "../typings/types";
-import { mineflayerEventClasses } from "../events/mineflayer";
 
 export class Minecraft {
 	public client: Discord;
@@ -173,7 +167,7 @@ export class Minecraft {
 			str += `\nConnected <t:${Math.floor(this.uptime / 1000)}:R>, updated <t:${Math.floor(Date.now() / 1000)}:R>` +
 				"\n\n" + header + footer;
 
-			this.channel.setTopic(str).catch(() => {});
+			this.channel.setTopic(str).catch(() => { });
 		}, topic.interval);
 	}
 
@@ -228,7 +222,7 @@ export class Minecraft {
 			try {
 				this.bot.removeAllListeners();
 				this.bot.quit();
-			} catch {}
+			} catch { }
 			(this as any).bot = null;
 		}
 	}

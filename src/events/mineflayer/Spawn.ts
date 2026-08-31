@@ -1,6 +1,6 @@
 import { Minecraft } from "../../structures";
-import { Server } from "../../typings/types";
-import { MineflayerEvent } from "../../typings/MineflayerEvent";
+import { Server } from "../../typings";
+import { MineflayerEvent } from "../../typings";
 
 export default class SpawnEvent extends MineflayerEvent {
 	constructor() {

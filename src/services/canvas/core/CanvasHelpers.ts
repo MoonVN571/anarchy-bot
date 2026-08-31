@@ -1,6 +1,6 @@
 import { SKRSContext2D } from "@napi-rs/canvas";
-import { ChatParser } from "../../../utils/chatParser";
 import { FontManager } from "./FontManager";
+import { ChatParser } from "../../../utils";
 
 export class CanvasHelpers {
 	/**

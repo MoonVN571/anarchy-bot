@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import { Discord } from "../../../structures";
 import { DeathPatternModel } from "../../../database/models/DeathPatternModel";
-import { DeathParserService } from "../../../services/DeathParserService";
+import { DeathParserService } from "../../../services";
 
 export async function handleDeathApprove(client: Discord, interaction: ButtonInteraction): Promise<void> {
 	const patternId = interaction.customId.replace("death_approve_", "");

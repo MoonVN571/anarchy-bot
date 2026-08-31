@@ -4,8 +4,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { messageColors } from "../utils/chatParser";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { messageColors } from "../utils";
 
 export class DiscordInviteCommand extends Command {
 	private readonly defaultInviteUrl: string = "http://bit.ly/mo0nbot2";

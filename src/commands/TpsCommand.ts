@@ -4,8 +4,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { messageColors } from "../utils/chatParser";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { messageColors } from "../utils";
 
 export class TpsCommand extends Command {
 	constructor() {
@@ -74,7 +74,7 @@ export class TpsCommand extends Command {
 			try {
 				const val = parseFloat((bot.bot as any).getTps());
 				if (!isNaN(val) && val > 0) return Math.min(20.0, val);
-			} catch {}
+			} catch { }
 		}
 
 		// Fallback: estimate 20.0 if normal connected

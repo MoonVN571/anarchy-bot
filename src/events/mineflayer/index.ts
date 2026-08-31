@@ -4,7 +4,7 @@ import KickedEvent from "./Kicked";
 import MessageStrEvent from "./MessageStr";
 import SpawnEvent from "./Spawn";
 import WindowOpenEvent from "./WindowOpen";
-import { MineflayerEvent } from "../../typings/MineflayerEvent";
+import { MineflayerEvent } from "../../typings";
 
 export const mineflayerEventClasses: (new () => MineflayerEvent)[] = [
 	EndEvent,

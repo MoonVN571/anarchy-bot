@@ -1,9 +1,6 @@
-import { TextChannel, ContainerBuilder, APIEmbed } from "discord.js";
+import { TextChannel, ContainerBuilder, APIEmbed, } from "discord.js";
 import { Minecraft } from "./Minecraft";
-import { ParsedChatMessage, MessageType } from "../utils/chatParser";
-import { MessageV2Renderer } from "../utils/messageV2Renderer";
-import { MessageRenderer } from "../utils/messageRenderer";
-import { SpamDetector } from "../utils/spamDetector";
+import { ParsedChatMessage, SpamDetector, MessageV2Renderer, MessageRenderer, MessageType } from "../utils";
 
 interface QueuedMessage {
 	parsed: ParsedChatMessage;

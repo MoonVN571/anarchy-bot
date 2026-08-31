@@ -1,14 +1,16 @@
-export * from "./PlaytimeTracker";
-export * from "./DeathParserService";
-export * from "./QuoteService";
-export * from "./StatsService";
-export * from "./SystemPatternService";
-export * from "./MessageClassifierService";
-export * from "./AutoMessageService";
-export * from "./canvas";
-export * from "./ViewerManagerService";
-export * from "./AntiAfkService";
-export * from "./SmartPathfinderService";
-export * from "./HighwayNavigationService";
-export * from "./AutoEatService";
+// ==========================================
+// Central Barrel Export for All Services
+// Grouped by Architectural Domains
+// ==========================================
 
+// 1. Minecraft In-Game Services
+export * from "./minecraft";
+
+// 2. Analytics & Data Processing Services
+export * from "./analytics";
+
+// 3. LiveChat & Canvas Services
+export * from "./livechat";
+
+// 4. Web Backend & Management Services
+export * from "./web";

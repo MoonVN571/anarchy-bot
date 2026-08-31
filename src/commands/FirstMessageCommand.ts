@@ -1,16 +1,14 @@
 import {
 	ContainerBuilder,
-	SectionBuilder,
-	TextDisplayBuilder,
-	SeparatorBuilder,
-	ThumbnailBuilder,
 	MessageFlags,
+	SectionBuilder,
+	SeparatorBuilder,
+	TextDisplayBuilder,
+	ThumbnailBuilder,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
 import { MessageModel } from "../database/models/MessageModel";
-import { StatsService } from "../services/StatsService";
-import { formatTimeAgo } from "../utils/timeFormat";
-import { messageColors, ChatParser } from "../utils/chatParser";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { ChatParser, formatTimeAgo, messageColors } from "../utils";
 
 export class FirstMessageCommand extends Command {
 	constructor() {

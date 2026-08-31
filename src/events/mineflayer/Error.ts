@@ -1,5 +1,5 @@
 import { Minecraft } from "../../structures";
-import { MineflayerEvent } from "../../typings/MineflayerEvent";
+import { MineflayerEvent } from "../../typings";
 
 export default class ErrorEvent extends MineflayerEvent {
 	constructor() {

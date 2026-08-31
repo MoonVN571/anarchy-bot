@@ -1,14 +1,14 @@
 import {
 	ButtonInteraction,
-	MessageFlags,
 	ContainerBuilder,
-	TextDisplayBuilder,
+	MessageFlags,
 	SeparatorBuilder,
+	TextDisplayBuilder,
 } from "discord.js";
-import { Discord } from "../../../structures";
-import { DeathPatternModel } from "../../../database/models/DeathPatternModel";
 import { DeathCause } from "../../../database/models/DeathModel";
-import { DeathParserService } from "../../../services/DeathParserService";
+import { DeathPatternModel } from "../../../database/models/DeathPatternModel";
+import { DeathParserService } from "../../../services";
+import { Discord } from "../../../structures";
 
 export async function handleDeathResolvePvp(client: Discord, interaction: ButtonInteraction): Promise<void> {
 	const patternId = interaction.customId.replace("death_resolve_pvp_", "");

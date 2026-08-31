@@ -1,6 +1,6 @@
 import { Events } from "discord.js";
 import { Discord } from "../../structures";
-import { DiscordEvent } from "../../typings/DiscordEvent";
+import { DiscordEvent } from "../../typings";
 
 export default class ReadyEvent extends DiscordEvent {
 	constructor() {
@@ -13,4 +13,3 @@ export default class ReadyEvent extends DiscordEvent {
 		client.logger.info(`Logged in as ${client.user!.tag}`);
 	}
 }
-	

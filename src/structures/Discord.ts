@@ -1,7 +1,7 @@
 import { Client } from "discord.js";
 
 import { logger } from "./";
-import { loadDiscordEvents } from "../typings/DiscordEvent";
+import { loadDiscordEvents } from "../typings";
 import { botConfig } from "../config";
 
 export class Discord extends Client {

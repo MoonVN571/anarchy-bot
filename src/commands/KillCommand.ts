@@ -4,8 +4,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { messageColors } from "../utils/chatParser";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { messageColors } from "../utils";
 
 export class KillCommand extends Command {
 	private static lastKillTimes: Map<string, number> = new Map();

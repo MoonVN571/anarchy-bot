@@ -1,6 +1,6 @@
 import { AttachmentBuilder } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { CanvasRendererService } from "../services/CanvasRendererService";
+import { CanvasRendererService } from "../services";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
 
 export class TablistCommand extends Command {
 	constructor() {

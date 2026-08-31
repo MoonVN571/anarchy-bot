@@ -1,12 +1,12 @@
 import {
 	ContainerBuilder,
-	TextDisplayBuilder,
-	SeparatorBuilder,
 	MessageFlags,
+	SeparatorBuilder,
+	TextDisplayBuilder,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { StatsService } from "../services/StatsService";
-import { formatDuration } from "../utils/timeFormat";
+import { StatsService } from "../services";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { formatDuration } from "../utils";
 
 export class TopCommand extends Command {
 	constructor() {

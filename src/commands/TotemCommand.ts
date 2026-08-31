@@ -5,8 +5,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { isToggleOn, isToggleOff } from "../utils/vietnameseUtils";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { isToggleOn, isToggleOff } from "../utils";
 
 export class TotemCommand extends Command {
 	constructor() {

@@ -5,8 +5,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { Server } from "../typings/types";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { Server } from "../typings";
 
 export class HighwayCommand extends Command {
 	constructor() {
@@ -57,10 +57,10 @@ export class HighwayCommand extends Command {
 					new TextDisplayBuilder().setContent(
 						started
 							? `🛣️ **Đã kích hoạt chế độ Highway Navigation Engine!**\n` +
-							  `- Trục bám đường: **${axis}**\n` +
-							  `- Mốc tọa độ đích: \`${targetCoord}\`\n` +
-							  `- Cơ chế: **Auto-Centering + Sprint-jumping trên Ice + Né Portal/Lava**\n\n` +
-							  `*Gõ \`>stop\` để dừng khẩn cấp bất kỳ lúc nào.*`
+							`- Trục bám đường: **${axis}**\n` +
+							`- Mốc tọa độ đích: \`${targetCoord}\`\n` +
+							`- Cơ chế: **Auto-Centering + Sprint-jumping trên Ice + Né Portal/Lava**\n\n` +
+							`*Gõ \`>stop\` để dừng khẩn cấp bất kỳ lúc nào.*`
 							: `❌ **Không thể khởi động bám đường cao tốc!**`
 					)
 				)

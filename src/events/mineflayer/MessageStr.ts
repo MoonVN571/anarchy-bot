@@ -1,14 +1,11 @@
-import { Minecraft } from "../../structures";
-import { MineflayerEvent } from "../../typings/MineflayerEvent";
-import { ChatParser, MessageType } from "../../utils/chatParser";
-import { AuthHandler } from "../../utils/authHandler";
+import { inGameCommandManager } from "../../commands";
 import { MessageModel } from "../../database/models/MessageModel";
 import { PlayerModel } from "../../database/models/PlayerModel";
 import { RedisManager } from "../../redis/RedisManager";
-import { QuoteService } from "../../services/QuoteService";
-import { MessageClassifierService } from "../../services/MessageClassifierService";
-import { inGameCommandManager } from "../../commands";
-import { globalSpamDetector } from "../../utils/spamDetector";
+import { MessageClassifierService, QuoteService } from "../../services";
+import { Minecraft } from "../../structures";
+import { MineflayerEvent } from "../../typings";
+import { AuthHandler, ChatParser, globalSpamDetector, MessageType } from "../../utils";
 
 export default class MessageStrEvent extends MineflayerEvent {
 	constructor() {
@@ -98,7 +95,7 @@ export default class MessageStrEvent extends MineflayerEvent {
 				message: parsed.message,
 				type: parsed.type,
 				timestamp: new Date(),
-			}).catch(() => {});
+			}).catch(() => { });
 
 			// 2. Increment message count in PlayerModel & Redis Leaderboard
 			PlayerModel.updateOne(
@@ -117,9 +114,9 @@ export default class MessageStrEvent extends MineflayerEvent {
 					$inc: { messageCount: 1 },
 				},
 				{ upsert: true }
-			).catch(() => {});
+			).catch(() => { });
 
-			RedisManager.incrementLeaderboard(serverIp, "messages", lowerUser, 1).catch(() => {});
+			RedisManager.incrementLeaderboard(serverIp, "messages", lowerUser, 1).catch(() => { });
 
 			// 3. Save potential quotes
 			QuoteService.recordPotentialQuote(
@@ -127,7 +124,7 @@ export default class MessageStrEvent extends MineflayerEvent {
 				lowerUser,
 				parsed.username,
 				parsed.message
-			).catch(() => {});
+			).catch(() => { });
 			return;
 		}
 

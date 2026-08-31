@@ -1,6 +1,6 @@
 import { createCanvas, SKRSContext2D } from "@napi-rs/canvas";
 import { Minecraft } from "../../../structures";
-import { Server } from "../../../typings/types";
+import { Server } from "../../../typings";
 import { RedisManager } from "../../../redis/RedisManager";
 import { FontManager } from "../core/FontManager";
 import { CanvasHelpers } from "../core/CanvasHelpers";

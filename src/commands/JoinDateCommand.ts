@@ -1,15 +1,14 @@
 import {
 	ContainerBuilder,
-	SectionBuilder,
-	TextDisplayBuilder,
-	SeparatorBuilder,
-	ThumbnailBuilder,
 	MessageFlags,
+	SectionBuilder,
+	SeparatorBuilder,
+	TextDisplayBuilder,
+	ThumbnailBuilder,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { StatsService } from "../services/StatsService";
-import { formatTimeAgo } from "../utils/timeFormat";
-import { messageColors } from "../utils/chatParser";
+import { StatsService } from "../services";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { formatTimeAgo, messageColors } from "../utils";
 
 export class JoinDateCommand extends Command {
 	constructor() {

@@ -108,7 +108,7 @@ export class InGameCommandManager {
 		for (let i = 0; i < linesToSend.length; i++) {
 			try {
 				bot.bot.chat(`/w ${recipient} ${linesToSend[i]}`);
-			} catch {}
+			} catch { }
 
 			if (i < linesToSend.length - 1) {
 				await new Promise(r => setTimeout(r, this.MESSAGE_DELAY_MS));

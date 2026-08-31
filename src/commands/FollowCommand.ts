@@ -5,8 +5,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
-import { Server } from "../typings/types";
+import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { Server } from "../typings";
 
 export class FollowCommand extends Command {
 	constructor() {
@@ -42,8 +42,8 @@ export class FollowCommand extends Command {
 					new TextDisplayBuilder().setContent(
 						success
 							? `🏃 **Đang đi theo sau người chơi \`${targetPlayer}\`!**\n` +
-							  `- Cơ chế: Tự động bám sát khoảng cách 3 khối.\n\n` +
-							  `*Gõ \`>stop\` để hủy theo sau.*`
+							`- Cơ chế: Tự động bám sát khoảng cách 3 khối.\n\n` +
+							`*Gõ \`>stop\` để hủy theo sau.*`
 							: `❌ **Không tìm thấy người chơi \`${targetPlayer}\` trong tầm nhìn (render distance) của bot!**`
 					)
 				)
