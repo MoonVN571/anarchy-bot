@@ -15,9 +15,9 @@ export class AutoMessageService {
 	}
 
 	/**
-	 * Called whenever a valid player chat message is received on the Minecraft server
+	 * Called whenever a valid server message/event is received on the Minecraft server
 	 */
-	public onPlayerChat(): void {
+	public onServerMessage(): void {
 		const autoMessage = this.bot.config.livechat.autoMessage;
 		if (!autoMessage || !autoMessage.enabled || !autoMessage.messages || autoMessage.messages.length === 0) {
 			return;
@@ -36,6 +36,13 @@ export class AutoMessageService {
 		if (this.messageCount >= this.targetThreshold) {
 			this.trySendAutoMessage();
 		}
+	}
+
+	/**
+	 * Alias for onServerMessage
+	 */
+	public onPlayerChat(): void {
+		this.onServerMessage();
 	}
 
 	/**

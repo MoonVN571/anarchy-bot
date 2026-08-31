@@ -230,7 +230,7 @@ export class MessageV2Renderer {
 				.setAccentColor(messageColors[MessageType.Queue]) // 0xf1c40f
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`⏳ **Thông Báo Hàng Đợi (Queue)**\n` +
+						`**Queue Message**\n` +
 						`> ${parsed.formattedMsg || parsed.rawText}`
 					)
 				)

@@ -38,6 +38,9 @@ export default class MessageStrEvent extends MineflayerEvent {
 		// Ignore messages sent by the bot itself
 		if (parsed.type === MessageType.BotChat) return;
 
+		// Count valid incoming server messages/events for auto tip trigger
+		bot.autoMessageService.onServerMessage();
+
 		// 2. In-Game Minecraft Commands Handler (Prefix "!")
 		if (parsed.username && parsed.message && parsed.message.startsWith("!")) {
 			const isHandled = await inGameCommandManager.handleInGameMessage(bot, parsed.username, parsed.message);
@@ -119,9 +122,6 @@ export default class MessageStrEvent extends MineflayerEvent {
 				parsed.username,
 				parsed.message
 			).catch(() => {});
-
-			// 4. Trigger auto message count increment
-			bot.autoMessageService.onPlayerChat();
 			return;
 		}
 
