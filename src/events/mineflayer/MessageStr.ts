@@ -137,7 +137,18 @@ export default class MessageStrEvent extends MineflayerEvent {
 			return;
 		}
 
-		// B. Handle Non-Player Messages (Join/Leave, Death, System, or Unclassified Messages)
+		// B. Handle Player Join / Leave Events
+		if (parsed.type === MessageType.Join && parsed.username) {
+			await bot.playtimeTracker?.handlePlayerJoin(parsed.username);
+			return;
+		}
+
+		if (parsed.type === MessageType.Quit && parsed.username) {
+			await bot.playtimeTracker?.handlePlayerLeave(parsed.username);
+			return;
+		}
+
+		// C. Handle Non-Player Messages (Death, System, or Unclassified Messages)
 		await MessageClassifierService.classifyAndProcess(bot, cleanText, fullMsg, parsed);
 	}
 }

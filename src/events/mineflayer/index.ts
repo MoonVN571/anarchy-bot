@@ -15,8 +15,6 @@ export const mineflayerEventClasses: (new () => MineflayerEvent)[] = [
 	MessageStrEvent,
 	SpawnEvent,
 	WindowOpenEvent,
-	PlayerJoinedEvent,
-	PlayerLeftEvent,
 ];
 
 export {

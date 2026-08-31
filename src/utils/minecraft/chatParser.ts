@@ -245,7 +245,7 @@ export class ChatParser {
 		}
 
 		// 3. Format message according to classification
-		return this.formatParsedMessage(main, cleanText, structured);
+		return this.formatParsedMessage(main, cleanText, structured, rawJson);
 	}
 
 	private static extractFromJson(
@@ -398,7 +398,8 @@ export class ChatParser {
 	private static formatParsedMessage(
 		main: Minecraft,
 		cleanText: string,
-		parsed: { rank: string | null; username: string | null; message: string }
+		parsed: { rank: string | null; username: string | null; message: string },
+		rawJson?: any
 	): ParsedChatMessage {
 		let { username, rank, message } = parsed;
 		let msgType = MessageType.Server;
@@ -417,8 +418,8 @@ export class ChatParser {
 			formattedMsg = this.escapeDiscordFormat(cleanText);
 			const serverIp = main.config.connection.host;
 
-			const joinInfo = this.extractJoinUsername(cleanText);
-			const leaveInfo = this.extractLeaveUsername(cleanText);
+			const joinInfo = this.extractJoinUsername(cleanText, rawJson);
+			const leaveInfo = this.extractLeaveUsername(cleanText, rawJson);
 			const achieveUser = this.extractAchievementUsername(cleanText);
 			const whisperInfo = this.extractWhisperInfo(cleanText);
 
@@ -461,13 +462,19 @@ export class ChatParser {
 				msgType = MessageType.Join;
 				finalUsername = joinInfo.username;
 				if (joinInfo.rank) finalRank = joinInfo.rank;
+				formattedMsg = finalRank
+					? `**\`[+]\` \`[${finalRank}]\` ${this.escapeDiscordFormat(finalUsername)}**`
+					: `**\`[+]\` ${this.escapeDiscordFormat(finalUsername)}**`;
 			} else if (leaveInfo) {
 				msgType = MessageType.Quit;
 				finalUsername = leaveInfo.username;
 				if (leaveInfo.rank) finalRank = leaveInfo.rank;
-			} else if (this.isJoinMessage(cleanText)) {
+				formattedMsg = finalRank
+					? `**\`[-]\` \`[${finalRank}]\` ${this.escapeDiscordFormat(finalUsername)}**`
+					: `**\`[-]\` ${this.escapeDiscordFormat(finalUsername)}**`;
+			} else if (this.isJoinMessage(cleanText, rawJson)) {
 				msgType = MessageType.Join;
-			} else if (this.isLeaveMessage(cleanText)) {
+			} else if (this.isLeaveMessage(cleanText, rawJson)) {
 				msgType = MessageType.Quit;
 			} else if (this.isQueueMessage(cleanText)) {
 				msgType = MessageType.Queue;
@@ -598,7 +605,22 @@ export class ChatParser {
 	/**
 	 * Extract username and optional rank from Join message patterns
 	 */
-	public static extractJoinUsername(text: string): { username: string; rank?: string | null } | null {
+	public static extractJoinUsername(text: string, json?: any): { username: string; rank?: string | null } | null {
+		// 1. Check vanilla / server JSON translate (e.g. multiplayer.player.joined, multiplayer.player.joined.renamed)
+		if (
+			json?.translate &&
+			typeof json.translate === "string" &&
+			json.translate.startsWith("multiplayer.player.joined") &&
+			Array.isArray(json.with) &&
+			json.with.length > 0
+		) {
+			const raw = this.cleanMinecraftText(this.extractJsonText(json.with[0])).trim();
+			const match = raw.match(/[a-zA-Z0-9_]{3,16}/);
+			if (match) {
+				return { username: match[0], rank: null };
+			}
+		}
+
 		if (!text) return null;
 		const clean = this.cleanMinecraftText(text);
 
@@ -611,8 +633,8 @@ export class ChatParser {
 			};
 		}
 
-		// Pattern 2: [Rank] Steve joined the game / đã tham gia / đã kết nối / joined
-		const textMatch = clean.match(/^(?:\[(?<rank>[^\]]+)\]\s*)?(?<username>[a-zA-Z0-9_]{3,16})\s+(?:joined the game|đã tham gia(?:\s+trò chơi|\s+máy chủ|\s+server)?|đã kết nối(?:\s+vào máy chủ|\s+vào server)?|joined\b)/i);
+		// Pattern 2: [Rank] Steve joined the game / đã tham gia / đã kết nối / joined / đã vào / đã trực tuyến / đã đăng nhập
+		const textMatch = clean.match(/^(?:\[(?<rank>[^\]]+)\]\s*)?(?<username>[a-zA-Z0-9_]{3,16})\s+(?:joined the game|joined\b|logged in|đã tham gia(?:\s+trò chơi|\s+máy chủ|\s+server)?|đã kết nối(?:\s+vào máy chủ|\s+vào server)?|đã vào(?:\s+trò chơi|\s+máy chủ|\s+server)?|đã trực tuyến|đã đăng nhập)/i);
 		if (textMatch && textMatch.groups) {
 			return {
 				username: textMatch.groups.username,
@@ -626,7 +648,22 @@ export class ChatParser {
 	/**
 	 * Extract username and optional rank from Leave/Quit message patterns
 	 */
-	public static extractLeaveUsername(text: string): { username: string; rank?: string | null } | null {
+	public static extractLeaveUsername(text: string, json?: any): { username: string; rank?: string | null } | null {
+		// 1. Check vanilla / server JSON translate (e.g. multiplayer.player.left, multiplayer.player.left.renamed)
+		if (
+			json?.translate &&
+			typeof json.translate === "string" &&
+			json.translate.startsWith("multiplayer.player.left") &&
+			Array.isArray(json.with) &&
+			json.with.length > 0
+		) {
+			const raw = this.cleanMinecraftText(this.extractJsonText(json.with[0])).trim();
+			const match = raw.match(/[a-zA-Z0-9_]{3,16}/);
+			if (match) {
+				return { username: match[0], rank: null };
+			}
+		}
+
 		if (!text) return null;
 		const clean = this.cleanMinecraftText(text);
 
@@ -639,8 +676,8 @@ export class ChatParser {
 			};
 		}
 
-		// Pattern 2: [Rank] Steve left the game / đã rời khỏi / đã rời đi / đã mất kết nối / disconnected / left
-		const textMatch = clean.match(/^(?:\[(?<rank>[^\]]+)\]\s*)?(?<username>[a-zA-Z0-9_]{3,16})\s+(?:left the game|đã rời khỏi(?:\s+trò chơi|\s+máy chủ|\s+server)?|đã rời đi|đã mất kết nối|disconnected|left\b)/i);
+		// Pattern 2: [Rank] Steve left the game / đã rời khỏi / đã rời đi / đã mất kết nối / disconnected / left / đã thoát / đã ngoại tuyến / đã offline
+		const textMatch = clean.match(/^(?:\[(?<rank>[^\]]+)\]\s*)?(?<username>[a-zA-Z0-9_]{3,16})\s+(?:left the game|left\b|disconnected|đã rời khỏi(?:\s+trò chơi|\s+máy chủ|\s+server)?|đã rời đi|đã mất kết nối|đã thoát(?:\s+khỏi)?(?:\s+trò chơi|\s+máy chủ|\s+server)?|đã thoát|đã ngoại tuyến|đã offline)/i);
 		if (textMatch && textMatch.groups) {
 			return {
 				username: textMatch.groups.username,
@@ -651,12 +688,16 @@ export class ChatParser {
 		return null;
 	}
 
-	public static isJoinMessage(text: string): boolean {
-		return /(?:>>\s*)?\[\+\]\s*\w+|(?:\b\w+\s+(?:joined the game|đã tham gia))/i.test(text);
+	public static isJoinMessage(text: string, json?: any): boolean {
+		if (json?.translate && typeof json.translate === "string" && json.translate.startsWith("multiplayer.player.joined")) return true;
+		if (!text) return false;
+		return /(?:>>\s*)?\[\+\]\s*\w+|(?:\b\w+\s+(?:joined the game|joined\b|logged in|đã tham gia|đã kết nối|đã vào|đã trực tuyến|đã đăng nhập))/i.test(text);
 	}
 
-	public static isLeaveMessage(text: string): boolean {
-		return /(?:>>\s*)?\[\-\]\s*\w+|(?:\b\w+\s+(?:left the game|đã rời khỏi|đã rời đi))/i.test(text);
+	public static isLeaveMessage(text: string, json?: any): boolean {
+		if (json?.translate && typeof json.translate === "string" && json.translate.startsWith("multiplayer.player.left")) return true;
+		if (!text) return false;
+		return /(?:>>\s*)?\[\-\]\s*\w+|(?:\b\w+\s+(?:left the game|left\b|disconnected|đã rời khỏi|đã rời đi|đã mất kết nối|đã thoát|đã ngoại tuyến|đã offline))/i.test(text);
 	}
 
 	public static isQueueMessage(text: string): boolean {
