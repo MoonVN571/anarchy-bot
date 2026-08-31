@@ -1,6 +1,7 @@
 import { AttachmentBuilder } from "discord.js";
-import { CanvasRendererService, viewerManager } from "../services";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { CanvasRendererService, viewerManager } from "../../services";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+
 export class CoordsCommand extends Command {
 	constructor() {
 		super({
@@ -16,7 +17,7 @@ export class CoordsCommand extends Command {
 		const { message, bot } = ctx;
 
 		if (!bot || !bot.bot) {
-			await message.reply({ content: "⚠️ Bot hiện chưa được kết nối vào server." });
+			await message.reply({ content: "[Cảnh báo] Bot hiện chưa được kết nối vào server." });
 			return;
 		}
 
@@ -28,12 +29,12 @@ export class CoordsCommand extends Command {
 				: undefined;
 
 			await message.reply({
-				content: viewerUrl ? `🌐 **3D Map Viewer**: <${viewerUrl}>` : undefined,
+				content: viewerUrl ? `**3D Map Viewer**: <${viewerUrl}>` : undefined,
 				files: [attachment],
 			});
 		} catch (error) {
 			ctx.client.logger.error(`[CoordsCommand] Error rendering coordinates: ${error}`);
-			await message.reply({ content: "❌ Đã xảy ra lỗi khi tạo ảnh tọa độ của bot." });
+			await message.reply({ content: "[Lỗi] Đã xảy ra lỗi khi tạo ảnh tọa độ của bot." });
 		}
 	}
 

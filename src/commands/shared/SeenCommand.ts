@@ -6,9 +6,9 @@ import {
 	TextDisplayBuilder,
 	ThumbnailBuilder,
 } from "discord.js";
-import { StatsService } from "../services";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { formatTimeAgo, messageColors } from "../utils";
+import { StatsService } from "../../services";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { formatTimeAgo, messageColors } from "../../utils";
 
 export class SeenCommand extends Command {
 	constructor() {
@@ -49,8 +49,8 @@ export class SeenCommand extends Command {
 		const avatarUrl = `https://mc-heads.net/avatar/${stats?.username || targetUser}/64.png`;
 
 		const statusText = isCurrentlyOnline
-			? "🟢 **Hiện đang ONLINE trên máy chủ**"
-			: `🔴 **Offline** (Lần cuối: \`${lastSeenDate}\` - *${timeAgo}*)`;
+			? "**Hiện đang ONLINE trên máy chủ**"
+			: `**Offline** (Lần cuối: \`${lastSeenDate}\` - *${timeAgo}*)`;
 
 		const section = new SectionBuilder()
 			.addTextDisplayComponents(

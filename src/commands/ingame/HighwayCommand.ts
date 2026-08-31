@@ -5,8 +5,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { Server } from "../typings";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { Server } from "../../typings";
 
 export class HighwayCommand extends Command {
 	constructor() {
@@ -23,13 +23,13 @@ export class HighwayCommand extends Command {
 		const { message, bot, args } = ctx;
 
 		if (!bot || !bot.bot || bot.currentServer !== Server.Main) {
-			await message.reply({ content: "⚠️ Bot hiện không ở trong thế giới chính (Main server)!" });
+			await message.reply({ content: "[Cảnh báo] Bot hiện không ở trong thế giới chính (Main server)!" });
 			return;
 		}
 
 		if (args.length < 2) {
 			await message.reply({
-				content: "⚠️ Sai cú pháp! Vui lòng dùng: `>highway <+X|-X|+Z|-Z|++|+-|-+|--> <target>` (Ví dụ: `>highway +X 50000` hoặc `>highway ++ 100000`)",
+				content: "[Cảnh báo] Sai cú pháp! Vui lòng dùng: `>highway <+X|-X|+Z|-Z|++|+-|-+|--> <target>` (Ví dụ: `>highway +X 50000` hoặc `>highway ++ 100000`)",
 			});
 			return;
 		}
@@ -39,12 +39,12 @@ export class HighwayCommand extends Command {
 		const targetCoord = parseFloat(args[1]);
 
 		if (!axis) {
-			await message.reply({ content: "⚠️ Trục cao tốc không hợp lệ! Chọn một trong các trục: `+X`, `-X`, `+Z`, `-Z`, `++`, `+-`, `-+`, `--`." });
+			await message.reply({ content: "[Cảnh báo] Trục cao tốc không hợp lệ! Chọn một trong các trục: `+X`, `-X`, `+Z`, `-Z`, `++`, `+-`, `-+`, `--`." });
 			return;
 		}
 
 		if (isNaN(targetCoord)) {
-			await message.reply({ content: "⚠️ Mốc tọa độ đích phải là chữ số." });
+			await message.reply({ content: "[Cảnh báo] Mốc tọa độ đích phải là chữ số." });
 			return;
 		}
 
@@ -56,12 +56,12 @@ export class HighwayCommand extends Command {
 				new SectionBuilder().addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
 						started
-							? `🛣️ **Đã kích hoạt chế độ Highway Navigation Engine!**\n` +
+							? `**Đã kích hoạt chế độ Highway Navigation Engine!**\n` +
 							`- Trục bám đường: **${axis}**\n` +
 							`- Mốc tọa độ đích: \`${targetCoord}\`\n` +
 							`- Cơ chế: **Auto-Centering + Sprint-jumping trên Ice + Né Portal/Lava**\n\n` +
 							`*Gõ \`>stop\` để dừng khẩn cấp bất kỳ lúc nào.*`
-							: `❌ **Không thể khởi động bám đường cao tốc!**`
+							: `**Không thể khởi động bám đường cao tốc!**`
 					)
 				)
 			)
@@ -77,23 +77,23 @@ export class HighwayCommand extends Command {
 		const { bot, args } = ctx;
 
 		if (!bot || !bot.bot || bot.currentServer !== Server.Main) {
-			return "[Highway] Bot chua ket noi Main server.";
+			return "[Highway] Bot chưa kết nối vào thế giới chính.";
 		}
 
 		if (args.length < 2) {
-			return "[Highway] Cu phap: !highway <+X|-X|+Z|-Z|++|+-|-+|--> <target>";
+			return "[Highway] Cú pháp: !highway <+X|-X|+Z|-Z|++|+-|-+|--> <mốc_tọa_độ>";
 		}
 
 		const axis = bot.highwayNavigationService.parseAxis(args[0]);
 		const targetCoord = parseFloat(args[1]);
 
 		if (!axis || isNaN(targetCoord)) {
-			return "[Highway] Truc hoac toa do khong hop le!";
+			return "[Highway] Trục hoặc tọa độ không hợp lệ!";
 		}
 
 		const started = await bot.highwayNavigationService.startHighway(axis, targetCoord);
 		return started
-			? `[Highway] Dang chay bam truc ${axis} den moc ${targetCoord}... Go !stop de dung.`
-			: `[Highway] Loi khoi dong highway navigation.`;
+			? `[Highway] Đang chạy bám trục ${axis} đến mốc ${targetCoord}... Gõ !stop để dừng.`
+			: `[Highway] Lỗi khởi động di chuyển cao tốc.`;
 	}
 }

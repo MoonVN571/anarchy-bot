@@ -4,8 +4,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { messageColors } from "../utils";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { messageColors } from "../../utils";
 
 export class TpsCommand extends Command {
 	constructor() {
@@ -24,16 +24,13 @@ export class TpsCommand extends Command {
 		const tps = this.getEstimatedTps(bot);
 		const botPing = bot.bot?.player?.ping ?? 0;
 
-		let statusEmoji = "🟢";
 		let statusText = "Server đang hoạt động rất mượt mà";
 		let color = messageColors.join;
 
 		if (tps < 15.0) {
-			statusEmoji = "🔴";
 			statusText = "Server đang lag nặng (TPS thấp)";
 			color = messageColors.dead;
 		} else if (tps < 18.5) {
-			statusEmoji = "🟡";
 			statusText = "Server hơi giật lag nhẹ";
 			color = messageColors.queue;
 		}
@@ -44,7 +41,7 @@ export class TpsCommand extends Command {
 				new TextDisplayBuilder().setContent(
 					`**Hiệu Năng & Độ Mượt Máy Chủ**\n\n` +
 					`- **Server:** \`${serverHost}\`\n` +
-					`- **TPS:** \`${tps.toFixed(1)} / 20.0\` ${statusEmoji}\n` +
+					`- **TPS:** \`${tps.toFixed(1)} / 20.0\`\n` +
 					`- **Độ trễ Ping:** \`${botPing}ms\`\n` +
 					`- **Đánh giá:** ${statusText}`
 				)

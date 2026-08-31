@@ -6,9 +6,9 @@ import {
 	ThumbnailBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { Server } from "../typings";
-import { messageColors } from "../utils";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { Server } from "../../typings";
+import { messageColors } from "../../utils";
 
 export class BotStatusCommand extends Command {
 	constructor() {
@@ -25,7 +25,7 @@ export class BotStatusCommand extends Command {
 		const { message, bot, client } = ctx;
 
 		if (!bot) {
-			await message.reply({ content: "⚠️ Không tìm thấy instance bot cho kênh này." });
+			await message.reply({ content: "[Cảnh báo] Không tìm thấy instance bot cho kênh này." });
 			return;
 		}
 
@@ -36,10 +36,10 @@ export class BotStatusCommand extends Command {
 		const isConnected = !!bot.bot;
 		const isMain = bot.currentServer === Server.Main;
 		const statusBadge = !isConnected
-			? "🔴 Mất kết nối (Đang chờ reconnect)"
+			? "[Offline] Mất kết nối (Đang chờ reconnect)"
 			: isMain
-				? "🟢 Đã vào thế giới chính (Main Server)"
-				: "🟡 Đang ở hàng chờ (Queue)";
+				? "[Online] Đã vào thế giới chính (Main Server)"
+				: "[Queue] Đang ở hàng chờ (Queue)";
 
 		const uptimeMs = bot.uptime ? Date.now() - bot.uptime : 0;
 		const hours = Math.floor(uptimeMs / (1000 * 60 * 60));
@@ -90,6 +90,6 @@ export class BotStatusCommand extends Command {
 		const bot = ctx.bot;
 		const isMain = bot.currentServer === Server.Main;
 		const uptimeMinutes = bot.uptime ? Math.floor((Date.now() - bot.uptime) / 60000) : 0;
-		return `[Status] Bot: ${bot.bot?.username || "mo0nbot"} | Server: ${isMain ? "Main" : "Queue"} | Uptime: ${uptimeMinutes}m`;
+		return `[Trạng thái] Bot: ${bot.bot?.username || "mo0nbot"} | Máy chủ: ${isMain ? "Chính" : "Hàng chờ"} | Uptime: ${uptimeMinutes} phút`;
 	}
 }

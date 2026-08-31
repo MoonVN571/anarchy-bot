@@ -1,31 +1,33 @@
 import { Message } from "discord.js";
 import { Command } from "../typings";
 import { Discord, Minecraft } from "../structures";
-import { KdCommand } from "./KdCommand";
-import { StatsCommand } from "./StatsCommand";
-import { PlaytimeCommand } from "./PlaytimeCommand";
-import { QuoteCommand } from "./QuoteCommand";
-import { TopCommand } from "./TopCommand";
-import { OnlineCommand } from "./OnlineCommand";
-import { CoordsCommand } from "./CoordsCommand";
-import { TablistCommand } from "./TablistCommand";
-import { BotStatusCommand } from "./BotStatusCommand";
-import { HelpCommand } from "./HelpCommand";
-import { JoinDateCommand } from "./JoinDateCommand";
-import { SeenCommand } from "./SeenCommand";
-import { FirstMessageCommand } from "./FirstMessageCommand";
-import { LastMessageCommand } from "./LastMessageCommand";
-import { DiscordInviteCommand } from "./DiscordInviteCommand";
-import { KillCommand } from "./KillCommand";
-import { PingCommand } from "./PingCommand";
-import { TpsCommand } from "./TpsCommand";
-import { GotoCommand } from "./GotoCommand";
-import { HighwayCommand } from "./HighwayCommand";
-import { StopCommand } from "./StopCommand";
-import { AutoEatCommand } from "./AutoEatCommand";
-import { TotemCommand } from "./TotemCommand";
-import { FollowCommand } from "./FollowCommand";
-
+import {
+	HighwayCommand,
+	GotoCommand,
+	StopCommand,
+	FollowCommand,
+	CoordsCommand,
+	TotemCommand,
+} from "./ingame";
+import { BotStatusCommand } from "./discord";
+import {
+	HelpCommand,
+	DiscordInviteCommand,
+	JoinDateCommand,
+	SeenCommand,
+	StatsCommand,
+	KillCommand,
+	PingCommand,
+	TpsCommand,
+	KdCommand,
+	PlaytimeCommand,
+	TopCommand,
+	QuoteCommand,
+	OnlineCommand,
+	FirstMessageCommand,
+	LastMessageCommand,
+	TablistCommand,
+} from "./shared";
 import { removeVietnameseDiacritics } from "../utils";
 
 export class CommandManager {
@@ -105,15 +107,25 @@ export class CommandManager {
 	}
 
 	private registerDefaultCommands(): void {
+		// Ingame commands
+		this.registerCommand(new HighwayCommand());
+		this.registerCommand(new GotoCommand());
+		this.registerCommand(new StopCommand());
+		this.registerCommand(new FollowCommand());
+		this.registerCommand(new CoordsCommand());
+		this.registerCommand(new TotemCommand());
+
+		// Discord commands
+		this.registerCommand(new BotStatusCommand());
+
+		// Shared commands
 		this.registerCommand(new KdCommand());
 		this.registerCommand(new StatsCommand());
 		this.registerCommand(new PlaytimeCommand());
 		this.registerCommand(new QuoteCommand());
 		this.registerCommand(new TopCommand());
 		this.registerCommand(new OnlineCommand());
-		this.registerCommand(new CoordsCommand());
 		this.registerCommand(new TablistCommand());
-		this.registerCommand(new BotStatusCommand());
 		this.registerCommand(new JoinDateCommand());
 		this.registerCommand(new SeenCommand());
 		this.registerCommand(new FirstMessageCommand());
@@ -122,12 +134,6 @@ export class CommandManager {
 		this.registerCommand(new KillCommand());
 		this.registerCommand(new PingCommand());
 		this.registerCommand(new TpsCommand());
-		this.registerCommand(new GotoCommand());
-		this.registerCommand(new HighwayCommand());
-		this.registerCommand(new StopCommand());
-		this.registerCommand(new AutoEatCommand());
-		this.registerCommand(new TotemCommand());
-		this.registerCommand(new FollowCommand());
 		this.registerCommand(new HelpCommand(this));
 	}
 }

@@ -5,8 +5,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { Server } from "../typings";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { Server } from "../../typings";
 
 export class FollowCommand extends Command {
 	constructor() {
@@ -23,12 +23,12 @@ export class FollowCommand extends Command {
 		const { message, bot, args } = ctx;
 
 		if (!bot || !bot.bot || bot.currentServer !== Server.Main) {
-			await message.reply({ content: "⚠️ Bot hiện không ở trong thế giới chính (Main server)!" });
+			await message.reply({ content: "[Cảnh báo] Bot hiện không ở trong thế giới chính (Main server)!" });
 			return;
 		}
 
 		if (args.length === 0) {
-			await message.reply({ content: "⚠️ Vui lòng chỉ định tên người chơi cần đi theo: `>follow <player_name>`" });
+			await message.reply({ content: "[Cảnh báo] Vui lòng chỉ định tên người chơi cần đi theo: `>follow <player_name>`" });
 			return;
 		}
 
@@ -41,10 +41,10 @@ export class FollowCommand extends Command {
 				new SectionBuilder().addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
 						success
-							? `🏃 **Đang đi theo sau người chơi \`${targetPlayer}\`!**\n` +
+							? `**Đang đi theo sau người chơi \`${targetPlayer}\`!**\n` +
 							`- Cơ chế: Tự động bám sát khoảng cách 3 khối.\n\n` +
 							`*Gõ \`>stop\` để hủy theo sau.*`
-							: `❌ **Không tìm thấy người chơi \`${targetPlayer}\` trong tầm nhìn (render distance) của bot!**`
+							: `**Không tìm thấy người chơi \`${targetPlayer}\` trong tầm nhìn (render distance) của bot!**`
 					)
 				)
 			)
@@ -60,14 +60,14 @@ export class FollowCommand extends Command {
 		const { bot, sender, args } = ctx;
 
 		if (!bot || !bot.bot || bot.currentServer !== Server.Main) {
-			return "[Follow] Bot chua ket noi Main server.";
+			return "[Follow] Bot chưa kết nối vào thế giới chính.";
 		}
 
 		const targetPlayer = args.length > 0 ? args[0] : sender;
 		const success = bot.smartPathfinderService.followPlayer(targetPlayer);
 
 		return success
-			? `[Follow] Dang di theo sau ${targetPlayer}... Go !stop de dung.`
-			: `[Follow] Khong tim thay ${targetPlayer} trong render distance!`;
+			? `[Follow] Đang đi theo sau ${targetPlayer}... Gõ !stop để dừng.`
+			: `[Follow] Không tìm thấy ${targetPlayer} trong tầm nhìn của bot!`;
 	}
 }

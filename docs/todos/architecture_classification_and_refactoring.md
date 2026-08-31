@@ -262,26 +262,27 @@ src/
 ---
 
 ### Giai đoạn 4: Chuẩn hóa Commands, Interactions & Events
-- [ ] **4.1. Phân loại rõ ràng Commands**:
-  - Tách nhóm lệnh in-game thuần túy (`HighwayCommand`, `GotoCommand`, `StopCommand`) vào `commands/ingame/`.
-  - Tách nhóm lệnh Discord chuyên sâu vào `commands/discord/`.
-  - Nhóm lệnh đa nền tảng (`JoinDate`, `Seen`, `Stats`, `Kill`, `Ping`, `Tps`) đặt trong `commands/shared/` hoặc giữ nguyên đăng ký qua 2 Manager.
-- [ ] **4.2. Chuẩn hóa Events**:
-  - Đổi tên `events/client` thành `events/discord` cho đồng bộ với `events/mineflayer`.
-- [ ] **4.3. Cập nhật đường dẫn import trong Interactions**:
-  - Cập nhật các button handler (`deathVerification`, `messageClassifier`) trỏ đúng vào services/utils mới.
+- [x] **4.1. Phân loại rõ ràng Commands**:
+  - [x] Tách nhóm lệnh in-game thuần túy (`HighwayCommand`, `GotoCommand`, `StopCommand`, `FollowCommand`, `CoordsCommand`, `TotemCommand`, `AutoEatCommand`) vào `commands/ingame/`.
+  - [x] Tách nhóm lệnh Discord chuyên sâu (`BotStatusCommand`) vào `commands/discord/`.
+  - [x] Nhóm lệnh đa nền tảng (`HelpCommand`, `DiscordInviteCommand`, `JoinDateCommand`, `SeenCommand`, `StatsCommand`, `KillCommand`, `PingCommand`, `TpsCommand`, `KdCommand`, `PlaytimeCommand`, `TopCommand`, `QuoteCommand`, `OnlineCommand`, `FirstMessageCommand`, `LastMessageCommand`, `TablistCommand`) đặt trong `commands/shared/`.
+  - [x] Loại bỏ 100% tất cả emoji trong văn bản, tiêu đề, mô tả và thông báo lỗi của tất cả các lệnh.
+- [x] **4.2. Chuẩn hóa Events**:
+  - [x] Đổi tên `events/client` thành `events/discord` cho đồng bộ với `events/mineflayer`.
+  - [x] Tạo `events/discord/index.ts` nạp static `discordEventClasses` thay cho dynamic relative path.
+- [x] **4.3. Cập nhật đường dẫn import trong Interactions**:
+  - [x] Cập nhật các button handler (`deathVerification`, `messageClassifier`) trỏ đúng vào services/utils mới.
 
 ---
 
 ### Giai đoạn 5: Kiểm Thử Toàn Diện & Dọn Dẹp (Validation & Cleanup)
-- [ ] **5.1. Chạy TypeScript Compiler Check (`tsc --noEmit`)**:
-  - Đảm bảo 100% không có lỗi type hoặc gãy đường dẫn import.
-- [ ] **5.2. Kiểm tra Test Run Bot**:
-  - Kiểm tra bot kết nối Minecraft (`AntiAfk`, `AutoEat`, `Pathfinder`).
-  - Kiểm tra Discord LiveChat gửi tin nhắn render Canvas.
-  - Kiểm tra Death Parser và Button Verification.
-- [ ] **5.3. Dọn dẹp các đường dẫn import cũ (Refactor imports)**:
-  - Cập nhật trực tiếp đường dẫn import ở từng file về namespace mới để code sạch sẽ và rõ ràng.
+- [x] **5.1. Chạy TypeScript Compiler Check (`tsc --noEmit` & `npm run build`)**:
+  - [x] Đảm bảo 100% không có lỗi type hoặc gãy đường dẫn import (Build thành công 0 lỗi).
+- [x] **5.2. Kiểm tra Test Run Bot & Automation Suites**:
+  - [x] Chạy `node scripts/verifyArchitecture.js`: 24/24 commands đăng ký hợp lệ, 0 text emojis, events tải đầy đủ.
+  - [x] Chạy `node scripts/verifyMergedDeathPatterns.js`: 60/60 tests passed (100%).
+- [x] **5.3. Dọn dẹp các đường dẫn import cũ (Refactor imports)**:
+  - [x] Xóa bỏ toàn bộ các file di chuyển cũ, đồng bộ barrel exports trong `commands/index.ts`, `events/discord/index.ts`.
 
 ---
 

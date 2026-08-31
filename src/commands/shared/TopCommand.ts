@@ -4,9 +4,9 @@ import {
 	SeparatorBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
-import { StatsService } from "../services";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { formatDuration } from "../utils";
+import { StatsService } from "../../services";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { formatDuration } from "../../utils";
 
 export class TopCommand extends Command {
 	constructor() {

@@ -5,6 +5,8 @@ import { RedisManager } from "../../redis/RedisManager";
 export class PlaytimeTracker {
 	private main: Minecraft;
 	private syncInterval: NodeJS.Timeout | null = null;
+	private recentJoins: Map<string, number> = new Map(); // Debounce duplicate join events
+	private readonly JOIN_DEBOUNCE_MS = 3000;
 
 	constructor(main: Minecraft) {
 		this.main = main;
@@ -17,9 +19,12 @@ export class PlaytimeTracker {
 	public start(): void {
 		if (this.syncInterval) clearInterval(this.syncInterval);
 
+		// Immediately sync online players on start
+		this.syncOnlinePlayers().catch(() => {});
+
 		// Sync online players periodically every 60 seconds
 		this.syncInterval = setInterval(() => {
-			this.syncOnlinePlayers();
+			this.syncOnlinePlayers().catch(() => {});
 		}, 60 * 1000);
 	}
 
@@ -39,11 +44,19 @@ export class PlaytimeTracker {
 		const cleanUser = username.trim();
 		const lowerUser = cleanUser.toLowerCase();
 
+		// Debounce rapid duplicate join calls
+		const now = Date.now();
+		const lastJoinTime = this.recentJoins.get(lowerUser) || 0;
+		if (now - lastJoinTime < this.JOIN_DEBOUNCE_MS) {
+			return;
+		}
+		this.recentJoins.set(lowerUser, now);
+
 		await RedisManager.addOnlinePlayer(this.serverIp, lowerUser);
 		await RedisManager.startSession(this.serverIp, lowerUser);
 		this.main.client.logger.debug("Playtime", `[${this.serverIp}] Player "${cleanUser}" joined. Started session.`);
 
-		const now = new Date();
+		const nowDate = new Date(now);
 		try {
 			await PlayerModel.findOneAndUpdate(
 				{ server: this.serverIp, username: lowerUser },
@@ -51,16 +64,17 @@ export class PlaytimeTracker {
 					$setOnInsert: {
 						server: this.serverIp,
 						username: lowerUser,
-						displayName: cleanUser,
-						firstSeen: now,
+						firstSeen: nowDate,
 						playtime: 0,
 						kills: 0,
 						deaths: 0,
 						messageCount: 0,
+						leaveCount: 0,
 					},
 					$set: {
-						lastSeen: now,
-						lastJoin: now,
+						displayName: cleanUser,
+						lastSeen: nowDate,
+						lastJoin: nowDate,
 						isOnline: true,
 						...(uuid ? { uuid } : {}),
 					},
@@ -127,7 +141,7 @@ export class PlaytimeTracker {
 		await RedisManager.setOnlinePlayers(this.serverIp, currentPlayers);
 		this.main.client.logger.debug("Playtime", `[${this.serverIp}] Synced ${currentPlayers.length} online players (+60s playtime each).`);
 
-		// Increment 60 seconds delta for all currently online players
+		// Increment 60 seconds delta for all currently online players and ensure joinCount is initialized
 		const now = new Date();
 		for (const username of currentPlayers) {
 			const lower = username.toLowerCase();
@@ -137,9 +151,22 @@ export class PlaytimeTracker {
 			PlayerModel.updateOne(
 				{ server: this.serverIp, username: lower },
 				{
+					$setOnInsert: {
+						server: this.serverIp,
+						username: lower,
+						displayName: username,
+						firstSeen: now,
+						playtime: 0,
+						kills: 0,
+						deaths: 0,
+						messageCount: 0,
+						joinCount: 1,
+						leaveCount: 0,
+					},
 					$set: { lastSeen: now, isOnline: true },
 					$inc: { playtime: 60 },
-				}
+				},
+				{ upsert: true }
 			).catch(() => {});
 		}
 	}

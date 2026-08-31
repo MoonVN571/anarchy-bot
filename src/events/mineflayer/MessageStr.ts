@@ -116,6 +116,8 @@ export default class MessageStrEvent extends MineflayerEvent {
 						playtime: 0,
 						kills: 0,
 						deaths: 0,
+						joinCount: 1,
+						leaveCount: 0,
 					},
 					$set: { lastSeen: new Date(), isOnline: true },
 					$inc: { messageCount: 1 },

@@ -4,6 +4,8 @@ import KickedEvent from "./Kicked";
 import MessageStrEvent from "./MessageStr";
 import SpawnEvent from "./Spawn";
 import WindowOpenEvent from "./WindowOpen";
+import PlayerJoinedEvent from "./PlayerJoined";
+import PlayerLeftEvent from "./PlayerLeft";
 import { MineflayerEvent } from "../../typings";
 
 export const mineflayerEventClasses: (new () => MineflayerEvent)[] = [
@@ -13,6 +15,8 @@ export const mineflayerEventClasses: (new () => MineflayerEvent)[] = [
 	MessageStrEvent,
 	SpawnEvent,
 	WindowOpenEvent,
+	PlayerJoinedEvent,
+	PlayerLeftEvent,
 ];
 
 export {
@@ -22,4 +26,6 @@ export {
 	MessageStrEvent,
 	SpawnEvent,
 	WindowOpenEvent,
+	PlayerJoinedEvent,
+	PlayerLeftEvent,
 };

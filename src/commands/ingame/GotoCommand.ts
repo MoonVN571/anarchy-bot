@@ -5,8 +5,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { Server } from "../typings";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { Server } from "../../typings";
 
 export class GotoCommand extends Command {
 	constructor() {
@@ -23,12 +23,12 @@ export class GotoCommand extends Command {
 		const { message, bot, args } = ctx;
 
 		if (!bot || !bot.bot || bot.currentServer !== Server.Main) {
-			await message.reply({ content: "⚠️ Bot hiện không ở trong thế giới chính (Main server) để di chuyển!" });
+			await message.reply({ content: "[Cảnh báo] Bot hiện không ở trong thế giới chính (Main server) để di chuyển!" });
 			return;
 		}
 
 		if (args.length < 2) {
-			await message.reply({ content: "⚠️ Sai cú pháp! Vui lòng dùng: `>goto <x> [y] <z>` (Ví dụ: `>goto 100 200` hoặc `>goto 100 64 200`)" });
+			await message.reply({ content: "[Cảnh báo] Sai cú pháp! Vui lòng dùng: `>goto <x> [y] <z>` (Ví dụ: `>goto 100 200` hoặc `>goto 100 64 200`)" });
 			return;
 		}
 
@@ -43,7 +43,7 @@ export class GotoCommand extends Command {
 		}
 
 		if (isNaN(x) || isNaN(z) || (y !== undefined && isNaN(y))) {
-			await message.reply({ content: "⚠️ Tọa độ không hợp lệ! X, Y, Z phải là các chữ số." });
+			await message.reply({ content: "[Cảnh báo] Tọa độ không hợp lệ! X, Y, Z phải là các chữ số." });
 			return;
 		}
 
@@ -56,12 +56,12 @@ export class GotoCommand extends Command {
 				new SectionBuilder().addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
 						success
-							? `🧭 **Đang điều hướng di chuyển...**\n` +
+							? `**Đang điều hướng di chuyển...**\n` +
 							`- Điểm đích: \`${targetStr}\`\n` +
 							`- Vị trí hiện tại: \`(${Math.round(bot.bot.entity.position.x)}, ${Math.round(bot.bot.entity.position.y)}, ${Math.round(bot.bot.entity.position.z)})\`\n` +
 							`- Trạng thái: **Đang di chuyển thông minh (Né lava & portal)**\n\n` +
 							`*Gõ \`>stop\` để dừng di chuyển bất kỳ lúc nào.*`
-							: `❌ **Không thể thiết lập đường đi tới \`${targetStr}\`!**`
+							: `**Không thể thiết lập đường đi tới \`${targetStr}\`!**`
 					)
 				)
 			)
@@ -77,11 +77,11 @@ export class GotoCommand extends Command {
 		const { bot, args } = ctx;
 
 		if (!bot || !bot.bot || bot.currentServer !== Server.Main) {
-			return "[Goto] Bot chua ket noi Main server.";
+			return "[Goto] Bot chưa kết nối vào thế giới chính.";
 		}
 
 		if (args.length < 2) {
-			return "[Goto] Cu phap: !goto <x> [y] <z>";
+			return "[Goto] Cú pháp: !goto <x> [y] <z>";
 		}
 
 		let x: number, y: number | undefined, z: number;
@@ -95,12 +95,13 @@ export class GotoCommand extends Command {
 		}
 
 		if (isNaN(x) || isNaN(z) || (y !== undefined && isNaN(y))) {
-			return "[Goto] Toa do khong hop le!";
+			return "[Goto] Tọa độ không hợp lệ!";
 		}
 
 		const success = await bot.smartPathfinderService.moveTo(x, y, z);
+		const targetDisplay = y !== undefined ? `(${x}, ${y}, ${z})` : `(${x}, ${z})`;
 		return success
-			? `[Goto] Dang di chuyen den (${x}, ${y !== undefined ? y : "auto"}, ${z})... Gõ !stop de dung.`
-			: `[Goto] Khong the tim duong den (${x}, ${z})!`;
+			? `[Goto] Đang di chuyển đến ${targetDisplay}... Gõ !stop để dừng.`
+			: `[Goto] Không thể tìm đường đến (${x}, ${z})!`;
 	}
 }

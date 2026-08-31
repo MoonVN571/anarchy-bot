@@ -6,8 +6,8 @@ import {
 	TextDisplayBuilder,
 	ThumbnailBuilder,
 } from "discord.js";
-import { QuoteService } from "../services";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { QuoteService } from "../../services";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
 
 export class QuoteCommand extends Command {
 	constructor() {

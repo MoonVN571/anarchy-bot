@@ -6,9 +6,9 @@ import {
 	TextDisplayBuilder,
 	ThumbnailBuilder,
 } from "discord.js";
-import { StatsService } from "../services";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { formatDuration, formatTimeAgo } from "../utils";
+import { StatsService } from "../../services";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { formatDuration, formatTimeAgo } from "../../utils";
 
 export class StatsCommand extends Command {
 	constructor() {

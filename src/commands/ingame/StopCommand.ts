@@ -5,7 +5,7 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
 
 export class StopCommand extends Command {
 	constructor() {
@@ -22,7 +22,7 @@ export class StopCommand extends Command {
 		const { message, bot } = ctx;
 
 		if (!bot || !bot.bot) {
-			await message.reply({ content: "⚠️ Không tìm thấy instance bot!" });
+			await message.reply({ content: "[Cảnh báo] Không tìm thấy instance bot!" });
 			return;
 		}
 
@@ -34,7 +34,7 @@ export class StopCommand extends Command {
 			.addSectionComponents(
 				new SectionBuilder().addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`🛑 **Đã kích hoạt Phanh Khẩn Cấp (Emergency Stop)!**\n` +
+						`**Đã kích hoạt Phanh Khẩn Cấp (Emergency Stop)!**\n` +
 						`- Đã hủy toàn bộ mục tiêu tìm đường (Pathfinder / Highway).\n` +
 						`- Đã nhả toàn bộ phím điều hướng và ổn định nhân vật tại khối an toàn.\n` +
 						`- Đã tiếp tục chế độ Smart Anti-AFK.`
@@ -53,12 +53,12 @@ export class StopCommand extends Command {
 		const { bot } = ctx;
 
 		if (!bot || !bot.bot) {
-			return "[Stop] Bot chua ket noi.";
+			return "[Stop] Bot chưa kết nối.";
 		}
 
 		bot.smartPathfinderService?.stop();
 		bot.highwayNavigationService?.stop();
 
-		return `[Stop] Da huy toan bo di chuyen va dung lai an toan.`;
+		return `[Stop] Đã hủy toàn bộ di chuyển và dừng lại an toàn.`;
 	}
 }

@@ -5,8 +5,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { isToggleOn, isToggleOff } from "../utils";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { isToggleOn, isToggleOff } from "../../utils";
 
 export class TotemCommand extends Command {
 	constructor() {
@@ -23,7 +23,7 @@ export class TotemCommand extends Command {
 		const { message, bot, args } = ctx;
 
 		if (!bot || !bot.bot) {
-			await message.reply({ content: "⚠️ Không tìm thấy instance bot!" });
+			await message.reply({ content: "[Cảnh báo] Không tìm thấy instance bot!" });
 			return;
 		}
 
@@ -45,11 +45,11 @@ export class TotemCommand extends Command {
 			.addSectionComponents(
 				new SectionBuilder().addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`🛡️ **Quản lý Totem of Undying (Tay phụ / Offhand)**\n` +
-						`- Auto-Totem Keeper: **${bot.autoEatService.isTotemEnabled ? "🟢 Đang BẬT" : "🔴 Đang TẮT"}**\n` +
+						`**Quản lý Totem of Undying (Tay phụ / Offhand)**\n` +
+						`- Auto-Totem Keeper: **${bot.autoEatService.isTotemEnabled ? "Đang BẬT" : "Đang TẮT"}**\n` +
 						`- Số lượng Totem trong túi đồ: **${totemCount}**\n` +
 						`- Vật phẩm tay phụ hiện tại: \`${offhandItem?.name || "Trống"}\`\n` +
-						`- Kết quả trang bị: **${equipped || isHoldingTotem ? "Đã giữ Totem ở tay phụ ✅" : "Không có Totem để trang bị ⚠️"}**`
+						`- Kết quả trang bị: **${equipped || isHoldingTotem ? "Đã giữ Totem ở tay phụ" : "Không có Totem để trang bị"}**`
 					)
 				)
 			)
@@ -79,4 +79,3 @@ export class TotemCommand extends Command {
 		return `[Totem] Tự động: ${bot.autoEatService.isTotemEnabled ? "BẬT" : "TẮT"} | Kho: ${totemCount} Totems | Kết quả: ${equipped ? "Đã lắp Totem vào tay phụ" : "Không có Totem"}`;
 	}
 }
-

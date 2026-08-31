@@ -6,9 +6,9 @@ import {
 	TextDisplayBuilder,
 	ThumbnailBuilder,
 } from "discord.js";
-import { StatsService } from "../services";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { formatTimeAgo, messageColors } from "../utils";
+import { StatsService } from "../../services";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { formatTimeAgo, messageColors } from "../../utils";
 
 export class JoinDateCommand extends Command {
 	constructor() {

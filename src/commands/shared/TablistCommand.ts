@@ -1,6 +1,6 @@
 import { AttachmentBuilder } from "discord.js";
-import { CanvasRendererService } from "../services";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { CanvasRendererService } from "../../services";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
 
 export class TablistCommand extends Command {
 	constructor() {
@@ -17,7 +17,7 @@ export class TablistCommand extends Command {
 		const { message, bot } = ctx;
 
 		if (!bot || !bot.bot) {
-			await message.reply({ content: "⚠️ Bot hiện chưa được kết nối vào server." });
+			await message.reply({ content: "[Cảnh báo] Bot hiện chưa được kết nối vào server." });
 			return;
 		}
 
@@ -27,12 +27,12 @@ export class TablistCommand extends Command {
 
 			const playerCount = bot.bot.players ? Object.keys(bot.bot.players).length : 0;
 			await message.reply({
-				content: `👥 **Tablist máy chủ ${bot.config.connection.host}** (${playerCount} người chơi online):`,
+				content: `**Tablist máy chủ ${bot.config.connection.host}** (${playerCount} người chơi online):`,
 				files: [attachment],
 			});
 		} catch (error) {
 			ctx.client.logger.error(`[TablistCommand] Error rendering tablist: ${error}`);
-			await message.reply({ content: "❌ Đã xảy ra lỗi khi tạo ảnh Tablist." });
+			await message.reply({ content: "[Lỗi] Đã xảy ra lỗi khi tạo ảnh Tablist." });
 		}
 	}
 

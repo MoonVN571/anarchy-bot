@@ -4,9 +4,9 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { formatDuration } from "../utils";
-import { messageColors } from "../utils";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { formatDuration } from "../../utils";
+import { messageColors } from "../../utils";
 
 export class PingCommand extends Command {
 	constructor() {

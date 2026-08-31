@@ -4,8 +4,8 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { messageColors } from "../utils";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { messageColors } from "../../utils";
 
 export class DiscordInviteCommand extends Command {
 	private readonly defaultInviteUrl: string = "http://bit.ly/mo0nbot2";
@@ -30,7 +30,7 @@ export class DiscordInviteCommand extends Command {
 				new TextDisplayBuilder().setContent(
 					`**Máy Chủ Discord Chính Thức**\n\n` +
 					`Tham gia cộng đồng Discord để nhận thông báo, tra cứu thống kê và kết nối cùng người chơi:\n` +
-					`🔗 **Liên kết mời:** ${inviteUrl}`
+					`**Liên kết mời:** ${inviteUrl}`
 				)
 			)
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))

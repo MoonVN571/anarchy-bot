@@ -4,7 +4,7 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
 
 export class OnlineCommand extends Command {
 	constructor() {

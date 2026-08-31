@@ -1,24 +1,23 @@
 import {
 	ContainerBuilder,
-	SectionBuilder,
-	TextDisplayBuilder,
-	SeparatorBuilder,
-	ThumbnailBuilder,
 	MessageFlags,
+	SectionBuilder,
+	SeparatorBuilder,
+	TextDisplayBuilder,
+	ThumbnailBuilder,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { MessageModel } from "../database/models/MessageModel";
-import { formatTimeAgo } from "../utils";
-import { messageColors, ChatParser } from "../utils";
+import { MessageModel } from "../../database/models/MessageModel";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { ChatParser, formatTimeAgo, messageColors } from "../../utils";
 
-export class LastMessageCommand extends Command {
+export class FirstMessageCommand extends Command {
 	constructor() {
 		super({
-			name: "lastmessage",
-			aliases: ["lm", "lastmsg"],
-			description: "Tra cứu câu tin nhắn gần nhất của người chơi gửi trên máy chủ",
-			usage: ">lastmessage <tên_người_chơi>",
-			inGameUsage: "!lm [tên_người_chơi]",
+			name: "firstmessage",
+			aliases: ["fm", "firstmsg"],
+			description: "Tra cứu câu tin nhắn đầu tiên của người chơi gửi trên máy chủ",
+			usage: ">firstmessage <tên_người_chơi>",
+			inGameUsage: "!fm [tên_người_chơi]",
 		});
 	}
 
@@ -28,36 +27,36 @@ export class LastMessageCommand extends Command {
 
 		if (!targetUser) {
 			await message.reply({
-				content: `Cú pháp: \`${this.usage}\` (Ví dụ: \`>lm MoonVN\`)`,
+				content: `Cú pháp: \`${this.usage}\` (Ví dụ: \`>fm MoonVN\`)`,
 			});
 			return;
 		}
 
 		const lowerUser = targetUser.toLowerCase().trim();
-		const lastMsg = await MessageModel.findOne({
+		const firstMsg = await MessageModel.findOne({
 			server: serverHost,
 			username: lowerUser,
-		}).sort({ timestamp: -1 });
+		}).sort({ timestamp: 1 });
 
-		if (!lastMsg) {
+		if (!firstMsg) {
 			await message.reply({
 				content: `Không tìm thấy câu chat nào của người chơi **${targetUser}** trên server \`${serverHost}\`.`,
 			});
 			return;
 		}
 
-		const playerName = lastMsg.displayName || lastMsg.username || targetUser;
-		const formattedDate = new Date(lastMsg.timestamp).toLocaleString("vi-VN");
-		const timeAgo = formatTimeAgo(new Date(lastMsg.timestamp));
-		const avatarUrl = `https://mc-heads.net/avatar/${lastMsg.username || playerName}/64.png`;
+		const playerName = firstMsg.displayName || firstMsg.username || targetUser;
+		const formattedDate = new Date(firstMsg.timestamp).toLocaleString("vi-VN");
+		const timeAgo = formatTimeAgo(new Date(firstMsg.timestamp));
+		const avatarUrl = `https://mc-heads.net/avatar/${firstMsg.username || playerName}/64.png`;
 
 		const section = new SectionBuilder()
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
-					`**Tin Nhắn Gần Nhất: ${playerName}**\n\n` +
+					`**Tin Nhắn Đầu Tiên: ${playerName}**\n\n` +
 					`- **Server:** \`${serverHost}\`\n` +
 					`- **Thời gian:** \`${formattedDate}\` (*${timeAgo}*)\n` +
-					`- **Nội dung:**\n> ${ChatParser.escapeDiscordFormat(lastMsg.message)}`
+					`- **Nội dung:**\n> ${ChatParser.escapeDiscordFormat(firstMsg.message)}`
 				)
 			)
 			.setThumbnailAccessory(new ThumbnailBuilder().setURL(avatarUrl).setDescription(`Avatar của ${playerName}`));
@@ -81,16 +80,16 @@ export class LastMessageCommand extends Command {
 		const targetUser = args[0] || sender;
 		const lowerUser = targetUser.toLowerCase().trim();
 
-		const lastMsg = await MessageModel.findOne({
+		const firstMsg = await MessageModel.findOne({
 			server: serverHost,
 			username: lowerUser,
-		}).sort({ timestamp: -1 });
+		}).sort({ timestamp: 1 });
 
-		if (!lastMsg) {
-			return `[LastMsg] Không tìm thấy câu chat nào của "${targetUser}"!`;
+		if (!firstMsg) {
+			return `[FirstMsg] Không tìm thấy câu chat nào của "${targetUser}"!`;
 		}
 
-		const timeAgo = formatTimeAgo(new Date(lastMsg.timestamp));
-		return `[LastMsg] ${lastMsg.displayName} (${timeAgo}): "${lastMsg.message}"`;
+		const timeAgo = formatTimeAgo(new Date(firstMsg.timestamp));
+		return `[FirstMsg] ${firstMsg.displayName} (${timeAgo}): "${firstMsg.message}"`;
 	}
 }

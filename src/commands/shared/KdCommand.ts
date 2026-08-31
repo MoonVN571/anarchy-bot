@@ -6,8 +6,8 @@ import {
 	TextDisplayBuilder,
 	ThumbnailBuilder,
 } from "discord.js";
-import { StatsService } from "../services";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
+import { StatsService } from "../../services";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
 
 export class KdCommand extends Command {
 	constructor() {
@@ -69,7 +69,7 @@ export class KdCommand extends Command {
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
-					`🔥 Killstreak Hiện tại: **${stats.currentKillstreak || 0}** | Cao nhất: **${stats.highestKillstreak || 0}**\n` +
+					`Killstreak Hiện tại: **${stats.currentKillstreak || 0}** | Cao nhất: **${stats.highestKillstreak || 0}**\n` +
 					`*Máy chủ: ${serverHost}*`
 				)
 			);

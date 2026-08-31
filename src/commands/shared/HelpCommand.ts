@@ -4,9 +4,9 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
-import { Command, CommandContext, InGameCommandContext } from "../typings";
-import { CommandManager } from "./CommandManager";
-import { messageColors } from "../utils";
+import { Command, CommandContext, InGameCommandContext } from "../../typings";
+import { CommandManager } from "../CommandManager";
+import { messageColors } from "../../utils";
 
 export class HelpCommand extends Command {
 	private manager: CommandManager;
@@ -62,27 +62,25 @@ export class HelpCommand extends Command {
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
 					"**Bảng Lệnh Bot (Discord: Prefix `>` | In-game: Prefix `!`)**\n\n" +
-					"📊 **Thống Kê & Xếp Hạng:**\n" +
+					"**Thống Kê & Xếp Hạng:**\n" +
 					"- `>kd [player]` (In-game: `!kd`) — Xem tỉ lệ hạ gục K/D & Killstreak\n" +
 					"- `>stats [player]` (In-game: `!stats`) — Thống kê tổng hợp toàn diện người chơi\n" +
 					"- `>top <playtime|kills|deaths|messages|kd>` (In-game: `!top`) — Bảng xếp hạng server\n" +
 					"- `>playtime [player]` (In-game: `!playtime`) — Xem thời gian online tích lũy\n" +
 					"- `>quote [player]` (In-game: `!quote`) — Trích dẫn câu chat ngẫu nhiên\n" +
 					"- `>online` (In-game: `!online`) — Danh sách người chơi đang online\n\n" +
-					"🔍 **Tra Cứu Thông Tin & Lịch Sử:**\n" +
+					"**Tra Cứu Thông Tin & Lịch Sử:**\n" +
 					"- `>jd [player]` (In-game: `!jd`) — Ngày đầu tiên người chơi vào server\n" +
 					"- `>seen [player]` (In-game: `!seen`) — Trạng thái online hoặc lần cuối nhìn thấy\n" +
 					"- `>fm [player]` (In-game: `!fm`) — Tra cứu câu tin nhắn đầu tiên\n" +
 					"- `>lm [player]` (In-game: `!lm`) — Tra cứu câu tin nhắn gần nhất\n\n" +
-					"🤖 **Tự Động Hóa & Di Chuyển (Automation & Navigation):**\n" +
+					"**Tự Động Hóa & Di Chuyển (Automation & Navigation):**\n" +
 					"- `>goto <x> [y] <z>` (In-game: `!goto`) — Tự động tìm đường đi an toàn (né lava/portal)\n" +
 					"- `>highway <trục> <mốc>` (In-game: `!highway`) — Bám làn cao tốc & sprint-jumping trên Ice\n" +
 					"- `>stop` (In-game: `!stop`) — Phanh khẩn cấp, hủy toàn bộ di chuyển\n" +
-					"- `>autoeat [on|off]` (In-game: `!autoeat` / `!eat`) — Tự động ăn theo bảng ưu tiên dinh dưỡng\n" +
 					"- `>totem [on|off]` (In-game: `!totem`) — Tự động giữ Totem of Undying ở tay phụ\n" +
-					"- `>antiafk [on|off]` (In-game: `!antiafk`) — Chế độ mô phỏng hành vi chống kick AFK\n" +
 					"- `!follow <player>` — Bot tự tìm đường đi theo bảo vệ người chơi\n\n" +
-					"🛠️ **Tiện Ích & Hệ Thống:**\n" +
+					"**Tiện Ích & Hệ Thống:**\n" +
 					"- `>discord` (In-game: `!discord`) — Link tham gia máy chủ Discord của Bot\n" +
 					"- `>kill` (In-game: `!kill`) — Bot tự sát /kill giải cứu khi kẹt bẫy (Cooldown 60s)\n" +
 					"- `>ping` (In-game: `!ping`) — Đo độ trễ mạng và thời gian uptime bot\n" +
@@ -107,7 +105,7 @@ export class HelpCommand extends Command {
 		return [
 			"[Help - Thống kê] !kd, !stats, !top, !playtime, !quote, !online",
 			"[Help - Tra cứu] !jd, !seen, !fm, !lm",
-			"[Help - Tự động] !goto, !highway, !stop, !autoeat, !eat, !totem, !antiafk, !follow",
+			"[Help - Tự động] !goto, !highway, !stop, !totem, !follow",
 			"[Help - Tiện ích] !discord, !kill, !ping, !tps, !pos, !tab, !status",
 		];
 	}

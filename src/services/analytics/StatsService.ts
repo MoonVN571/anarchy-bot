@@ -44,7 +44,13 @@ export class StatsService {
 				return combined as IPlayer;
 			}
 
-			return await PlayerModel.findOne({ server, username: lowerUser });
+			const player = await PlayerModel.findOne({ server, username: lowerUser });
+			if (player) {
+				if (!player.joinCount || player.joinCount < 1) {
+					player.joinCount = 1;
+				}
+			}
+			return player;
 		} catch {
 			return null;
 		}
