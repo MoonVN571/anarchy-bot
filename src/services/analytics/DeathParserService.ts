@@ -1,21 +1,13 @@
-import { ContainerBuilder, TextDisplayBuilder } from "discord.js";
-import { DeathCause, DeathModel, IDeath } from "../../database/models/DeathModel";
+import { DeathCause } from "../../database/models/DeathModel";
 import { DeathPatternModel, IDeathPattern } from "../../database/models/DeathPatternModel";
-import { PlayerModel } from "../../database/models/PlayerModel";
 import { RedisManager } from "../../redis/RedisManager";
-import { Discord } from "../../structures/Discord";
 import { Minecraft } from "../../structures/Minecraft";
 import { isMinecraftMob } from "../../utils/minecraft/minecraftMobs";
 import { defaultDeathPatterns, DeathRegexLearner } from "../../utils";
+import { DeathStatsService, ParsedDeath } from "./DeathStatsService";
+import { DeathVerificationService } from "./DeathVerificationService";
 
-export interface ParsedDeath {
-	victim: string;
-	killer?: string | null;
-	mob?: string | null;
-	weapon?: string | null;
-	cause: DeathCause;
-	rawMessage: string;
-}
+export { ParsedDeath };
 
 export class DeathParserService {
 	private static memoryCache: Map<string, { regex: RegExp; patternDoc: IDeathPattern }[]> = new Map();
@@ -26,7 +18,11 @@ export class DeathParserService {
 	public static invalidateCache(server: string): void {
 		this.memoryCache.delete(server.toLowerCase());
 		this.memoryCache.delete("global");
-		RedisManager.invalidateDeathPatterns(server).catch(() => { });
+		RedisManager.invalidateDeathPatterns(server).catch(() => {});
+	}
+
+	public static clearMemoryCache(): void {
+		this.memoryCache.clear();
 	}
 
 	/**
@@ -57,7 +53,10 @@ export class DeathParserService {
 	/**
 	 * Synchronously extract victim, killer, mob, weapon from death message
 	 */
-	public static extractDeathInfoSync(server: string, text: string): {
+	public static extractDeathInfoSync(
+		server: string,
+		text: string
+	): {
 		victim: string;
 		killer?: string | null;
 		mob?: string | null;
@@ -137,30 +136,34 @@ export class DeathParserService {
 		}
 
 		// 1. Try Redis cache for merged patterns
-		let mergedPatterns: any[] | null = await RedisManager.getCachedDeathPatterns(server);
+		let mergedPatterns: IDeathPattern[] | null = await RedisManager.getCachedDeathPatterns(server);
 
 		// 2. If not in Redis, load verified patterns from MongoDB and merge with default patterns
 		if (!mergedPatterns || mergedPatterns.length === 0) {
-			let dbPatterns: any[] = [];
+			let dbPatterns: IDeathPattern[] = [];
 			try {
-				dbPatterns = await DeathPatternModel.find({
+				dbPatterns = (await DeathPatternModel.find({
 					$or: [{ serverScope: "global" }, { serverScope: server }],
 					enabled: true,
-				}).sort({ priority: -1, createdAt: -1 }).lean();
+				})
+					.sort({ priority: -1, createdAt: -1 })
+					.lean()) as unknown as IDeathPattern[];
 			} catch {
 				dbPatterns = [];
 			}
 
 			// Map default patterns to match pattern structure
-			const defaultsMapped: any[] = defaultDeathPatterns.map(d => ({
-				_id: `default_${d.name}`,
+			const defaultsMapped: IDeathPattern[] = defaultDeathPatterns.map((d) => ({
+				_id: `default_${d.name}` as unknown,
 				serverScope: d.serverScope,
 				name: d.name,
 				pattern: d.pattern,
 				cause: d.cause,
 				priority: d.priority,
 				enabled: true,
-			}));
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			} as unknown as IDeathPattern));
 
 			// Merge: DB verified patterns take priority, avoid duplicates by name or exact pattern
 			const seenNames = new Set<string>();
@@ -183,7 +186,7 @@ export class DeathParserService {
 
 			// Cache merged patterns into Redis (1 hour TTL)
 			if (mergedPatterns.length > 0) {
-				await RedisManager.cacheDeathPatterns(server, mergedPatterns as any);
+				await RedisManager.cacheDeathPatterns(server, mergedPatterns);
 			}
 		}
 
@@ -192,7 +195,7 @@ export class DeathParserService {
 		for (const p of mergedPatterns || []) {
 			try {
 				const regex = new RegExp(p.pattern, "i");
-				compiled.push({ regex, patternDoc: p as IDeathPattern });
+				compiled.push({ regex, patternDoc: p });
 			} catch {
 				// Skip invalid regex
 			}
@@ -205,10 +208,7 @@ export class DeathParserService {
 	/**
 	 * Parse server message to check if it's a death event
 	 */
-	public static async handleDeathMessage(
-		main: Minecraft,
-		serverMsg: string
-	): Promise<ParsedDeath | null> {
+	public static async handleDeathMessage(main: Minecraft, serverMsg: string): Promise<ParsedDeath | null> {
 		if (!serverMsg) return null;
 
 		const cleanMsg = serverMsg.trim();
@@ -240,7 +240,7 @@ export class DeathParserService {
 					`[${serverIp}] Matched pattern "${patternDoc.name}" -> Victim: "${victim}", Killer: ${killer ? `"${killer}"` : "null"}, Mob: ${mob ? `"${mob}"` : "null"}, Cause: ${cause}`
 				);
 
-				await this.recordDeathStats(main, serverIp, parsed);
+				await DeathStatsService.recordDeathStatsDirect(serverIp, parsed, main?.client?.logger);
 				return parsed;
 			}
 		}
@@ -248,380 +248,10 @@ export class DeathParserService {
 		// 2. Check if message has death keywords but didn't match -> Learn dynamically
 		if (this.hasDeathKeywords(cleanMsg)) {
 			main.client.logger.debug("Death/KD", `[${serverIp}] Unrecognized death keyword in: "${cleanMsg}". Triggering learner.`);
-			DeathRegexLearner.processUnknownDeathMessage(main, cleanMsg).catch(() => { });
+			DeathRegexLearner.processUnknownDeathMessage(main, cleanMsg).catch(() => {});
 		}
 
 		return null;
-	}
-
-	/**
-	 * Record death and update player KDA in Database & Redis
-	 */
-	private static async recordDeathStats(main: Minecraft, server: string, parsed: ParsedDeath): Promise<IDeath | null> {
-		return this.recordDeathStatsDirect(server, parsed, main?.client?.logger);
-	}
-
-	/**
-	 * Direct recording of death stats without needing a Minecraft instance
-	 */
-	public static async recordDeathStatsDirect(server: string, parsed: ParsedDeath, logger?: any): Promise<IDeath | null> {
-		try {
-			// 1. Save death log
-			const deathRecord = await DeathModel.create({
-				server,
-				victim: parsed.victim.toLowerCase(),
-				victimDisplayName: parsed.victim,
-				killer: parsed.killer ? parsed.killer.toLowerCase() : null,
-				killerDisplayName: parsed.killer || null,
-				mob: parsed.mob,
-				weapon: parsed.weapon,
-				cause: parsed.cause,
-				rawMessage: parsed.rawMessage,
-				timestamp: new Date(),
-			});
-
-			// 2. Update victim stats
-			const victimLower = parsed.victim.toLowerCase();
-			await RedisManager.incrementLeaderboard(server, "deaths", victimLower, 1);
-
-			const victimInc: any = { deaths: 1 };
-			if (parsed.cause === DeathCause.SUICIDE) victimInc.suicides = 1;
-			if (parsed.cause === DeathCause.MOB) victimInc.mobDeaths = 1;
-
-			const victimDoc = await PlayerModel.findOneAndUpdate(
-				{ server, username: victimLower },
-				{
-					$setOnInsert: {
-						server,
-						username: victimLower,
-						displayName: parsed.victim,
-						firstSeen: new Date(),
-						playtime: 0,
-						kills: 0,
-						messageCount: 0,
-						joinCount: 1,
-						leaveCount: 0,
-					},
-					$set: {
-						lastSeen: new Date(),
-						currentKillstreak: 0,
-					},
-					$inc: victimInc,
-				},
-				{ upsert: true, returnDocument: 'after' }
-			);
-
-			if (victimDoc) {
-				const kd = victimDoc.deaths > 0 ? parseFloat((victimDoc.kills / victimDoc.deaths).toFixed(2)) : victimDoc.kills;
-				await PlayerModel.updateOne({ _id: victimDoc._id }, { $set: { kdRatio: kd } });
-				await RedisManager.setLeaderboardScore(server, "kd", victimLower, kd);
-				if (logger) logger.debug("Death/KD", `[${server}] Victim "${parsed.victim}" stats updated: Deaths=${victimDoc.deaths}, K/D=${kd}`);
-			}
-
-			// 3. Update killer stats (PvP)
-			if (parsed.killer) {
-				const killerLower = parsed.killer.toLowerCase();
-				await RedisManager.incrementLeaderboard(server, "kills", killerLower, 1);
-
-				const killerDoc = await PlayerModel.findOneAndUpdate(
-					{ server, username: killerLower },
-					{
-						$setOnInsert: {
-							server,
-							username: killerLower,
-							displayName: parsed.killer,
-							firstSeen: new Date(),
-							playtime: 0,
-							deaths: 0,
-							messageCount: 0,
-							joinCount: 1,
-							leaveCount: 0,
-						},
-						$set: {
-							lastSeen: new Date(),
-						},
-						$inc: {
-							kills: 1,
-							currentKillstreak: 1,
-						},
-					},
-					{ upsert: true, returnDocument: 'after' }
-				);
-
-				if (killerDoc) {
-					const newStreak = killerDoc.currentKillstreak || 1;
-					const maxStreak = Math.max(killerDoc.highestKillstreak || 0, newStreak);
-					const kd = killerDoc.deaths > 0 ? parseFloat((killerDoc.kills / killerDoc.deaths).toFixed(2)) : killerDoc.kills;
-
-					await PlayerModel.updateOne(
-						{ _id: killerDoc._id },
-						{
-							$set: {
-								highestKillstreak: maxStreak,
-								kdRatio: kd,
-							},
-						}
-					);
-					await RedisManager.setLeaderboardScore(server, "kd", killerLower, kd);
-					if (logger) logger.debug("Death/KD", `[${server}] Killer "${parsed.killer}" stats updated: Kills=${killerDoc.kills}, Streak=${newStreak}, K/D=${kd}`);
-				}
-			}
-
-			return deathRecord;
-		} catch {
-			return null;
-		}
-	}
-
-	/**
-	 * Centralized method triggered when a pattern is approved, created or edited:
-	 * 1. Invalidate caches (Memory & Redis).
-	 * 2. Retroactively fix stats if custom victim/killer provided.
-	 * 3. Scan and batch process all matching pending death patterns retroactively.
-	 * 4. Update their Discord verification messages and remove buttons.
-	 */
-	public static async onPatternApproved(
-		client: Discord,
-		approvedPattern: IDeathPattern,
-		approverName: string,
-		customVictim?: string | null,
-		customKiller?: string | null
-	): Promise<void> {
-		const serverScope = approvedPattern.serverScope;
-		this.invalidateCache(serverScope);
-		await RedisManager.invalidateDeathPatterns(serverScope);
-
-		// 1. Retroactively fix stats for the approved pattern's sample message if custom values were provided
-		if (approvedPattern.sampleMessage && customVictim) {
-			await this.retroactivelyFixDeathStats(
-				serverScope,
-				approvedPattern.sampleMessage,
-				customVictim,
-				approvedPattern.cause === DeathCause.PVP ? (customKiller || null) : null,
-				approvedPattern.cause === DeathCause.MOB ? (customKiller || null) : null,
-				approvedPattern.cause
-			);
-		} else if (approvedPattern.sampleMessage) {
-			// Ensure stats recorded for sample message if not already recorded
-			try {
-				const existing = await DeathModel.findOne({
-					server: serverScope,
-					rawMessage: approvedPattern.sampleMessage,
-				});
-				if (!existing) {
-					const match = approvedPattern.sampleMessage.match(new RegExp(approvedPattern.pattern, "i"));
-					if (match && match.groups && match.groups.victim) {
-						await this.recordDeathStatsDirect(serverScope, {
-							victim: match.groups.victim.trim(),
-							killer: match.groups.killer ? match.groups.killer.trim() : null,
-							mob: match.groups.mob ? match.groups.mob.trim() : null,
-							weapon: match.groups.weapon ? match.groups.weapon.trim() : null,
-							cause: approvedPattern.cause,
-							rawMessage: approvedPattern.sampleMessage,
-						}, client.logger);
-					}
-				}
-			} catch {
-				// Ignore
-			}
-		}
-
-		// 2. Scan and batch resolve other pending patterns matching this regex
-		try {
-			const compiledRegex = new RegExp(approvedPattern.pattern, "i");
-			const pendingPatterns = await DeathPatternModel.find({
-				_id: { $ne: approvedPattern._id },
-				$or: [{ serverScope: "global" }, { serverScope: serverScope }],
-				enabled: false,
-			});
-
-			for (const pending of pendingPatterns) {
-				if (pending.sampleMessage && compiledRegex.test(pending.sampleMessage)) {
-					const match = pending.sampleMessage.match(compiledRegex);
-					if (match && match.groups && match.groups.victim) {
-						const victim = match.groups.victim.trim();
-						const killer = match.groups.killer ? match.groups.killer.trim() : null;
-						const mob = match.groups.mob ? match.groups.mob.trim() : null;
-						const weapon = match.groups.weapon ? match.groups.weapon.trim() : null;
-
-						const parsed: ParsedDeath = {
-							victim,
-							killer,
-							mob,
-							weapon,
-							cause: approvedPattern.cause,
-							rawMessage: pending.sampleMessage,
-						};
-
-						// Record death stats if not already recorded
-						const existing = await DeathModel.findOne({
-							server: pending.serverScope,
-							rawMessage: pending.sampleMessage,
-						});
-
-						if (!existing) {
-							await this.recordDeathStatsDirect(pending.serverScope, parsed, client.logger);
-						}
-					}
-
-					// Update old Discord verification message if IDs exist
-					if (pending.verificationChannelId && pending.verificationMessageId) {
-						try {
-							const channel = client.channels.cache.get(pending.verificationChannelId) as any;
-							if (channel && channel.isTextBased()) {
-								const msg = await channel.messages.fetch(pending.verificationMessageId).catch(() => null);
-								if (msg) {
-									const container = new ContainerBuilder()
-										.setAccentColor(0x2ea711)
-										.addTextDisplayComponents(
-											new TextDisplayBuilder().setContent(
-												`**Death Message Đã Được Tự Động Xác Minh**\n\n` +
-												`- **Server:** \`${pending.serverScope}\` | **Nguyên nhân:** \`${approvedPattern.cause}\`\n` +
-												`- **Pattern:** \`${approvedPattern.name}\`\n\n` +
-												`**Tin nhắn gốc:**\n\`\`\`\n${pending.sampleMessage}\n\`\`\`\n` +
-												`*Tự động đồng bộ theo mẫu đã duyệt bởi @${approverName}*`
-											)
-										);
-									await msg.edit({ components: [container] }).catch(() => { });
-								}
-							}
-						} catch {
-							// Ignore discord message edit error
-						}
-					}
-
-					// Delete resolved duplicate pattern
-					await DeathPatternModel.deleteOne({ _id: pending._id });
-				}
-			}
-		} catch (err) {
-			client.logger.error(`[DeathParserService] Error retroactively applying pattern: ${err}`);
-		}
-	}
-
-	/**
-	 * Retroactively fix and recalculate player stats if an admin corrected victim or killer
-	 */
-	public static async retroactivelyFixDeathStats(
-		server: string,
-		sampleMessage: string,
-		correctedVictim: string,
-		correctedKiller: string | null,
-		correctedMob: string | null,
-		correctedCause: DeathCause
-	): Promise<void> {
-		if (!sampleMessage) return;
-
-		try {
-			// Find existing death log recorded for this message
-			const existingDeath = await DeathModel.findOne({
-				server,
-				rawMessage: sampleMessage,
-			}).sort({ timestamp: -1 });
-
-			const victimLower = correctedVictim.toLowerCase().trim();
-			const killerLower = correctedKiller ? correctedKiller.toLowerCase().trim() : null;
-
-			if (existingDeath) {
-				const oldVictimLower = existingDeath.victim.toLowerCase();
-				const oldKillerLower = existingDeath.killer ? existingDeath.killer.toLowerCase() : null;
-
-				// A. Fix Victim if changed
-				if (oldVictimLower !== victimLower) {
-					// Revert death from old victim
-					const oldVictimDoc = await PlayerModel.findOneAndUpdate(
-						{ server, username: oldVictimLower },
-						{ $inc: { deaths: -1 } },
-						{ returnDocument: "after" }
-					);
-					if (oldVictimDoc) {
-						const safeDeaths = Math.max(0, oldVictimDoc.deaths);
-						const kd = safeDeaths > 0 ? parseFloat((oldVictimDoc.kills / safeDeaths).toFixed(2)) : oldVictimDoc.kills;
-						await PlayerModel.updateOne({ _id: oldVictimDoc._id }, { $set: { deaths: safeDeaths, kdRatio: kd } });
-					}
-
-					// Add death to corrected victim
-					const newVictimDoc = await PlayerModel.findOneAndUpdate(
-						{ server, username: victimLower },
-						{
-							$setOnInsert: {
-								server,
-								username: victimLower,
-								displayName: correctedVictim,
-								firstSeen: new Date(),
-								playtime: 0,
-								kills: 0,
-								messageCount: 0,
-								joinCount: 1,
-								leaveCount: 0,
-							},
-							$set: { lastSeen: new Date() },
-							$inc: { deaths: 1 },
-						},
-						{ upsert: true, returnDocument: "after" }
-					);
-					if (newVictimDoc) {
-						const kd = newVictimDoc.deaths > 0 ? parseFloat((newVictimDoc.kills / newVictimDoc.deaths).toFixed(2)) : newVictimDoc.kills;
-						await PlayerModel.updateOne({ _id: newVictimDoc._id }, { $set: { kdRatio: kd } });
-					}
-				}
-
-				// B. Fix Killer if changed
-				if (oldKillerLower !== killerLower) {
-					if (oldKillerLower) {
-						// Revert kill from old killer
-						const oldKillerDoc = await PlayerModel.findOneAndUpdate(
-							{ server, username: oldKillerLower },
-							{ $inc: { kills: -1 } },
-							{ returnDocument: "after" }
-						);
-						if (oldKillerDoc) {
-							const safeKills = Math.max(0, oldKillerDoc.kills);
-							const kd = oldKillerDoc.deaths > 0 ? parseFloat((safeKills / oldKillerDoc.deaths).toFixed(2)) : safeKills;
-							await PlayerModel.updateOne({ _id: oldKillerDoc._id }, { $set: { kills: safeKills, kdRatio: kd } });
-						}
-					}
-
-					if (killerLower) {
-						// Add kill to corrected killer
-						const newKillerDoc = await PlayerModel.findOneAndUpdate(
-							{ server, username: killerLower },
-							{
-								$setOnInsert: {
-									server,
-									username: killerLower,
-									displayName: correctedKiller!,
-									firstSeen: new Date(),
-									playtime: 0,
-									deaths: 0,
-									messageCount: 0,
-									joinCount: 1,
-									leaveCount: 0,
-								},
-								$set: { lastSeen: new Date() },
-								$inc: { kills: 1 },
-							},
-							{ upsert: true, returnDocument: "after" }
-						);
-						if (newKillerDoc) {
-							const kd = newKillerDoc.deaths > 0 ? parseFloat((newKillerDoc.kills / newKillerDoc.deaths).toFixed(2)) : newKillerDoc.kills;
-							await PlayerModel.updateOne({ _id: newKillerDoc._id }, { $set: { kdRatio: kd } });
-						}
-					}
-				}
-
-				// Update the death log
-				existingDeath.victim = victimLower;
-				existingDeath.victimDisplayName = correctedVictim;
-				existingDeath.killer = killerLower;
-				existingDeath.killerDisplayName = correctedKiller || null;
-				existingDeath.mob = correctedMob || null;
-				existingDeath.cause = correctedCause;
-				await existingDeath.save();
-			}
-		} catch (err) {
-			// Catch error safely
-		}
 	}
 
 	/**
@@ -653,117 +283,9 @@ export class DeathParserService {
 		);
 	}
 
-	/**
-	 * Re-verify all death patterns and death logs stored in Database against latest regex patterns
-	 */
-	public static async reverifyAllDeathsInDb(serverFilter?: string): Promise<{
-		totalPatterns: number;
-		verifiedPatterns: number;
-		patternIssues: { id: string; name: string; issue: string }[];
-		totalDeaths: number;
-		matchedDeaths: number;
-		updatedDeaths: number;
-		unmatchedDeaths: number;
-	}> {
-		// Invalidate memory and Redis caches
-		this.invalidateCache("global");
-		if (serverFilter) this.invalidateCache(serverFilter);
-
-		// Preload merged patterns
-		await this.getPatternsForServer(serverFilter || "global");
-
-		// 1. Re-verify DeathPatternModel
-		const patternQuery = serverFilter ? { $or: [{ serverScope: "global" }, { serverScope: serverFilter }] } : {};
-		const allPatterns = await DeathPatternModel.find(patternQuery);
-		let verifiedPatterns = 0;
-		const patternIssues: { id: string; name: string; issue: string }[] = [];
-
-		for (const p of allPatterns) {
-			try {
-				const reg = new RegExp(p.pattern, "i");
-				if (p.sampleMessage) {
-					const m = p.sampleMessage.match(reg);
-					if (m && m.groups && m.groups.victim) {
-						verifiedPatterns++;
-					} else {
-						patternIssues.push({
-							id: String(p._id),
-							name: p.name,
-							issue: `Sample message "${p.sampleMessage}" does not match regex "${p.pattern}"`,
-						});
-					}
-				} else {
-					verifiedPatterns++;
-				}
-			} catch (err: any) {
-				patternIssues.push({
-					id: String(p._id),
-					name: p.name,
-					issue: `Invalid regex pattern: ${err.message}`,
-				});
-			}
-		}
-
-		// 2. Re-verify DeathModel (Historical death messages in DB)
-		const deathQuery = serverFilter ? { server: serverFilter } : {};
-		const allDeaths = await DeathModel.find(deathQuery);
-
-		let matchedDeaths = 0;
-		let updatedDeaths = 0;
-		let unmatchedDeaths = 0;
-
-		for (const death of allDeaths) {
-			const server = death.server || "global";
-			const raw = death.rawMessage;
-			if (!raw) {
-				unmatchedDeaths++;
-				continue;
-			}
-
-			const info = this.extractDeathInfoSync(server, raw);
-			if (info) {
-				matchedDeaths++;
-				const victimLower = info.victim.toLowerCase();
-				const killerLower = info.killer ? info.killer.toLowerCase() : null;
-
-				const hasChanged =
-					death.victim !== victimLower ||
-					death.cause !== info.cause ||
-					(death.killer || null) !== killerLower ||
-					(death.mob || null) !== (info.mob || null) ||
-					(death.weapon || null) !== (info.weapon || null);
-
-				if (hasChanged) {
-					death.victim = victimLower;
-					death.victimDisplayName = info.victim;
-					death.killer = killerLower;
-					death.killerDisplayName = info.killer || null;
-					death.mob = info.mob || null;
-					death.weapon = info.weapon || null;
-					death.cause = info.cause;
-					await death.save();
-					updatedDeaths++;
-				}
-			} else {
-				unmatchedDeaths++;
-			}
-		}
-
-		// Refresh caches for all servers
-		this.memoryCache.clear();
-		await RedisManager.invalidateDeathPatterns("global");
-		if (serverFilter) {
-			await RedisManager.invalidateDeathPatterns(serverFilter);
-		}
-
-		return {
-			totalPatterns: allPatterns.length,
-			verifiedPatterns,
-			patternIssues,
-			totalDeaths: allDeaths.length,
-			matchedDeaths,
-			updatedDeaths,
-			unmatchedDeaths,
-		};
-	}
+	// Backwards-compatible delegates for stats and verification
+	public static recordDeathStatsDirect = DeathStatsService.recordDeathStatsDirect;
+	public static retroactivelyFixDeathStats = DeathStatsService.retroactivelyFixDeathStats;
+	public static onPatternApproved = DeathVerificationService.onPatternApproved;
+	public static reverifyAllDeathsInDb = DeathVerificationService.reverifyAllDeathsInDb;
 }
