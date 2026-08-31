@@ -8,7 +8,7 @@ import {
 import { Discord } from "../../../structures";
 import { DeathPatternModel } from "../../../database/models/DeathPatternModel";
 import { DeathCause } from "../../../database/models/DeathModel";
-import { RedisManager } from "../../../redis/RedisManager";
+import { DeathParserService } from "../../../services/DeathParserService";
 
 export async function handleDeathResolveMob(client: Discord, interaction: ButtonInteraction): Promise<void> {
 	const patternId = interaction.customId.replace("death_resolve_mob_", "");
@@ -26,7 +26,7 @@ export async function handleDeathResolveMob(client: Discord, interaction: Button
 		pattern.confirmedBy = interaction.user.tag || interaction.user.username;
 		await pattern.save();
 
-		await RedisManager.invalidateDeathPatterns(pattern.serverScope);
+		await DeathParserService.onPatternApproved(client, pattern, interaction.user.username);
 
 		const container = new ContainerBuilder()
 			.setAccentColor(0x3498db)

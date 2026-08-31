@@ -4,6 +4,7 @@ import {
 	handleDeathResolvePvp,
 	handleDeathResolveMob,
 	handleDeathApprove,
+	handleDeathSwap,
 	handleDeathEditModal,
 	handleDeathDismiss,
 } from "./buttons/deathVerification";
@@ -20,6 +21,7 @@ const buttonPrefixHandlers: Array<{ prefix: string; handler: ButtonHandler }> = 
 	{ prefix: "death_resolve_pvp_", handler: handleDeathResolvePvp },
 	{ prefix: "death_resolve_mob_", handler: handleDeathResolveMob },
 	{ prefix: "death_approve_", handler: handleDeathApprove },
+	{ prefix: "death_swap_", handler: handleDeathSwap },
 	{ prefix: "death_edit_", handler: handleDeathEditModal },
 	{ prefix: "death_dismiss_", handler: handleDeathDismiss },
 

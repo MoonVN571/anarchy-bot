@@ -10,6 +10,8 @@ export interface IDeathPattern extends Document {
 	enabled: boolean;
 	confirmedBy?: string | null;
 	sampleMessage?: string;
+	verificationChannelId?: string | null;
+	verificationMessageId?: string | null;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -29,6 +31,8 @@ const DeathPatternSchema = new Schema<IDeathPattern>(
 		enabled: { type: Boolean, default: true },
 		confirmedBy: { type: String, default: null },
 		sampleMessage: { type: String, default: null },
+		verificationChannelId: { type: String, default: null },
+		verificationMessageId: { type: String, default: null },
 	},
 	{ timestamps: true }
 );

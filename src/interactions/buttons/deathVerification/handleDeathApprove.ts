@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import { Discord } from "../../../structures";
 import { DeathPatternModel } from "../../../database/models/DeathPatternModel";
-import { RedisManager } from "../../../redis/RedisManager";
+import { DeathParserService } from "../../../services/DeathParserService";
 
 export async function handleDeathApprove(client: Discord, interaction: ButtonInteraction): Promise<void> {
 	const patternId = interaction.customId.replace("death_approve_", "");
@@ -24,7 +24,7 @@ export async function handleDeathApprove(client: Discord, interaction: ButtonInt
 		pattern.confirmedBy = interaction.user.tag || interaction.user.username;
 		await pattern.save();
 
-		await RedisManager.invalidateDeathPatterns(pattern.serverScope);
+		await DeathParserService.onPatternApproved(client, pattern, interaction.user.username);
 
 		const container = new ContainerBuilder()
 			.setAccentColor(0x2ea711)

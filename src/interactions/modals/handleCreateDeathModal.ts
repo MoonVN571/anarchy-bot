@@ -54,19 +54,14 @@ export async function handleCreateDeathModal(client: Discord, interaction: Modal
 			confirmedBy: interaction.user.tag || interaction.user.username,
 		});
 
-		await RedisManager.invalidateDeathPatterns(newScope);
-
-		// Retroactively update/record death if victim provided
-		if (customVictim) {
-			await DeathParserService.retroactivelyFixDeathStats(
-				newScope,
-				created.sampleMessage || "",
-				customVictim,
-				cause === DeathCause.PVP ? customKillerOrMob : null,
-				cause === DeathCause.MOB ? customKillerOrMob : null,
-				cause
-			);
-		}
+		// Centralized approval, cache invalidation and retroactive sync
+		await DeathParserService.onPatternApproved(
+			client,
+			created,
+			interaction.user.username,
+			customVictim || null,
+			customKillerOrMob || null
+		);
 
 		await interaction.editReply({ content: "Đã lưu Death Regex Pattern mới và cập nhật K/D thành công!" });
 

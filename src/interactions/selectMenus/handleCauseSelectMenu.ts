@@ -8,7 +8,7 @@ import {
 import { Discord } from "../../structures";
 import { DeathPatternModel } from "../../database/models/DeathPatternModel";
 import { DeathCause } from "../../database/models/DeathModel";
-import { RedisManager } from "../../redis/RedisManager";
+import { DeathParserService } from "../../services/DeathParserService";
 
 export async function handleCauseSelectMenu(client: Discord, interaction: StringSelectMenuInteraction): Promise<void> {
 	const patternId = interaction.customId.replace("select_death_cause_", "");
@@ -28,7 +28,7 @@ export async function handleCauseSelectMenu(client: Discord, interaction: String
 		pattern.confirmedBy = interaction.user.tag || interaction.user.username;
 		await pattern.save();
 
-		await RedisManager.invalidateDeathPatterns(pattern.serverScope);
+		await DeathParserService.onPatternApproved(client, pattern, interaction.user.username);
 
 		const container = new ContainerBuilder()
 			.setAccentColor(0x2ea711)

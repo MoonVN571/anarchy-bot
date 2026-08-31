@@ -402,7 +402,7 @@ export class ChatParser {
 		cleanText: string,
 		parsed: { rank: string | null; username: string | null; message: string }
 	): ParsedChatMessage {
-		const { username, rank, message } = parsed;
+		let { username, rank, message } = parsed;
 		let msgType = MessageType.Server;
 		let formattedMsg = "";
 		let rawText = cleanText;
@@ -422,9 +422,40 @@ export class ChatParser {
 			const joinInfo = this.extractJoinUsername(cleanText);
 			const leaveInfo = this.extractLeaveUsername(cleanText);
 			const achieveUser = this.extractAchievementUsername(cleanText);
+			const whisperInfo = this.extractWhisperInfo(cleanText);
 
-			if (this.isWhisperMsg(cleanText)) {
-				msgType = MessageType.Whisper;
+			if (whisperInfo || this.isWhisperMsg(cleanText)) {
+				const info = whisperInfo || { sender: "Unknown", message: cleanText };
+				const senderLower = info.sender.toLowerCase();
+				const isBotOutgoing =
+					senderLower === "me" ||
+					senderLower === "tôi" ||
+					(main.bot?.username && senderLower === main.bot.username.toLowerCase()) ||
+					(main.config.connection.username && senderLower === main.config.connection.username.toLowerCase());
+
+				if (isBotOutgoing) {
+					msgType = MessageType.BotChat;
+				} else {
+					msgType = MessageType.Whisper;
+				}
+
+				finalUsername = info.sender;
+				const target = info.receiver || (isBotOutgoing ? "Player" : "me");
+				message = info.message;
+				formattedMsg = `**[${info.sender} -> ${target}]** ${this.escapeDiscordFormat(info.message)}`;
+				return {
+					type: msgType,
+					formattedMsg,
+					rawText,
+					username: finalUsername,
+					targetUser: target,
+					victim,
+					killer,
+					mob,
+					weapon,
+					rank: finalRank,
+					message,
+				};
 			} else if (achieveUser || this.isAchievementMsg(cleanText)) {
 				msgType = MessageType.Achievement;
 				if (achieveUser) finalUsername = achieveUser;
@@ -488,7 +519,71 @@ export class ChatParser {
 	}
 
 	public static isWhisperMsg(text: string): boolean {
-		return /^(?:(?:\w+\s+(?:thì\s+thầm|whispers|tells\s+you|whispered\s+to\s+you):)|(?:(?:Đến|To)\s+\w+:))\s+.*$/i.test(text);
+		if (!text) return false;
+		const clean = this.cleanMinecraftText(text).trim();
+		return (
+			/^(?:\[(?<sender>me|tôi|[a-zA-Z0-9_]{3,16})\s*(?:->|tới|đến|to)\s*(?<receiver>me|tôi|[a-zA-Z0-9_]{3,16})\])/i.test(clean) ||
+			/^(?:\[(?:To|Đến|From|Từ)\s+[a-zA-Z0-9_]{3,16}\])/i.test(clean) ||
+			/^(?:[a-zA-Z0-9_]{3,16}\s+(?:thì\s+thầm|whispers|tells\s+you|whispered\s+to\s+you|nhắn\s+cho\s+bạn):)/i.test(clean) ||
+			/^(?:(?:Đến|To)\s+[a-zA-Z0-9_]{3,16}:)/i.test(clean)
+		);
+	}
+
+	public static extractWhisperInfo(text: string): { sender: string; receiver?: string; message: string } | null {
+		if (!text) return null;
+		const clean = this.cleanMinecraftText(text).trim();
+
+		// Case 1: [me -> Loaconto] message or [Player -> me] message
+		const arrowMatch = clean.match(/^\[(?<sender>me|tôi|[a-zA-Z0-9_]{3,16})\s*(?:->|tới|đến|to)\s*(?<receiver>me|tôi|[a-zA-Z0-9_]{3,16})\]\s*(?<msg>.*)$/i);
+		if (arrowMatch && arrowMatch.groups) {
+			return {
+				sender: arrowMatch.groups.sender,
+				receiver: arrowMatch.groups.receiver,
+				message: arrowMatch.groups.msg || "",
+			};
+		}
+
+		// Case 2: [To Player] message or [Đến Player] message
+		const toMatch = clean.match(/^\[(?:To|Đến)\s+(?<receiver>[a-zA-Z0-9_]{3,16})\]\s*(?<msg>.*)$/i);
+		if (toMatch && toMatch.groups) {
+			return {
+				sender: "me",
+				receiver: toMatch.groups.receiver,
+				message: toMatch.groups.msg || "",
+			};
+		}
+
+		// Case 3: [From Player] message or [Từ Player] message
+		const fromMatch = clean.match(/^\[(?:From|Từ)\s+(?<sender>[a-zA-Z0-9_]{3,16})\]\s*(?<msg>.*)$/i);
+		if (fromMatch && fromMatch.groups) {
+			return {
+				sender: fromMatch.groups.sender,
+				receiver: "me",
+				message: fromMatch.groups.msg || "",
+			};
+		}
+
+		// Case 4: Player whispers: message / Player tells you: message / Player nhắn cho bạn: message
+		const colonMatch = clean.match(/^(?<sender>[a-zA-Z0-9_]{3,16})\s+(?:thì\s+thầm|whispers|tells\s+you|whispered\s+to\s+you|nhắn\s+cho\s+bạn):\s*(?<msg>.*)$/i);
+		if (colonMatch && colonMatch.groups) {
+			return {
+				sender: colonMatch.groups.sender,
+				receiver: "me",
+				message: colonMatch.groups.msg || "",
+			};
+		}
+
+		// Case 5: To Player: message or Đến Player: message
+		const toColonMatch = clean.match(/^(?:To|Đến)\s+(?<receiver>[a-zA-Z0-9_]{3,16}):\s*(?<msg>.*)$/i);
+		if (toColonMatch && toColonMatch.groups) {
+			return {
+				sender: "me",
+				receiver: toColonMatch.groups.receiver,
+				message: toColonMatch.groups.msg || "",
+			};
+		}
+
+		return null;
 	}
 
 	public static isAchievementMsg(text: string): boolean {

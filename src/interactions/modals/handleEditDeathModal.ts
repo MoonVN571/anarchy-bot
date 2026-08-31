@@ -55,19 +55,14 @@ export async function handleEditDeathModal(client: Discord, interaction: ModalSu
 		pattern.confirmedBy = interaction.user.tag || interaction.user.username;
 		await pattern.save();
 
-		await RedisManager.invalidateDeathPatterns(pattern.serverScope);
-
-		// Retroactively fix stats if victim/killer was corrected
-		if (pattern.sampleMessage && customVictim) {
-			await DeathParserService.retroactivelyFixDeathStats(
-				pattern.serverScope,
-				pattern.sampleMessage,
-				customVictim,
-				pattern.cause === DeathCause.PVP ? customKillerOrMob : null,
-				pattern.cause === DeathCause.MOB ? customKillerOrMob : null,
-				pattern.cause
-			);
-		}
+		// Centralized approval, cache invalidation and retroactive sync
+		await DeathParserService.onPatternApproved(
+			client,
+			pattern,
+			interaction.user.username,
+			customVictim || null,
+			customKillerOrMob || null
+		);
 
 		await interaction.editReply({ content: "Đã lưu và điều chỉnh K/D & Regex Pattern thành công!" });
 

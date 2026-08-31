@@ -149,6 +149,10 @@ export class DeathRegexLearner {
 							.setLabel(`Là Mob (Quái vật "${killer}")`)
 							.setStyle(ButtonStyle.Primary),
 						new ButtonBuilder()
+							.setCustomId(`death_swap_${newPattern._id}`)
+							.setLabel("🔄 Đổi Vị trí")
+							.setStyle(ButtonStyle.Secondary),
+						new ButtonBuilder()
 							.setCustomId(`death_dismiss_${newPattern._id}`)
 							.setLabel("Bỏ qua")
 							.setStyle(ButtonStyle.Danger)
@@ -158,7 +162,19 @@ export class DeathRegexLearner {
 						new ButtonBuilder()
 							.setCustomId(`death_approve_${newPattern._id}`)
 							.setLabel("Xác nhận")
-							.setStyle(ButtonStyle.Success),
+							.setStyle(ButtonStyle.Success)
+					);
+
+					if (killer || detectedMob) {
+						row.addComponents(
+							new ButtonBuilder()
+								.setCustomId(`death_swap_${newPattern._id}`)
+								.setLabel("🔄 Đổi Vị trí")
+								.setStyle(ButtonStyle.Secondary)
+						);
+					}
+
+					row.addComponents(
 						new ButtonBuilder()
 							.setCustomId(`death_edit_${newPattern._id}`)
 							.setLabel("Sửa Regex")
@@ -223,12 +239,19 @@ export class DeathRegexLearner {
 					.addActionRowComponents(row)
 					.addActionRowComponents(causeSelectRow);
 
-				targetChannel.send({
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				}).catch((err) => {
+				try {
+					const sentMsg = await targetChannel.send({
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
+					});
+					if (sentMsg) {
+						newPattern.verificationChannelId = sentMsg.channelId;
+						newPattern.verificationMessageId = sentMsg.id;
+						await newPattern.save();
+					}
+				} catch (err) {
 					main.client.logger.error(`[DeathRegexLearner] Failed to send verification message: ${err}`);
-				});
+				}
 			}
 
 			return newPattern;

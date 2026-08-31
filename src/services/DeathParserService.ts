@@ -1,4 +1,6 @@
 import { Minecraft } from "../structures/Minecraft";
+import { Discord } from "../structures/Discord";
+import { ContainerBuilder, TextDisplayBuilder, SeparatorBuilder } from "discord.js";
 import { DeathModel, DeathCause, IDeath } from "../database/models/DeathModel";
 import { DeathPatternModel, IDeathPattern } from "../database/models/DeathPatternModel";
 import { PlayerModel } from "../database/models/PlayerModel";
@@ -216,7 +218,17 @@ export class DeathParserService {
 	/**
 	 * Record death and update player KDA in Database & Redis
 	 */
+	/**
+	 * Record death and update player KDA in Database & Redis
+	 */
 	private static async recordDeathStats(main: Minecraft, server: string, parsed: ParsedDeath): Promise<IDeath | null> {
+		return this.recordDeathStatsDirect(server, parsed, main?.client?.logger);
+	}
+
+	/**
+	 * Direct recording of death stats without needing a Minecraft instance
+	 */
+	public static async recordDeathStatsDirect(server: string, parsed: ParsedDeath, logger?: any): Promise<IDeath | null> {
 		try {
 			// 1. Save death log
 			const deathRecord = await DeathModel.create({
@@ -264,7 +276,7 @@ export class DeathParserService {
 			if (victimDoc) {
 				const kd = victimDoc.deaths > 0 ? parseFloat((victimDoc.kills / victimDoc.deaths).toFixed(2)) : victimDoc.kills;
 				await PlayerModel.updateOne({ _id: victimDoc._id }, { $set: { kdRatio: kd } });
-				main.client.logger.debug("Death/KD", `[${server}] Victim "${parsed.victim}" stats updated: Deaths=${victimDoc.deaths}, K/D=${kd}`);
+				if (logger) logger.debug("Death/KD", `[${server}] Victim "${parsed.victim}" stats updated: Deaths=${victimDoc.deaths}, K/D=${kd}`);
 			}
 
 			// 3. Update killer stats (PvP)
@@ -309,13 +321,139 @@ export class DeathParserService {
 							},
 						}
 					);
-					main.client.logger.debug("Death/KD", `[${server}] Killer "${parsed.killer}" stats updated: Kills=${killerDoc.kills}, Streak=${newStreak}, K/D=${kd}`);
+					if (logger) logger.debug("Death/KD", `[${server}] Killer "${parsed.killer}" stats updated: Kills=${killerDoc.kills}, Streak=${newStreak}, K/D=${kd}`);
 				}
 			}
 
 			return deathRecord;
 		} catch {
 			return null;
+		}
+	}
+
+	/**
+	 * Centralized method triggered when a pattern is approved, created or edited:
+	 * 1. Invalidate caches (Memory & Redis).
+	 * 2. Retroactively fix stats if custom victim/killer provided.
+	 * 3. Scan and batch process all matching pending death patterns retroactively.
+	 * 4. Update their Discord verification messages and remove buttons.
+	 */
+	public static async onPatternApproved(
+		client: Discord,
+		approvedPattern: IDeathPattern,
+		approverName: string,
+		customVictim?: string | null,
+		customKiller?: string | null
+	): Promise<void> {
+		const serverScope = approvedPattern.serverScope;
+		this.invalidateCache(serverScope);
+		await RedisManager.invalidateDeathPatterns(serverScope);
+
+		// 1. Retroactively fix stats for the approved pattern's sample message if custom values were provided
+		if (approvedPattern.sampleMessage && customVictim) {
+			await this.retroactivelyFixDeathStats(
+				serverScope,
+				approvedPattern.sampleMessage,
+				customVictim,
+				approvedPattern.cause === DeathCause.PVP ? (customKiller || null) : null,
+				approvedPattern.cause === DeathCause.MOB ? (customKiller || null) : null,
+				approvedPattern.cause
+			);
+		} else if (approvedPattern.sampleMessage) {
+			// Ensure stats recorded for sample message if not already recorded
+			try {
+				const existing = await DeathModel.findOne({
+					server: serverScope,
+					rawMessage: approvedPattern.sampleMessage,
+				});
+				if (!existing) {
+					const match = approvedPattern.sampleMessage.match(new RegExp(approvedPattern.pattern, "i"));
+					if (match && match.groups && match.groups.victim) {
+						await this.recordDeathStatsDirect(serverScope, {
+							victim: match.groups.victim.trim(),
+							killer: match.groups.killer ? match.groups.killer.trim() : null,
+							mob: match.groups.mob ? match.groups.mob.trim() : null,
+							weapon: match.groups.weapon ? match.groups.weapon.trim() : null,
+							cause: approvedPattern.cause,
+							rawMessage: approvedPattern.sampleMessage,
+						}, client.logger);
+					}
+				}
+			} catch {
+				// Ignore
+			}
+		}
+
+		// 2. Scan and batch resolve other pending patterns matching this regex
+		try {
+			const compiledRegex = new RegExp(approvedPattern.pattern, "i");
+			const pendingPatterns = await DeathPatternModel.find({
+				_id: { $ne: approvedPattern._id },
+				$or: [{ serverScope: "global" }, { serverScope: serverScope }],
+				enabled: false,
+			});
+
+			for (const pending of pendingPatterns) {
+				if (pending.sampleMessage && compiledRegex.test(pending.sampleMessage)) {
+					const match = pending.sampleMessage.match(compiledRegex);
+					if (match && match.groups && match.groups.victim) {
+						const victim = match.groups.victim.trim();
+						const killer = match.groups.killer ? match.groups.killer.trim() : null;
+						const mob = match.groups.mob ? match.groups.mob.trim() : null;
+						const weapon = match.groups.weapon ? match.groups.weapon.trim() : null;
+
+						const parsed: ParsedDeath = {
+							victim,
+							killer,
+							mob,
+							weapon,
+							cause: approvedPattern.cause,
+							rawMessage: pending.sampleMessage,
+						};
+
+						// Record death stats if not already recorded
+						const existing = await DeathModel.findOne({
+							server: pending.serverScope,
+							rawMessage: pending.sampleMessage,
+						});
+
+						if (!existing) {
+							await this.recordDeathStatsDirect(pending.serverScope, parsed, client.logger);
+						}
+					}
+
+					// Update old Discord verification message if IDs exist
+					if (pending.verificationChannelId && pending.verificationMessageId) {
+						try {
+							const channel = client.channels.cache.get(pending.verificationChannelId) as any;
+							if (channel && channel.isTextBased()) {
+								const msg = await channel.messages.fetch(pending.verificationMessageId).catch(() => null);
+								if (msg) {
+									const container = new ContainerBuilder()
+										.setAccentColor(0x2ea711)
+										.addTextDisplayComponents(
+											new TextDisplayBuilder().setContent(
+												`**Death Message Đã Được Tự Động Xác Minh**\n\n` +
+												`- **Server:** \`${pending.serverScope}\` | **Nguyên nhân:** \`${approvedPattern.cause}\`\n` +
+												`- **Pattern:** \`${approvedPattern.name}\`\n` +
+												`- **Tin nhắn gốc:** \`\`\`${pending.sampleMessage}\`\`\`\n` +
+												`*Tự động đồng bộ theo mẫu đã duyệt bởi @${approverName}*`
+											)
+										);
+									await msg.edit({ components: [container] }).catch(() => {});
+								}
+							}
+						} catch {
+							// Ignore discord message edit error
+						}
+					}
+
+					// Delete resolved duplicate pattern
+					await DeathPatternModel.deleteOne({ _id: pending._id });
+				}
+			}
+		} catch (err) {
+			client.logger.error(`[DeathParserService] Error retroactively applying pattern: ${err}`);
 		}
 	}
 
