@@ -5,6 +5,7 @@ import { Discord } from "./Discord";
 import { LiveChatManager } from "./LiveChatManager";
 import { PlaytimeTracker } from "../services/PlaytimeTracker";
 import { AutoMessageService } from "../services/AutoMessageService";
+import { AntiAfkService } from "../services/AntiAfkService";
 import { viewerManager } from "../services/ViewerManagerService";
 import { MinecraftServerConfig, Server } from "../typings/types";
 import { mineflayerEventClasses } from "../events/mineflayer";
@@ -22,6 +23,7 @@ export class Minecraft {
 	public liveChatManager: LiveChatManager;
 	public playtimeTracker: PlaytimeTracker;
 	public autoMessageService: AutoMessageService;
+	public antiAfkService: AntiAfkService;
 
 	private isDestroyed: boolean = false;
 	private reconnectTimer: NodeJS.Timeout | null = null;
@@ -35,6 +37,7 @@ export class Minecraft {
 		this.liveChatManager = new LiveChatManager(this);
 		this.playtimeTracker = new PlaytimeTracker(this);
 		this.autoMessageService = new AutoMessageService(this);
+		this.antiAfkService = new AntiAfkService(this);
 
 		this.resolveChannel();
 		this.connect();
@@ -191,6 +194,7 @@ export class Minecraft {
 
 	public disconnect(): void {
 		this.clearAllTimers();
+		this.antiAfkService?.stop();
 		this.stopViewer();
 		this.playtimeTracker?.stop();
 		this.liveChatManager?.clear();
@@ -203,6 +207,7 @@ export class Minecraft {
 	}
 
 	private cleanupBotInstance(): void {
+		this.antiAfkService?.stop();
 		if (this.bot) {
 			this.stopViewer();
 			try {

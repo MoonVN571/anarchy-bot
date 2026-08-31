@@ -7,4 +7,5 @@ export * from "./MessageClassifierService";
 export * from "./AutoMessageService";
 export * from "./canvas";
 export * from "./ViewerManagerService";
+export * from "./AntiAfkService";
 
