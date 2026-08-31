@@ -1,3 +1,17 @@
+// Hook require('canvas') -> @napi-rs/canvas for libraries like prismarine-viewer
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const Module = require("module");
+const originalRequire = Module.prototype.require;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+Module.prototype.require = function (id: string): any {
+	if (id === "canvas") {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		return require("@napi-rs/canvas");
+	}
+	// eslint-disable-next-line prefer-rest-params
+	return originalRequire.apply(this, arguments);
+};
+
 import { ActivityType, Events, GatewayIntentBits, Partials } from "discord.js";
 import { Discord, MinecraftBotManager } from "./structures";
 import { ServerIp } from "./typings/types";

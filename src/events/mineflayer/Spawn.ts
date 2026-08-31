@@ -28,5 +28,6 @@ export default class SpawnEvent extends MineflayerEvent {
 
 		main.startAutoMessageTimer();
 		main.startTopicTimer();
+		main.startViewer();
 	}
 }

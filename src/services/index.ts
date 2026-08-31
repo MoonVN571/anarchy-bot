@@ -5,4 +5,6 @@ export * from "./StatsService";
 export * from "./SystemPatternService";
 export * from "./MessageClassifierService";
 export * from "./AutoMessageService";
+export * from "./canvas";
+export * from "./ViewerManagerService";
 

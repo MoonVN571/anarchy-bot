@@ -25,6 +25,7 @@
     "mineflayer-pathfinder": "^2.4.5",
     "mongoose": "^9.9.4",
     "prismarine-chat": "^1.13.0",
+    "prismarine-viewer": "^1.33.0",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0"
   },

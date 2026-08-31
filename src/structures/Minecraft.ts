@@ -5,6 +5,7 @@ import { Discord } from "./Discord";
 import { LiveChatManager } from "./LiveChatManager";
 import { PlaytimeTracker } from "../services/PlaytimeTracker";
 import { AutoMessageService } from "../services/AutoMessageService";
+import { viewerManager } from "../services/ViewerManagerService";
 import { MinecraftServerConfig, Server } from "../typings/types";
 import { mineflayerEventClasses } from "../events/mineflayer";
 
@@ -179,8 +180,18 @@ export class Minecraft {
 		this.autoMessageService.stopLegacyTimer();
 	}
 
+	public startViewer(): void {
+		if (process.env.VIEWER_ENABLED !== "true" || !this.bot) return;
+		viewerManager.registerBot(this);
+	}
+
+	public stopViewer(): void {
+		viewerManager.unregisterBot(this.config.id);
+	}
+
 	public disconnect(): void {
 		this.clearAllTimers();
+		this.stopViewer();
 		this.playtimeTracker?.stop();
 		this.cleanupBotInstance();
 	}
@@ -192,6 +203,7 @@ export class Minecraft {
 
 	private cleanupBotInstance(): void {
 		if (this.bot) {
+			this.stopViewer();
 			try {
 				this.bot.removeAllListeners();
 				this.bot.quit();

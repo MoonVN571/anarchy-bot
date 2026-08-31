@@ -1,6 +1,7 @@
 import { AttachmentBuilder } from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
 import { CanvasRendererService } from "../services/CanvasRendererService";
+import { viewerManager } from "../services/ViewerManagerService";
 
 export class CoordsCommand extends Command {
 	constructor() {
@@ -24,8 +25,12 @@ export class CoordsCommand extends Command {
 		try {
 			const imageBuffer = await CanvasRendererService.renderCoordinates(bot);
 			const attachment = new AttachmentBuilder(imageBuffer, { name: "bot-coords.png" });
+			const viewerUrl = process.env.VIEWER_ENABLED === "true"
+				? viewerManager.getViewerUrl(bot.config.id)
+				: undefined;
 
 			await message.reply({
+				content: viewerUrl ? `🌐 **3D Map Viewer**: <${viewerUrl}>` : undefined,
 				files: [attachment],
 			});
 		} catch (error) {
@@ -44,9 +49,11 @@ export class CoordsCommand extends Command {
 		const x = Math.round(pos.x);
 		const y = Math.round(pos.y);
 		const z = Math.round(pos.z);
+		const cx = Math.floor(x / 16);
+		const cz = Math.floor(z / 16);
 		const rawDim = (bot?.game?.dimension as any) || "overworld";
 		const dimName = rawDim.includes("nether") ? "Nether" : rawDim.includes("end") ? "The End" : "Overworld";
 
-		return `[Vị trí] Tọa độ Bot: X: ${x}, Y: ${y}, Z: ${z} (${dimName}) | Máu: ${Math.round(bot.health || 20)}/20 | Đói: ${Math.round(bot.food || 20)}/20`;
+		return `[Vị trí] X: ${x}, Y: ${y}, Z: ${z} | Chunk: [${cx}, ${cz}] (${dimName}) | Máu: ${Math.round(bot.health || 20)}/20 | Đói: ${Math.round(bot.food || 20)}/20`;
 	}
 }
