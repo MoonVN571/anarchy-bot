@@ -66,9 +66,9 @@ export async function handleDeathSwap(client: Discord, interaction: ButtonIntera
 					`**Death Message Đã Được Đổi Vị Trí & Xác Minh Thành Công**\n\n` +
 					`- **Server:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`PVP\`\n` +
 					`- **Nạn nhân mới (Victim):** \`${swappedVictim}\`\n` +
-					`- **Kẻ hạ gục mới (Killer):** \`${swappedKiller}\`\n` +
-					`- **Regex Mới:** \`\`\`regex\n${pattern.pattern}\`\`\`\n` +
-					`- **Tin nhắn gốc:** \`\`\`${pattern.sampleMessage || "N/A"}\`\`\``
+					`- **Kẻ hạ gục mới (Killer):** \`${swappedKiller}\`\n\n` +
+					`**Regex Mới:**\n\`\`\`regex\n${pattern.pattern}\n\`\`\`\n` +
+					`**Tin nhắn gốc:**\n\`\`\`\n${pattern.sampleMessage || "N/A"}\n\`\`\``
 				)
 			)
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))

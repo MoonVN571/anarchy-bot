@@ -45,18 +45,33 @@ export class DeathRegexLearner {
 		for (const username of allKnownPlayers) {
 			if (!username || username.length < 3) continue;
 			const regex = new RegExp(`\\b${username}\\b`, "i");
-			if (regex.test(cleanMsg)) {
+			if (regex.test(cleanMsg) && !matchedPlayers.includes(username)) {
 				matchedPlayers.push(username);
 			}
 		}
 
-		// Also extract any standard Minecraft username format
+		// Check for trailing weapon phrase (e.g. "sử dụng [dirt]", "bằng [Kiếm]", "using [dirt]")
+		let detectedWeaponPhrase: string | null = null;
+		let detectedWeaponKeyword: string | null = null;
+		const weaponMatch = cleanMsg.match(/(?:\s+(sử\s+dụng|bằng|using)\s+(\[[^\]]+\]|[^\s]+))$/i);
+		if (weaponMatch) {
+			detectedWeaponKeyword = weaponMatch[1];
+			detectedWeaponPhrase = weaponMatch[0];
+		}
+
+		// Also extract any standard Minecraft username format, ignoring weapon tokens or brackets
 		const wordTokens = cleanMsg.split(/\s+/);
 		for (const token of wordTokens) {
+			if (token.startsWith("[") || token.endsWith("]") || token.startsWith("<") || token.endsWith(">")) {
+				continue;
+			}
 			const cleanToken = token.replace(/[^a-zA-Z0-9_]/g, "");
 			if (/^[a-zA-Z0-9_]{3,16}$/.test(cleanToken)) {
 				if (!matchedPlayers.includes(cleanToken) && !isMinecraftMob(cleanToken)) {
-					matchedPlayers.push(cleanToken);
+					// Ensure this token isn't part of the detected weapon
+					if (!detectedWeaponPhrase || !detectedWeaponPhrase.includes(cleanToken)) {
+						matchedPlayers.push(cleanToken);
+					}
 				}
 			}
 		}
@@ -64,6 +79,13 @@ export class DeathRegexLearner {
 		if (matchedPlayers.length === 0) {
 			return null;
 		}
+
+		// Sort matched players by their index of occurrence in cleanMsg (victim always appears first)
+		matchedPlayers.sort((a, b) => {
+			const indexA = cleanMsg.toLowerCase().indexOf(a.toLowerCase());
+			const indexB = cleanMsg.toLowerCase().indexOf(b.toLowerCase());
+			return indexA - indexB;
+		});
 
 		// 2. Identify victim, killer, or mob
 		const victim = matchedPlayers[0];
@@ -89,7 +111,7 @@ export class DeathRegexLearner {
 			cause = DeathCause.MOB;
 		} else if (/ngã|rơi|fall|fell|hit the ground/i.test(cleanMsg)) {
 			cause = DeathCause.FALL;
-		} else if (/void|hư vô/i.test(cleanMsg)) {
+		} else if (/void|hư vô|hư không/i.test(cleanMsg)) {
 			cause = DeathCause.VOID;
 		} else if (/drown|chết đuối|ngạt nước/i.test(cleanMsg)) {
 			cause = DeathCause.DROWN;
@@ -104,7 +126,14 @@ export class DeathRegexLearner {
 		}
 
 		// 3. Auto-generate candidate regex
-		let generatedPattern = this.escapeRegex(cleanMsg);
+		let baseMsg = cleanMsg;
+		let weaponRegexClause = "";
+		if (detectedWeaponPhrase && detectedWeaponKeyword) {
+			baseMsg = cleanMsg.slice(0, cleanMsg.length - detectedWeaponPhrase.length);
+			weaponRegexClause = `(?:\\s+${detectedWeaponKeyword}\\s+\\[?(?<weapon>.+?)\\]?)?`;
+		}
+
+		let generatedPattern = this.escapeRegex(baseMsg);
 		generatedPattern = generatedPattern.replace(new RegExp(this.escapeRegex(victim), "g"), "(?<victim>[a-zA-Z0-9_]{3,16})");
 
 		if (killer && killer !== victim) {
@@ -113,7 +142,7 @@ export class DeathRegexLearner {
 			generatedPattern = generatedPattern.replace(new RegExp(this.escapeRegex(detectedMob), "g"), "(?<mob>.+?)");
 		}
 
-		generatedPattern = `^${generatedPattern}$`;
+		generatedPattern = `^${generatedPattern}${weaponRegexClause}$`;
 
 		try {
 			const patternName = `auto_learned_${serverIp.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`;

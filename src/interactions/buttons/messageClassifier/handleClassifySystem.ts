@@ -65,8 +65,8 @@ export async function handleClassifySystem(client: Discord, interaction: ButtonI
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
 					`**Đã Phân Loại Là Tin Nhắn Hệ Thống (System)**\n\n` +
-					`- **System Regex Đã Lưu:** \`\`\`regex\n${pattern}\`\`\`\n` +
-					`- **Tin nhắn mẫu:** \`\`\`${rawMsg}\`\`\``
+					`**System Regex Đã Lưu:**\n\`\`\`regex\n${pattern}\n\`\`\`\n` +
+					`**Tin nhắn mẫu:**\n\`\`\`\n${rawMsg}\n\`\`\``
 				)
 			)
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))

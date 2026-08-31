@@ -31,9 +31,9 @@ export async function handleDeathApprove(client: Discord, interaction: ButtonInt
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
 					`**Death Message Đã Được Xác Minh**\n\n` +
-					`- **Server:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`${pattern.cause}\`\n` +
-					`- **Regex:** \`\`\`regex\n${pattern.pattern}\`\`\`\n` +
-					`- **Tin nhắn gốc:** \`\`\`${pattern.sampleMessage || "N/A"}\`\`\``
+					`- **Server:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`${pattern.cause}\`\n\n` +
+					`**Regex:**\n\`\`\`regex\n${pattern.pattern}\n\`\`\`\n` +
+					`**Tin nhắn gốc:**\n\`\`\`\n${pattern.sampleMessage || "N/A"}\n\`\`\``
 				)
 			)
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))

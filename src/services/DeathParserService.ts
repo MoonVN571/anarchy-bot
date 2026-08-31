@@ -435,8 +435,8 @@ export class DeathParserService {
 											new TextDisplayBuilder().setContent(
 												`**Death Message Đã Được Tự Động Xác Minh**\n\n` +
 												`- **Server:** \`${pending.serverScope}\` | **Nguyên nhân:** \`${approvedPattern.cause}\`\n` +
-												`- **Pattern:** \`${approvedPattern.name}\`\n` +
-												`- **Tin nhắn gốc:** \`\`\`${pending.sampleMessage}\`\`\`\n` +
+												`- **Pattern:** \`${approvedPattern.name}\`\n\n` +
+												`**Tin nhắn gốc:**\n\`\`\`\n${pending.sampleMessage}\n\`\`\`\n` +
 												`*Tự động đồng bộ theo mẫu đã duyệt bởi @${approverName}*`
 											)
 										);

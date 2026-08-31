@@ -39,6 +39,13 @@ export const defaultDeathPatterns: SeedDeathPattern[] = [
 		priority: 100,
 	},
 	{
+		name: "vn_pvp_danh_bai",
+		serverScope: "global",
+		pattern: "^(?<victim>[a-zA-Z0-9_]{3,16})\\s+đã bị đánh bại(?:\\s+dễ dàng)?\\s+bởi\\s+(?<killer>[a-zA-Z0-9_]{3,16})(?:\\s+sử dụng\\s+\\[?(?<weapon>.+?)\\]?)?$",
+		cause: DeathCause.PVP,
+		priority: 100,
+	},
+	{
 		name: "vn_pvp_cho_an_dam",
 		serverScope: "global",
 		pattern: "^(?<victim>[a-zA-Z0-9_]{3,16})\\s+đã bị\\s+(?<killer>[a-zA-Z0-9_]{3,16})\\s+cho ăn đấm(?:\\s+bằng\\s+(?<weapon>.+))?$",

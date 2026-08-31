@@ -75,8 +75,8 @@ export async function handleEditDeathModal(client: Discord, interaction: ModalSu
 						`- **Server Scope:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`${pattern.cause}\`\n` +
 						(customVictim ? `- **Nạn nhân:** \`${customVictim}\`\n` : "") +
 						(customKillerOrMob ? `- **Kẻ hạ gục / Mob:** \`${customKillerOrMob}\`\n` : "") +
-						`- **Tin nhắn gốc:** \`\`\`${pattern.sampleMessage || "N/A"}\`\`\`\n` +
-						`- **Regex Đã Sửa:** \`\`\`regex\n${pattern.pattern}\`\`\``
+						`\n**Regex Đã Sửa:**\n\`\`\`regex\n${pattern.pattern}\n\`\`\`\n` +
+						`**Tin nhắn gốc:**\n\`\`\`\n${pattern.sampleMessage || "N/A"}\n\`\`\``
 					)
 				)
 				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))

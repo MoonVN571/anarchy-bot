@@ -33,9 +33,9 @@ export async function handleDeathResolveMob(client: Discord, interaction: Button
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
 					`**Đã Xác Nhận Là Quái Vật (Mob)**\n\n` +
-					`- **Server:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`MOB\`\n` +
-					`- **Regex:** \`\`\`regex\n${pattern.pattern}\`\`\`\n` +
-					`- **Tin nhắn gốc:** \`\`\`${pattern.sampleMessage || "N/A"}\`\`\``
+					`- **Server:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`MOB\`\n\n` +
+					`**Regex:**\n\`\`\`regex\n${pattern.pattern}\n\`\`\`\n` +
+					`**Tin nhắn gốc:**\n\`\`\`\n${pattern.sampleMessage || "N/A"}\n\`\`\``
 				)
 			)
 			.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
