@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../typings/Command";
 import { CommandManager } from "./CommandManager";
+import { messageColors } from "../utils/chatParser";
 
 export class HelpCommand extends Command {
 	private manager: CommandManager;
@@ -34,7 +35,7 @@ export class HelpCommand extends Command {
 
 			const aliasStr = cmd.aliases.length > 0 ? cmd.aliases.map(a => `\`>${a}\``).join(", ") : "Không có";
 			const container = new ContainerBuilder()
-				.setAccentColor(0x3498db)
+				.setAccentColor(messageColors.server)
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
 						`**Chi tiết Lệnh: >${cmd.name}**\n\n` +
@@ -63,7 +64,7 @@ export class HelpCommand extends Command {
 		});
 
 		const container = new ContainerBuilder()
-			.setAccentColor(0x9b59b6)
+			.setAccentColor(messageColors.achievement)
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
 					"**Danh Sách Lệnh (Discord: Prefix `>` | In-game: Prefix `!`)**\n\n" +
@@ -83,6 +84,6 @@ export class HelpCommand extends Command {
 	}
 
 	public async executeInGame(_ctx: InGameCommandContext): Promise<string | void> {
-		return `[Commands] !kd [player], !stats [player], !playtime [player], !quote [player], !top [category], !online, !help`;
+		return `[Commands] !kd, !stats, !playtime, !quote, !top, !online, !pos, !tab, !status, !help`;
 	}
 }
