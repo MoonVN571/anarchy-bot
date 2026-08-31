@@ -7,9 +7,10 @@ Tài liệu này theo dõi và ghi nhận toàn bộ hệ thống lệnh điều
 *(Lưu ý: Hệ thống Hộp thư Offline `!send` / `>send` đã được tách thành tài liệu chuyên biệt tại [`docs/todos/offline_mailbox_messaging.md`](file:///d:/Workspace/SOURCE/Others/anarchy-bot/docs/todos/offline_mailbox_messaging.md))*
 
 > [!IMPORTANT]
-> **Quy chuẩn Định dạng In-Game (Không sử dụng Emoji)**:
-> Font renderer của Minecraft client mặc định không hỗ trợ hiển thị Emoji Unicode (bị lỗi ô vuông `□`).
-> Tất cả các phản hồi in-game (`executeInGame`, whispers, chat bot) **hoàn toàn không dùng emoji**, sử dụng định dạng thẻ chuẩn: `[JoinDate]`, `[Seen]`, `[FirstMsg]`, `[LastMsg]`, `[Discord]`, `[Tu sat]`, `[Ping]`, `[Server TPS]`, `[Help - ...]`. Emoji chỉ hiển thị trên Discord Container V2.
+> **Quy chuẩn Định dạng In-Game (Tiếng Việt Có Dấu & Không dùng Emoji)**:
+> - Minecraft client hỗ trợ hiển thị hoàn hảo font **UTF-8 Tiếng Việt có dấu** (như `Thống kê`, `Tra cứu`, `Tiện ích`, `Tự sát`, `Hộp thư`).
+> - Minecraft không hỗ trợ hiển thị hình ảnh Emoji Unicode (sẽ bị lỗi ô vuông `□`).
+> - Do đó, toàn bộ phản hồi in-game (`executeInGame`, whispers, chat) **viết tiếng Việt có dấu chuẩn xác** và **tuyệt đối không dùng icon Emoji**. Emoji chỉ dùng trên Discord (Container V2).
 
 ---
 
