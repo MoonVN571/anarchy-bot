@@ -1,6 +1,6 @@
 import { TextChannel } from "discord.js";
 import { Bot, BotOptions, createBot } from "mineflayer";
-import { pathfinder } from "mineflayer-pathfinder";
+import { loader as baritoneLoader } from "@miner-org/mineflayer-baritone";
 import { mineflayerEventClasses } from "../events/mineflayer";
 import { AntiAfkService, AutoEatService, AutoMessageService, HighwayNavigationService, PlaytimeTracker, SmartPathfinderService, viewerManager } from "../services";
 import { MinecraftServerConfig, Server } from "../typings";
@@ -91,7 +91,7 @@ export class Minecraft {
 
 		try {
 			this.bot = createBot(botOptions);
-			this.bot.loadPlugin(pathfinder);
+			this.bot.loadPlugin(baritoneLoader);
 			this.loadEvents();
 		} catch (error) {
 			this.client.logger.error(`Error creating Minecraft bot instance: ${error}`);

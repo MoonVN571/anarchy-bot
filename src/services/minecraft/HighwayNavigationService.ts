@@ -1,3 +1,4 @@
+import { Bot } from "mineflayer";
 import { Vec3 } from "vec3";
 import { Minecraft } from "../../structures/Minecraft";
 
@@ -322,7 +323,7 @@ export class HighwayNavigationService {
 	/**
 	 * Detect lava, portal, or missing floor ahead
 	 */
-	private detectHazardAhead(bot: any, axis: HighwayAxis): { name: string; pos: Vec3 } | null {
+	private detectHazardAhead(bot: Bot, axis: HighwayAxis): { name: string; pos: Vec3 } | null {
 		const pos = bot.entity.position;
 		const forwardVec = this.getForwardVector(axis);
 
