@@ -56,6 +56,7 @@ export interface CreateServerConfigOptions {
 	reconnectInterval?: number;
 	autoNavigateCommand?: string;
 	lobbyNpc?: LobbyNpcConfig;
+	assumeMainServer?: boolean;
 }
 
 export function createServerConfig(options: CreateServerConfigOptions): MinecraftServerConfig {
@@ -85,6 +86,7 @@ export function createServerConfig(options: CreateServerConfigOptions): Minecraf
 			pin: process.env.PIN ? process.env.PIN.split("") : undefined,
 			autoNavigateCommand: options.autoNavigateCommand,
 			lobbyNpc: defaultLobbyNpc,
+			assumeMainServer: options.assumeMainServer,
 		},
 		livechat: {
 			channelId: options.channelId,

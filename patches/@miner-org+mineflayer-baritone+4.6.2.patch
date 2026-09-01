@@ -1,0 +1,40 @@
+diff --git a/node_modules/@miner-org/mineflayer-baritone/src/movement/basic.js b/node_modules/@miner-org/mineflayer-baritone/src/movement/basic.js
+index a9fb9be..6026d2d 100644
+--- a/node_modules/@miner-org/mineflayer-baritone/src/movement/basic.js
++++ b/node_modules/@miner-org/mineflayer-baritone/src/movement/basic.js
+@@ -243,7 +243,7 @@ class MoveDiagonal extends Move {
+     const adj1Blocked = !this.isWalkable(adj1) && !this.isStandable(adj1);
+     const adj2Blocked = !this.isWalkable(adj2) && !this.isStandable(adj2);
+ 
+-    if (adj1Blocked && adj2Blocked) return;
++    if (adj1Blocked || adj2Blocked) return;
+ 
+     if (
+       this.isWalkable(node) &&
+@@ -307,6 +307,8 @@ class MoveForwardUp extends Move {
+       }
+       const cost = this.COST_UP; // just normal jump cost, no extras
+       node.attributes.cost = cost;
++      node.attributes.up = true; // Added to ensure jump physics
++      node.attributes.nJump = true; // Added to ensure jump physics
+       neighbors.push(this.makeMovement(node, cost));
+       return;
+     }
+@@ -548,7 +550,7 @@ class MoveDiagonalUp extends Move {
+     const adj1Blocked = !this.isWalkable(adj1) && !this.isStandable(adj1);
+     const adj2Blocked = !this.isWalkable(adj2) && !this.isStandable(adj2);
+ 
+-    if (adj1Blocked && adj2Blocked) return;
++    if (adj1Blocked || adj2Blocked) return;
+ 
+     // Must be able to step *onto* the diagonal block
+     if (!this.isWalkable(node) || !this.isStandable(node)) return;
+@@ -601,7 +603,7 @@ class MoveDiagonalDown extends Move {
+   addNeighbors(neighbors, forwardDiag, adj1, adj2, originVec) {
+     const adj1Blocked = !this.isWalkable(adj1) && !this.isStandable(adj1);
+     const adj2Blocked = !this.isWalkable(adj2) && !this.isStandable(adj2);
+-    if (adj1Blocked && adj2Blocked) return;
++    if (adj1Blocked || adj2Blocked) return;
+ 
+     if (!this.isWalkable(forwardDiag)) return;
+ 

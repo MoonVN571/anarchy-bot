@@ -8,7 +8,8 @@
     "start": "npm run build && node ./dist/index.js",
     "build": "tsc --project tsconfig.json",
     "lint": "eslint . --fix",
-    "dev": "npx tsc -w"
+    "dev": "npx tsc -w",
+    "postinstall": "patch-package"
   },
   "keywords": [],
   "author": "Moon",
@@ -25,6 +26,8 @@
     "mineflayer": "^4.38.0",
     "mineflayer-pathfinder": "^2.4.5",
     "mongoose": "^9.9.4",
+    "patch-package": "^8.0.1",
+    "postinstall-postinstall": "^2.1.0",
     "prismarine-chat": "^1.13.0",
     "prismarine-viewer": "^1.33.0",
     "winston": "^3.19.0",
