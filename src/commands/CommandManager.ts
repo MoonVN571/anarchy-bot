@@ -7,7 +7,6 @@ import {
 	StopCommand,
 	FollowCommand,
 	CoordsCommand,
-	TotemCommand,
 } from "./ingame";
 import { BotStatusCommand } from "./discord";
 import {
@@ -113,7 +112,6 @@ export class CommandManager {
 		this.registerCommand(new StopCommand());
 		this.registerCommand(new FollowCommand());
 		this.registerCommand(new CoordsCommand());
-		this.registerCommand(new TotemCommand());
 
 		// Discord commands
 		this.registerCommand(new BotStatusCommand());
