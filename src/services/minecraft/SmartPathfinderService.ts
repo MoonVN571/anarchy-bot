@@ -1,6 +1,7 @@
 import { Movements, goals } from "mineflayer-pathfinder";
 import { Vec3 } from "vec3";
 import { Minecraft } from "../../structures/Minecraft";
+import { Server } from "../../typings";
 import { viewerManager } from "../web/ViewerManagerService";
 
 const { GoalNear, GoalBlock, GoalXZ, GoalFollow } = goals;
@@ -18,6 +19,8 @@ export class SmartPathfinderService {
 	private currentGoalDesc: string | null = null;
 	private waypointQueue: PathWaypoint[] = [];
 	private isExecutingQueue: boolean = false;
+	private lobbyNpcInterval: NodeJS.Timeout | null = null;
+	private isNavigatingToLobbyNpc: boolean = false;
 
 	constructor(main: Minecraft) {
 		this.main = main;
@@ -187,6 +190,8 @@ export class SmartPathfinderService {
 		const bot = this.main.bot;
 		this.waypointQueue = [];
 		this.isExecutingQueue = false;
+		this.clearLobbyNpcTimer();
+		this.isNavigatingToLobbyNpc = false;
 
 		if (bot) {
 			if ((bot as any).pathfinder) {
@@ -204,6 +209,131 @@ export class SmartPathfinderService {
 		viewerManager.broadcastPathUpdate(this.main.config.id, []);
 		this.onNavigationComplete(false);
 		this.main.client.logger.info(`[SmartPathfinder] Emergency stop executed.`);
+	}
+
+	/**
+	 * Navigate to lobby NPC without fall damage constraints and click on NPC to enter server
+	 */
+	public async navigateToLobbyNpc(x: number = 48, y: number = 10, z: number = 40): Promise<boolean> {
+		const bot = this.main.bot;
+		if (!bot || !(bot as any).pathfinder) return false;
+
+		if (this.isNavigatingToLobbyNpc) {
+			this.main.client.logger.debug("Lobby", "Lobby NPC navigation is already in progress.");
+			return true;
+		}
+
+		this.isNavigatingToLobbyNpc = true;
+		this.clearLobbyNpcTimer();
+
+		// Configure lobby movements (no fall damage in lobby, maxDropDown = 256)
+		const lobbyMovements = new Movements(bot);
+		lobbyMovements.allowParkour = true;
+		lobbyMovements.canDig = false;
+		lobbyMovements.maxDropDown = 256; // No fall damage in lobby
+		lobbyMovements.allow1by1towers = false;
+		lobbyMovements.allowSprinting = true;
+
+		this.movements = lobbyMovements;
+		(bot.pathfinder as any).setMovements(lobbyMovements);
+
+		this.main.antiAfkService?.pause();
+		this.isNavigating = true;
+		this.currentGoalDesc = `Lobby NPC (${x}, ${y}, ${z})`;
+
+		this.main.client.logger.info(
+			`[Lobby] Navigating to NPC at (${x}, ${y}, ${z}) with zero fall damage limit...`
+		);
+
+		const goal = new GoalNear(x, y, z, 2);
+		try {
+			(bot.pathfinder as any).setGoal(goal);
+		} catch (err) {
+			this.main.client.logger.error(`[Lobby] Failed to set pathfinder goal: ${err}`);
+			this.isNavigatingToLobbyNpc = false;
+			return false;
+		}
+
+		const targetVec = new Vec3(x, y, z);
+		let clickAttempts = 0;
+
+		this.lobbyNpcInterval = setInterval(async () => {
+			if (!this.main.bot || !this.main.bot.entity) {
+				this.clearLobbyNpcTimer();
+				return;
+			}
+
+			// If bot joined main server or spawn count advanced, cleanup and reset
+			if (this.main.currentServer === Server.Main || this.main.spawnCount >= 2) {
+				this.clearLobbyNpcTimer();
+				this.isNavigatingToLobbyNpc = false;
+				this.stop();
+				this.initMovements();
+				return;
+			}
+
+			const currentPos = this.main.bot.entity.position;
+			const dist = currentPos.distanceTo(targetVec);
+
+			// Within interaction distance
+			if (dist <= 4.0) {
+				clickAttempts++;
+				await this.interactWithNpcAt(targetVec);
+
+				if (clickAttempts >= 10) {
+					this.clearLobbyNpcTimer();
+					this.isNavigatingToLobbyNpc = false;
+				}
+			}
+		}, 1000);
+
+		return true;
+	}
+
+	/**
+	 * Click and interact with NPC at the target coordinate
+	 */
+	public async interactWithNpcAt(targetVec: Vec3): Promise<void> {
+		const bot = this.main.bot;
+		if (!bot || !bot.entity) return;
+
+		try {
+			// Find closest NPC / player entity near target coordinates
+			const npc = bot.nearestEntity((e: any) => {
+				if (!e || e === bot.entity) return false;
+				return e.position.distanceTo(targetVec) <= 5;
+			});
+
+			if (npc) {
+				this.main.client.logger.info(
+					`[Lobby] Found NPC ${npc.name || npc.username || ("entity #" + npc.id)} at ${npc.position}, interacting...`
+				);
+				await bot.lookAt(npc.position.offset(0, npc.height ? npc.height * 0.8 : 1.6, 0), true);
+				await bot.activateEntity(npc);
+			} else {
+				this.main.client.logger.info(
+					`[Lobby] Looking at NPC target coords (${targetVec.x}, ${targetVec.y + 1.5}, ${targetVec.z}) and clicking...`
+				);
+				await bot.lookAt(targetVec.offset(0, 1.5, 0), true);
+				const nearest = bot.nearestEntity(
+					(e: any) => e !== bot.entity && bot.entity.position.distanceTo(e.position) <= 4.5
+				);
+				if (nearest) {
+					await bot.activateEntity(nearest);
+				} else {
+					bot.swingArm("right");
+				}
+			}
+		} catch (err) {
+			this.main.client.logger.error(`[Lobby] Error interacting with NPC: ${err}`);
+		}
+	}
+
+	public clearLobbyNpcTimer(): void {
+		if (this.lobbyNpcInterval) {
+			clearInterval(this.lobbyNpcInterval);
+			this.lobbyNpcInterval = null;
+		}
 	}
 
 	/**

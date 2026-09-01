@@ -81,6 +81,20 @@ export class AuthHandler {
 			return;
 		}
 
+		const lobbyNpc = main.config.auth.lobbyNpc;
+		if (lobbyNpc?.enabled) {
+			if (
+				lowerMsg.includes("đăng nhập thành công") ||
+				lowerMsg.includes("logged in") ||
+				lowerMsg.includes("nhập mã pin thành công") ||
+				lowerMsg.includes("xác nhận thành công")
+			) {
+				main.client.logger.info(`[AuthHandler] Login detected, moving to lobby NPC at (${lobbyNpc.x}, ${lobbyNpc.y}, ${lobbyNpc.z})...`);
+				main.smartPathfinderService.navigateToLobbyNpc(lobbyNpc.x, lobbyNpc.y, lobbyNpc.z);
+				return;
+			}
+		}
+
 		if (lowerMsg.includes("/avn để vào server") || lowerMsg.includes("/avn de vao server")) {
 			main.bot.chat("/avn");
 			main.currentServer = Server.Queue;

@@ -11,10 +11,18 @@ export interface MinecraftConnectionConfig {
 	profilesFolder?: string;
 }
 
+export interface LobbyNpcConfig {
+	enabled: boolean;
+	x: number;
+	y: number;
+	z: number;
+}
+
 export interface MinecraftAuthConfig {
 	authmePassword?: string;
 	pin?: string[];
 	autoNavigateCommand?: string;
+	lobbyNpc?: LobbyNpcConfig;
 }
 
 export interface RateLimitConfig {

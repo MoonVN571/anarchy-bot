@@ -4,6 +4,7 @@ import {
 	LiveChatTopicConfig,
 	AutoMessageConfig,
 	AuthType,
+	LobbyNpcConfig,
 } from "../typings";
 import { ServerIp } from "../typings";
 
@@ -54,10 +55,17 @@ export interface CreateServerConfigOptions {
 	channelId: string;
 	reconnectInterval?: number;
 	autoNavigateCommand?: string;
+	lobbyNpc?: LobbyNpcConfig;
 }
 
 export function createServerConfig(options: CreateServerConfigOptions): MinecraftServerConfig {
 	const authMode: AuthType = (options.auth || (process.env.AUTH_MODE as AuthType) || "offline");
+
+	const defaultLobbyNpc: LobbyNpcConfig | undefined =
+		options.lobbyNpc ||
+		(options.ip === ServerIp.anarchyVN || options.ip === "2y2c.org" || options.id?.toLowerCase().includes("anarchyvn")
+			? { enabled: true, x: 48, y: 10, z: 40 }
+			: undefined);
 
 	return {
 		id: options.id || options.ip,
@@ -76,6 +84,7 @@ export function createServerConfig(options: CreateServerConfigOptions): Minecraf
 			authmePassword: process.env.AUTHME,
 			pin: process.env.PIN ? process.env.PIN.split("") : undefined,
 			autoNavigateCommand: options.autoNavigateCommand,
+			lobbyNpc: defaultLobbyNpc,
 		},
 		livechat: {
 			channelId: options.channelId,
