@@ -29,9 +29,9 @@ export class AutoEatService {
 	private isEating: boolean = false;
 	private checkInterval: NodeJS.Timeout | null = null;
 
-	public isEnabled: boolean;
+	public readonly isEnabled: boolean;
 	public threshold: number;
-	public isTotemEnabled: boolean;
+	public readonly isTotemEnabled: boolean;
 
 	constructor(main: Minecraft) {
 		this.main = main;
