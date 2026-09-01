@@ -27,9 +27,37 @@ export class HighwayCommand extends Command {
 			return;
 		}
 
+		if (args.length === 1 && (args[0].toLowerCase() === "status" || args[0].toLowerCase() === "info")) {
+			const status = bot.highwayNavigationService.getStatus();
+			const lastReason = bot.highwayNavigationService.getLastStopReason();
+			const pos = bot.bot.entity?.position;
+			const posStr = pos ? `(${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)})` : "unknown";
+
+			const infoText = status?.active
+				? `**Trạng thái Highway Navigation: [Đang chạy]**\n` +
+				  `- Trục: \`${status.axis}\` | Tọa độ đích: \`${status.targetCoord}\`\n` +
+				  `- Vị trí hiện tại: \`${posStr}\`\n` +
+				  `- Tốc độ thực tế: \`${status.currentSpeedBps.toFixed(1)} bps (blocks/s)\`\n` +
+				  `- Thời gian di chuyển: \`${((Date.now() - status.startTime) / 1000).toFixed(0)}s\``
+				: `**Trạng thái Highway Navigation: [Đang dừng]**\n` +
+				  `- Vị trí hiện tại: \`${posStr}\`\n` +
+				  `- Lý do dừng gần nhất: \`${lastReason}\``;
+
+			const container = new ContainerBuilder()
+				.setAccentColor(status?.active ? 0x0284c7 : 0x71717a)
+				.addSectionComponents(new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(infoText)))
+				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1));
+
+			await message.reply({
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
+			});
+			return;
+		}
+
 		if (args.length < 2) {
 			await message.reply({
-				content: "[Cảnh báo] Sai cú pháp! Vui lòng dùng: `>highway <+X|-X|+Z|-Z|++|+-|-+|--> <target>` (Ví dụ: `>highway +X 50000` hoặc `>highway ++ 100000`)",
+				content: "[Cảnh báo] Sai cú pháp! Vui lòng dùng: `>highway <+X|-X|+Z|-Z|++|+-|-+|--> <target>` (Ví dụ: `>highway +X 50000` hoặc `>highway status`)",
 			});
 			return;
 		}
@@ -60,7 +88,7 @@ export class HighwayCommand extends Command {
 							`- Trục bám đường: **${axis}**\n` +
 							`- Mốc tọa độ đích: \`${targetCoord}\`\n` +
 							`- Cơ chế: **Auto-Centering + Sprint-jumping trên Ice + Né Portal/Lava**\n\n` +
-							`*Gõ \`>stop\` để dừng khẩn cấp bất kỳ lúc nào.*`
+							`*Gõ \`>highway status\` để xem tốc độ/trạng thái hoặc \`>stop\` để dừng.*`
 							: `**Không thể khởi động bám đường cao tốc!**`
 					)
 				)
@@ -80,8 +108,19 @@ export class HighwayCommand extends Command {
 			return "[Highway] Bot chưa kết nối vào thế giới chính.";
 		}
 
+		if (args.length === 1 && (args[0].toLowerCase() === "status" || args[0].toLowerCase() === "info")) {
+			const status = bot.highwayNavigationService.getStatus();
+			const lastReason = bot.highwayNavigationService.getLastStopReason();
+			const pos = bot.bot.entity?.position;
+			const posStr = pos ? `(${pos.x.toFixed(1)}, ${pos.z.toFixed(1)})` : "unknown";
+
+			return status?.active
+				? `[Highway] Đang chạy trục ${status.axis} đến ${status.targetCoord} | Pos: ${posStr} | Tốc độ: ${status.currentSpeedBps.toFixed(1)} bps`
+				: `[Highway] Đang dừng | Pos: ${posStr} | Lý do dừng gần nhất: ${lastReason}`;
+		}
+
 		if (args.length < 2) {
-			return "[Highway] Cú pháp: !highway <+X|-X|+Z|-Z|++|+-|-+|--> <mốc_tọa_độ>";
+			return "[Highway] Cú pháp: !highway <+X|-X|+Z|-Z|++|+-|-+|--> <mốc_tọa_độ> hoặc !highway status";
 		}
 
 		const axis = bot.highwayNavigationService.parseAxis(args[0]);
