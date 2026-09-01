@@ -44,41 +44,57 @@ export default class MessageStrEvent extends MineflayerEvent {
 			AuthHandler.handle(bot, fullMsg);
 		}
 
-		// Ignore messages sent by the bot itself
-		if (parsed.type === MessageType.BotChat) return;
+		const botName = bot.bot?.username || bot.config.connection.username || "";
+		const isSelfMessage =
+			parsed.type === MessageType.BotChat ||
+			(botName && parsed.username && parsed.username.toLowerCase() === botName.toLowerCase());
 
 		// Check spam / duplicate detection
 		const { isSpam } = globalSpamDetector.checkDuplicate(parsed, serverIp);
 
 		// Count valid incoming server messages/events for auto tip trigger (skip spam/duplicate messages)
-		if (!isSpam) {
+		if (!isSpam && !isSelfMessage) {
 			bot.autoMessageService.onServerMessage();
 		}
 
-		// 3. In-Game Minecraft Commands Handler (Prefix "!")
-		const userMsg = (parsed.message || "").trim();
-		if (parsed.username && userMsg.startsWith("!")) {
-			await inGameCommandManager.handleInGameMessage(bot, parsed.username, userMsg);
-		} else if (parsed.type === MessageType.Whisper || ChatParser.isWhisperMsg(fullMsg)) {
-			// Extract whisper sender and message if sent as direct whisper
-			const whisperMatch = fullMsg.match(/^([a-zA-Z0-9_]{3,16})\s+(?:thì\s+thầm|whispers|tells\s+you|whispered\s+to\s+you|nhắn\s+cho\s+bạn):\s*(.*)$/i)
-				|| fullMsg.match(/^\[([a-zA-Z0-9_]{3,16})\s*->\s*(?:me|tôi|bạn)\]\s*(.*)$/i);
-			if (whisperMatch) {
-				const wMsg = whisperMatch[2].trim();
-				if (wMsg.startsWith("!")) {
-					await inGameCommandManager.handleInGameMessage(bot, whisperMatch[1], wMsg);
+		// 3. In-Game Minecraft Commands Handler (Prefix "!") - only process commands from other players
+		if (!isSelfMessage) {
+			const userMsg = (parsed.message || "").trim();
+			if (parsed.username && userMsg.startsWith("!")) {
+				await inGameCommandManager.handleInGameMessage(bot, parsed.username, userMsg);
+			} else if (parsed.type === MessageType.Whisper || ChatParser.isWhisperMsg(fullMsg)) {
+				// Extract whisper sender and message if sent as direct whisper to bot
+				const whisperMatch = fullMsg.match(/^([a-zA-Z0-9_]{3,16})\s+(?:thì\s+thầm|whispers|tells\s+you|whispered\s+to\s+you|nhắn\s+cho\s+bạn):\s*(.*)$/i)
+					|| fullMsg.match(/^\[([a-zA-Z0-9_]{3,16})\s*->\s*(?:me|tôi|bạn)\]\s*(.*)$/i);
+				if (whisperMatch) {
+					const wMsg = whisperMatch[2].trim();
+					if (wMsg.startsWith("!")) {
+						await inGameCommandManager.handleInGameMessage(bot, whisperMatch[1], wMsg);
+					}
 				}
-			}
-		} else {
-			// Fallback: Check if message contains an in-game command prefixed with "!" from any player
-			const cmdMatch = fullMsg.match(/(?:^|[\s<\[\(])(?<user>[a-zA-Z0-9_]{3,16})[>\]\)]?\s*[:»> ]\s*(?<cmd>![a-zA-Z0-9_]+.*)$/);
-			if (cmdMatch && cmdMatch.groups) {
-				await inGameCommandManager.handleInGameMessage(bot, cmdMatch.groups.user, cmdMatch.groups.cmd.trim());
+			} else {
+				// Fallback: Check if message contains an in-game command prefixed with "!" from any player
+				const cmdMatch = fullMsg.match(/(?:^|[\s<\[\(])(?<user>[a-zA-Z0-9_]{3,16})[>\]\)]?\s*[:»> ]\s*(?<cmd>![a-zA-Z0-9_]+.*)$/);
+				if (cmdMatch && cmdMatch.groups) {
+					await inGameCommandManager.handleInGameMessage(bot, cmdMatch.groups.user, cmdMatch.groups.cmd.trim());
+				}
 			}
 		}
 
-		// 4. Push to Discord livechat queue
-		bot.liveChatManager.push(parsed);
+		// 4. Filter out sensitive auth commands before pushing to Discord
+		const isAuthCmd =
+			fullMsg.startsWith("/login") ||
+			fullMsg.startsWith("/reg") ||
+			fullMsg.startsWith("/register") ||
+			fullMsg.startsWith("/pin") ||
+			fullMsg.startsWith("/dangnhap") ||
+			fullMsg.startsWith("/dangky") ||
+			(bot.config.auth.authmePassword && fullMsg.includes(bot.config.auth.authmePassword));
+
+		// Push to Discord livechat queue
+		if (!isAuthCmd) {
+			bot.liveChatManager.push(parsed);
+		}
 
 		// 5. Process Database & Services Asynchronously
 		this.processBackgroundServices(bot, serverIp, parsed, fullMsg);

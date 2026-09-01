@@ -111,7 +111,23 @@ export class MessageRenderer {
 			};
 		}
 
-		// 5. Default Server / Queue / Announcement
+		// 5. Whisper Event
+		if (parsed.type === MessageType.Whisper) {
+			const sender = parsed.username || "Player";
+			const target = parsed.targetUser || "Player";
+			return {
+				color: 0xfd00ff,
+				author: {
+					name: `Thì thầm | [${sender} -> ${target}]${countTag}`,
+					icon_url: `https://mc-heads.net/avatar/${sender}/64.png`,
+				},
+				description: parsed.message || parsed.rawText,
+				footer: { text: serverHost },
+				timestamp,
+			};
+		}
+
+		// 6. Default Server / Queue / Announcement
 		return {
 			color: baseColor,
 			description: `${parsed.formattedMsg || parsed.rawText}${countTag}`,
@@ -127,7 +143,8 @@ export class MessageRenderer {
 		const baseColor = messageColors[parsed.type] || 0x979797;
 		const username = parsed.username || "Player";
 		const headUrl = parsed.avatarUrl || `https://mc-heads.net/avatar/${username}/64.png`;
-		const rankPrefix = parsed.rank ? `[${parsed.rank}] ` : "";
+		const isBot = parsed.type === MessageType.BotChat;
+		const rankPrefix = parsed.rank ? `[${parsed.rank}] ` : (isBot ? "[BOT] " : "");
 		const countTag = repeatCount && repeatCount > 1 ? ` [x${repeatCount}]` : "";
 
 		return {
@@ -147,7 +164,7 @@ export class MessageRenderer {
 	 */
 	public static renderEmbed(parsed: ParsedChatMessage, serverHost: string, repeatCount?: number): APIEmbed {
 		if (
-			(parsed.type === MessageType.Chat || parsed.type === MessageType.HighlightChat) &&
+			(parsed.type === MessageType.Chat || parsed.type === MessageType.HighlightChat || parsed.type === MessageType.BotChat) &&
 			parsed.username
 		) {
 			return this.renderPlayerChatEmbed(parsed, serverHost, repeatCount);

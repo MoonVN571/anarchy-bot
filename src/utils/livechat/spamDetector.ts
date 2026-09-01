@@ -9,9 +9,16 @@ export class SpamDetector {
 	 */
 	public static getSignature(parsed: ParsedChatMessage, serverHost: string): string {
 		const type = parsed.type;
-		if ((type === MessageType.Chat || type === MessageType.HighlightChat) && parsed.username) {
+		if ((type === MessageType.Chat || type === MessageType.HighlightChat || type === MessageType.BotChat) && parsed.username) {
 			const cleanMsg = (parsed.message || "").trim().toLowerCase();
 			return `${serverHost}:chat:${parsed.username.toLowerCase()}:${cleanMsg}`;
+		}
+
+		if (type === MessageType.Whisper) {
+			const sender = (parsed.username || "none").toLowerCase();
+			const target = (parsed.targetUser || "none").toLowerCase();
+			const cleanMsg = (parsed.message || "").trim().toLowerCase();
+			return `${serverHost}:whisper:${sender}:${target}:${cleanMsg}`;
 		}
 
 		if (type === MessageType.Dead) {

@@ -27,12 +27,13 @@ export class MessageV2Renderer {
 		const timeTag = this.getDiscordTimestamp("F");
 		const countTag = repeatCount && repeatCount > 1 ? ` \`[x${repeatCount}]\`` : "";
 
-		const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : "";
+		const isBot = parsed.type === MessageType.BotChat;
+		const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : (isBot ? "`[BOT]` " : "");
 		const userTitle = `**${rankPrefix}${username}**${countTag}`;
 
 		const section = new SectionBuilder()
 			.addTextDisplayComponents(
-				new TextDisplayBuilder().setContent(`${userTitle}\n${parsed.message}`)
+				new TextDisplayBuilder().setContent(`${userTitle}\n${parsed.message || parsed.rawText}`)
 			)
 			.setThumbnailAccessory(
 				new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`)
@@ -254,7 +255,27 @@ export class MessageV2Renderer {
 				.addTextDisplayComponents(new TextDisplayBuilder().setContent(timeTag));
 		}
 
-		// 8. Whisper / Default
+		// 8. Whisper Event
+		if (parsed.type === MessageType.Whisper) {
+			const sender = parsed.username || "Player";
+			const target = parsed.targetUser || "Player";
+			const headUrl = `https://mc-heads.net/avatar/${sender}/64.png`;
+			const whisperTitle = `**[${sender} ➔ ${target}]**${countTag}`;
+
+			const section = new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(`${whisperTitle}\n${parsed.message || parsed.rawText}`)
+				)
+				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${sender}`));
+
+			return new ContainerBuilder()
+				.setAccentColor(messageColors[MessageType.Whisper] || 0xfd00ff)
+				.addSectionComponents(section)
+				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+				.addTextDisplayComponents(new TextDisplayBuilder().setContent(timeTag));
+		}
+
+		// 9. Default Event / Fallback
 		return new ContainerBuilder()
 			.setAccentColor(accentColor)
 			.addTextDisplayComponents(
@@ -294,7 +315,7 @@ export class MessageV2Renderer {
 	 */
 	public static renderContainer(parsed: ParsedChatMessage, serverHost: string, repeatCount?: number): ContainerBuilder {
 		if (
-			(parsed.type === MessageType.Chat || parsed.type === MessageType.HighlightChat) &&
+			(parsed.type === MessageType.Chat || parsed.type === MessageType.HighlightChat || parsed.type === MessageType.BotChat) &&
 			parsed.username
 		) {
 			return this.renderPlayerChatContainer(parsed, repeatCount);

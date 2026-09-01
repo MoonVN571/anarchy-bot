@@ -333,23 +333,27 @@ export class ChatParser {
 
 			if (whisperInfo || isWhisperMsg(cleanText)) {
 				const info = whisperInfo || { sender: "Unknown", message: cleanText };
+				const botName = main.bot?.username || main.config.connection.username || "Bot";
 				const senderLower = info.sender.toLowerCase();
-				const isBotOutgoing =
+				const isBotSender =
 					senderLower === "me" ||
 					senderLower === "tôi" ||
 					(main.bot?.username && senderLower === main.bot.username.toLowerCase()) ||
 					(main.config.connection.username && senderLower === main.config.connection.username.toLowerCase());
 
-				if (isBotOutgoing) {
-					msgType = MessageType.BotChat;
-				} else {
-					msgType = MessageType.Whisper;
+				const resolvedSender = isBotSender ? botName : info.sender;
+				let resolvedReceiver = info.receiver || "me";
+				const receiverLower = resolvedReceiver.toLowerCase();
+				if (receiverLower === "me" || receiverLower === "tôi") {
+					resolvedReceiver = botName;
 				}
 
-				finalUsername = info.sender;
-				const target = info.receiver || (isBotOutgoing ? "Player" : "me");
+				msgType = MessageType.Whisper;
+				finalUsername = resolvedSender;
+				const target = resolvedReceiver;
 				message = info.message;
-				formattedMsg = `**[${info.sender} -> ${target}]** ${escapeDiscordFormat(info.message)}`;
+				formattedMsg = `**[${resolvedSender} -> ${target}]** ${escapeDiscordFormat(info.message)}`;
+
 				return {
 					type: msgType,
 					formattedMsg,

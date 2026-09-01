@@ -39,7 +39,6 @@ export class LiveChatManager {
 	 */
 	public async push(parsed: ParsedChatMessage): Promise<void> {
 		if (!parsed.formattedMsg && !parsed.message) return;
-		if (parsed.type === MessageType.BotChat) return;
 
 		const channel = this.main.channel as TextChannel;
 		if (!channel) {
