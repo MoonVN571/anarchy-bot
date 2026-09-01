@@ -23,6 +23,7 @@ export class SmartPathfinderService {
 	private lobbyNpcInterval: NodeJS.Timeout | null = null;
 	private isNavigatingToLobbyNpc: boolean = false;
 	private eventsRegistered: boolean = false;
+	private commandUser?: string;
 
 	constructor(main: Minecraft) {
 		this.main = main;
@@ -40,13 +41,26 @@ export class SmartPathfinderService {
 		// Safe Anarchy Movement Configuration
 		if (ash.config) {
 			ash.config.parkour = true;
-			ash.config.breakBlocks = false; // Do not break blocks in general navigation
-			ash.config.placeBlocks = false; // Do not place blocks in general navigation
+			ash.config.breakBlocks = true; // Bật đập khối
+			ash.config.placeBlocks = true; // Bật đặt khối (Bắc cầu, leo cột)
 			ash.config.maxFallDist = 3; // Safe fall height limit (prevent high fall damage)
 			ash.config.swimming = true;
+			ash.config.allowSprinting = false; // Tắt tính năng chạy nhanh
 			ash.config.thinkTimeout = 15000;
 			ash.config.stuckTimeout = 4000; // Allow 4s to traverse slopes/jumps before replan
-			ash.config.blocksToAvoid = ["lava", "nether_portal", "fire", "cobweb"];
+			
+			// Cấm đập phá các khối nguy hiểm hoặc quan trọng
+			ash.config.blocksToAvoid = [
+				"lava", "nether_portal", "fire", "cobweb", "water",
+				"obsidian", "bedrock", "ender_chest", "shulker_box",
+				"chest", "trapped_chest", "barrel", "hopper", "dropper", "dispenser"
+			];
+
+			// Quy định các khối được phép lôi ra đặt làm cầu/cột
+			ash.config.disposableBlocks = [
+				"netherrack", "dirt", "cobblestone", "stone",
+				"diorite", "granite", "andesite", "sandstone"
+			];
 		}
 
 		// Disable ash.debug so it will NOT send /particle chat spam to the server
@@ -82,6 +96,13 @@ export class SmartPathfinderService {
 				this.executeNextWaypoint();
 			} else {
 				this.main.client.logger.info(`[SmartPathfinder] Reached destination goal successfully!`);
+				if (bot && this.isNavigating && this.commandUser) {
+					try {
+						bot.whisper(this.commandUser, `[Pathfinder] Đã đến đích thành công!`);
+					} catch (err) {
+						this.main.client.logger.debug("Whisper Error", String(err));
+					}
+				}
 				this.onNavigationComplete(true);
 			}
 		});
@@ -107,6 +128,7 @@ export class SmartPathfinderService {
 
 			// Inspect block obstacles right in front of bot
 			let obstacleInfo = "";
+			let chatObstacleInfo = "Không rõ lý do";
 			if (pos) {
 				const yaw = bot.entity.yaw;
 				const dx = -Math.sin(yaw);
@@ -115,6 +137,12 @@ export class SmartPathfinderService {
 				const blockFeet = bot.blockAt(stepAhead);
 				const blockHead = bot.blockAt(stepAhead.offset(0, 1, 0));
 				obstacleInfo = ` | Obstacle ahead: Feet=[${blockFeet?.name || "air"}], Head=[${blockHead?.name || "air"}]`;
+				
+				if (blockFeet && blockFeet.name !== "air") {
+					chatObstacleInfo = `Vướng block ${blockFeet.name} dưới chân`;
+				} else if (blockHead && blockHead.name !== "air") {
+					chatObstacleInfo = `Vướng block ${blockHead.name} trên đầu`;
+				}
 			}
 
 			this.main.client.logger.info(
@@ -122,6 +150,13 @@ export class SmartPathfinderService {
 			);
 
 			if (this.isNavigating && !this.isNavigatingToLobbyNpc && this.waypointQueue.length === 0) {
+				if (bot && this.commandUser) {
+					try {
+						bot.whisper(this.commandUser, `[Pathfinder] Đã dừng di chuyển tại ${posStr}. Lý do: ${chatObstacleInfo}`);
+					} catch (err) {
+						this.main.client.logger.debug("Whisper Error", String(err));
+					}
+				}
 				this.onNavigationComplete(false);
 			}
 		});
@@ -130,9 +165,11 @@ export class SmartPathfinderService {
 	/**
 	 * Move to target coordinate (X, Y, Z) with auto Y fallback if omitted
 	 */
-	public async moveTo(x: number, y?: number, z?: number, range: number = 1): Promise<boolean> {
+	public async moveTo(x: number, y?: number, z?: number, range: number = 1, commandUser?: string): Promise<boolean> {
 		const bot = this.main.bot;
 		if (!bot || !bot.ashfinder) return false;
+		
+		this.commandUser = commandUser;
 
 		if (z === undefined && y !== undefined) {
 			// If called as moveTo(x, z)
@@ -201,7 +238,7 @@ export class SmartPathfinderService {
 	/**
 	 * Follow a specific player entity
 	 */
-	public followPlayer(username: string, range: number = 3): boolean {
+	public followPlayer(username: string, range: number = 3, commandUser?: string): boolean {
 		const bot = this.main.bot;
 		if (!bot || !bot.ashfinder) return false;
 
@@ -215,6 +252,7 @@ export class SmartPathfinderService {
 			bot.ashfinder.stop();
 		} catch {}
 
+		this.commandUser = commandUser;
 		this.main.antiAfkService?.pause();
 		this.isNavigating = true;
 		this.currentGoalDesc = `Follow ${username}`;

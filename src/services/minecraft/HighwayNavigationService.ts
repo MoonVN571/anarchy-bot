@@ -26,6 +26,7 @@ export class HighwayNavigationService {
 	private lastSpeedCalcTime: number = 0;
 	private lastSpeedPos: Vec3 | null = null;
 	private lastKnownStopReason: string = "NONE";
+	private commandUser?: string;
 
 	constructor(main: Minecraft) {
 		this.main = main;
@@ -46,10 +47,11 @@ export class HighwayNavigationService {
 	/**
 	 * Start highway auto-centering and traveling along the specified axis
 	 */
-	public async startHighway(axis: HighwayAxis, targetCoord: number): Promise<boolean> {
+	public async startHighway(axis: HighwayAxis, targetCoord: number, commandUser?: string): Promise<boolean> {
 		const bot = this.main.bot;
 		if (!bot?.entity) return false;
 
+		this.commandUser = commandUser;
 		this.stop("NEW_TASK_STARTED"); // Stop any existing highway task
 
 		const currentPos = bot.entity.position.clone();
@@ -106,9 +108,18 @@ export class HighwayNavigationService {
 				bot.clearControlStates();
 			} catch {}
 		}
-
 		this.main.antiAfkService?.resume();
 		this.main.client.logger.info(`[Highway] Navigation stopped. Reason: ${reason}`);
+
+		if (bot && this.commandUser && reason !== "NEW_TASK_STARTED") {
+			try {
+				let msg = `[Highway] Đã dừng di chuyển. Lý do: ${reason}`;
+				if (reason === "TARGET_REACHED") msg = `[Highway] Đã đến mốc tọa độ đích thành công!`;
+				bot.whisper(this.commandUser, msg);
+			} catch (err) {
+				this.main.client.logger.debug("Whisper Error", String(err));
+			}
+		}
 	}
 
 	public getStatus(): HighwayState | null {

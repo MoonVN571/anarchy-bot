@@ -63,11 +63,15 @@ export class FollowCommand extends Command {
 			return "[Follow] Bot chưa kết nối vào thế giới chính.";
 		}
 
-		const targetPlayer = args.length > 0 ? args[0] : sender;
-		const success = bot.smartPathfinderService.followPlayer(targetPlayer);
+		if (args.length === 0) {
+			return "[Follow] Cú pháp: !follow <player_name>";
+		}
+
+		const targetPlayer = args[0];
+		const success = bot.smartPathfinderService.followPlayer(targetPlayer, 3, ctx.sender);
 
 		return success
-			? `[Follow] Đang đi theo sau ${targetPlayer}... Gõ !stop để dừng.`
-			: `[Follow] Không tìm thấy ${targetPlayer} trong tầm nhìn của bot!`;
+			? `[Follow] Đang tự động đi theo sau ${targetPlayer}... Gõ !stop để hủy.`
+			: `[Follow] Không tìm thấy người chơi ${targetPlayer} trong tầm nhìn của bot!`;
 	}
 }

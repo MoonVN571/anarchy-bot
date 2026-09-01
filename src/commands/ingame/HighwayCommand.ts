@@ -130,7 +130,7 @@ export class HighwayCommand extends Command {
 			return "[Highway] Trục hoặc tọa độ không hợp lệ!";
 		}
 
-		const started = await bot.highwayNavigationService.startHighway(axis, targetCoord);
+		const started = await bot.highwayNavigationService.startHighway(axis, targetCoord, ctx.sender);
 		return started
 			? `[Highway] Đang chạy bám trục ${axis} đến mốc ${targetCoord}... Gõ !stop để dừng.`
 			: `[Highway] Lỗi khởi động di chuyển cao tốc.`;
