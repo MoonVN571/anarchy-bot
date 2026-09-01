@@ -12,22 +12,16 @@ export default class SpawnEvent extends MineflayerEvent {
 
 	async execute(main: Minecraft): Promise<void> {
 		main.spawnCount++;
-		if (main.spawnCount >= 2) {
-			main.currentServer = Server.Main;
-			main.clearQueueTimeout();
-			main.smartPathfinderService?.clearLobbyNpcTimer();
-			main.smartPathfinderService?.initMovements();
-			main.antiAfkService?.start();
-			main.autoEatService?.start();
-		} else if (main.spawnCount === 1) {
-			// Lobby spawn: trigger lobby NPC navigation if configured
+		main.client.logger.debug("Mineflayer", `Bot spawn event #${main.spawnCount} triggered at ${main.bot?.entity?.position}`);
+
+		if (main.currentServer !== Server.Main) {
 			const lobbyNpc = main.config.auth.lobbyNpc;
 			if (lobbyNpc?.enabled) {
 				setTimeout(() => {
-					if (main.currentServer !== Server.Main && main.spawnCount === 1) {
+					if (main.currentServer !== Server.Main && main.bot?.entity) {
 						main.smartPathfinderService?.navigateToLobbyNpc(lobbyNpc.x, lobbyNpc.y, lobbyNpc.z);
 					}
-				}, 1500);
+				}, 1200);
 			}
 		}
 
@@ -43,8 +37,12 @@ export default class SpawnEvent extends MineflayerEvent {
 		main.startAutoMessageTimer();
 		main.startTopicTimer();
 		main.startViewer();
-		main.antiAfkService?.start();
-		main.autoEatService?.start();
-		main.smartPathfinderService?.initMovements();
+
+		// Only start Anti-AFK, AutoEat, and survival movements if already on Main server
+		if (main.currentServer === Server.Main) {
+			main.antiAfkService?.start();
+			main.autoEatService?.start();
+			main.smartPathfinderService?.initMovements();
+		}
 	}
 }

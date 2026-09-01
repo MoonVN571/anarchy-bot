@@ -26,12 +26,23 @@ export default class MessageStrEvent extends MineflayerEvent {
 
 		const serverIp = bot.config.connection.host;
 
-		// 1. Parse chat message first to resolve username and formatted structure
+		// 1. AuthMe / PIN / Premium / Lobby navigation handling (process on ALL incoming raw messages)
+		const rawCandidate = serverMsg || (typeof jsonMsg === "string" ? jsonMsg : jsonMsg?.text) || "";
+		if (rawCandidate) {
+			AuthHandler.handle(bot, rawCandidate);
+		}
+
+		// 2. Parse chat message to resolve username and formatted structure
 		const parsed = ChatParser.parse(bot, serverMsg, jsonMsg, sender);
 		if (!parsed) return;
 
 		const fullMsg = parsed.rawText;
 		if (!fullMsg || fullMsg.endsWith("players sleeping")) return;
+
+		// If rawCandidate was empty, fallback handle parsed raw text
+		if (!rawCandidate) {
+			AuthHandler.handle(bot, fullMsg);
+		}
 
 		// Ignore messages sent by the bot itself
 		if (parsed.type === MessageType.BotChat) return;
@@ -44,7 +55,7 @@ export default class MessageStrEvent extends MineflayerEvent {
 			bot.autoMessageService.onServerMessage();
 		}
 
-		// 2. In-Game Minecraft Commands Handler (Prefix "!")
+		// 3. In-Game Minecraft Commands Handler (Prefix "!")
 		const userMsg = (parsed.message || "").trim();
 		if (parsed.username && userMsg.startsWith("!")) {
 			await inGameCommandManager.handleInGameMessage(bot, parsed.username, userMsg);
@@ -65,9 +76,6 @@ export default class MessageStrEvent extends MineflayerEvent {
 				await inGameCommandManager.handleInGameMessage(bot, cmdMatch.groups.user, cmdMatch.groups.cmd.trim());
 			}
 		}
-
-		// 3. AuthMe / PIN handling (Non-premium login)
-		AuthHandler.handle(bot, serverMsg || fullMsg);
 
 		// 4. Push to Discord livechat queue
 		bot.liveChatManager.push(parsed);

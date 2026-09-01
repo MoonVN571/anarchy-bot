@@ -21,6 +21,7 @@ export class SmartPathfinderService {
 	private isExecutingQueue: boolean = false;
 	private lobbyNpcInterval: NodeJS.Timeout | null = null;
 	private isNavigatingToLobbyNpc: boolean = false;
+	private eventsRegistered: boolean = false;
 
 	constructor(main: Minecraft) {
 		this.main = main;
@@ -67,7 +68,8 @@ export class SmartPathfinderService {
 	 */
 	private setupPathfinderEvents(): void {
 		const bot = this.main.bot;
-		if (!bot || !(bot as any).pathfinder) return;
+		if (!bot || !(bot as any).pathfinder || this.eventsRegistered) return;
+		this.eventsRegistered = true;
 
 		// When path is calculated or updated
 		bot.on("path_update" as any, (r: any) => {
@@ -89,7 +91,7 @@ export class SmartPathfinderService {
 		// When path reset or stopped
 		bot.on("path_reset" as any, (reason: string) => {
 			if (reason === "interrupted" || reason === "stop" || reason === "stuck") {
-				if (this.isNavigating && this.waypointQueue.length === 0) {
+				if (this.isNavigating && !this.isNavigatingToLobbyNpc && this.waypointQueue.length === 0) {
 					this.onNavigationComplete(false);
 				}
 			}
@@ -198,12 +200,12 @@ export class SmartPathfinderService {
 				try {
 					(bot.pathfinder as any).setGoal(null);
 					(bot.pathfinder as any).stop();
-				} catch {}
+				} catch { }
 			}
 
 			try {
 				bot.clearControlStates();
-			} catch {}
+			} catch { }
 		}
 
 		viewerManager.broadcastPathUpdate(this.main.config.id, []);
@@ -214,12 +216,15 @@ export class SmartPathfinderService {
 	/**
 	 * Navigate to lobby NPC without fall damage constraints and click on NPC to enter server
 	 */
-	public async navigateToLobbyNpc(x: number = 48, y: number = 10, z: number = 40): Promise<boolean> {
+	public async navigateToLobbyNpc(x: number = 48.5, y: number = 10, z: number = 40.5): Promise<boolean> {
 		const bot = this.main.bot;
 		if (!bot || !(bot as any).pathfinder) return false;
 
 		if (this.isNavigatingToLobbyNpc) {
-			this.main.client.logger.debug("Lobby", "Lobby NPC navigation is already in progress.");
+			this.main.client.logger.info(`[Lobby] Lobby NPC navigation refreshed. Target: (${x}, ${y}, ${z})`);
+			try {
+				(bot.pathfinder as any).setGoal(new GoalNear(x, y, z, 2));
+			} catch { }
 			return true;
 		}
 
@@ -241,21 +246,35 @@ export class SmartPathfinderService {
 		this.isNavigating = true;
 		this.currentGoalDesc = `Lobby NPC (${x}, ${y}, ${z})`;
 
+		const currentPos = bot.entity?.position;
+		const posStr = currentPos ? `(${currentPos.x.toFixed(1)}, ${currentPos.y.toFixed(1)}, ${currentPos.z.toFixed(1)})` : "unknown";
 		this.main.client.logger.info(
-			`[Lobby] Navigating to NPC at (${x}, ${y}, ${z}) with zero fall damage limit...`
+			`[Lobby] Navigating to NPC at (${x}, ${y}, ${z}) with zero fall damage limit... Current pos: ${posStr}`
 		);
 
-		const goal = new GoalNear(x, y, z, 2);
+		const goalNear = new GoalNear(x, y, z, 2);
+		const goalXZ = new GoalXZ(x, z);
+		let usedGoal: any = goalNear;
+
 		try {
-			(bot.pathfinder as any).setGoal(goal);
+			(bot.pathfinder as any).setGoal(goalNear);
 		} catch (err) {
-			this.main.client.logger.error(`[Lobby] Failed to set pathfinder goal: ${err}`);
-			this.isNavigatingToLobbyNpc = false;
-			return false;
+			this.main.client.logger.warn(`[Lobby] GoalNear failed, falling back to GoalXZ: ${err}`);
+			try {
+				(bot.pathfinder as any).setGoal(goalXZ);
+				usedGoal = goalXZ;
+			} catch (err2) {
+				this.main.client.logger.error(`[Lobby] Failed to set GoalXZ: ${err2}`);
+				this.isNavigatingToLobbyNpc = false;
+				return false;
+			}
 		}
 
 		const targetVec = new Vec3(x, y, z);
 		let clickAttempts = 0;
+		let lastPos: Vec3 | null = null;
+		let logWalkTicks = 0;
+		let isInteracting = false;
 
 		this.lobbyNpcInterval = setInterval(async () => {
 			if (!this.main.bot || !this.main.bot.entity) {
@@ -263,67 +282,180 @@ export class SmartPathfinderService {
 				return;
 			}
 
-			// If bot joined main server or spawn count advanced, cleanup and reset
-			if (this.main.currentServer === Server.Main || this.main.spawnCount >= 2) {
+			// Only stop if bot has joined the main server
+			if (this.main.currentServer === Server.Main) {
 				this.clearLobbyNpcTimer();
 				this.isNavigatingToLobbyNpc = false;
-				this.stop();
+				this.isNavigating = false;
+				(this.main.bot.pathfinder as any)?.setGoal(null);
+				try {
+					this.main.bot.clearControlStates();
+				} catch { }
 				this.initMovements();
 				return;
 			}
 
-			const currentPos = this.main.bot.entity.position;
-			const dist = currentPos.distanceTo(targetVec);
+			const pos = this.main.bot.entity.position;
+			const dist = pos.distanceTo(targetVec);
 
 			// Within interaction distance
 			if (dist <= 4.0) {
+				try {
+					bot.clearControlStates();
+				} catch { }
+
+				if (isInteracting) return;
+				isInteracting = true;
 				clickAttempts++;
-				await this.interactWithNpcAt(targetVec);
+
+				await this.interactWithNpcAt(targetVec, clickAttempts);
+				isInteracting = false;
 
 				if (clickAttempts >= 10) {
 					this.clearLobbyNpcTimer();
 					this.isNavigatingToLobbyNpc = false;
 				}
+			} else {
+				// Actively move towards targetVec
+				const isMoving = (bot.pathfinder as any).isMoving();
+				logWalkTicks++;
+				if (logWalkTicks % 3 === 0) {
+					this.main.client.logger.info(
+						`[Lobby] Walking to NPC (${x}, ${y}, ${z}) - Current: (${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}) - Dist: ${dist.toFixed(1)}m`
+					);
+				}
+
+				if (!isMoving) {
+					// Direct movement fallback: look at target & walk forward
+					try {
+						await bot.lookAt(new Vec3(x, pos.y, z), true);
+						bot.setControlState("forward", true);
+						bot.setControlState("sprint", true);
+
+						// If stuck in same position, jump to unstick
+						if (lastPos && lastPos.distanceTo(pos) < 0.2) {
+							bot.setControlState("jump", true);
+							setTimeout(() => {
+								if (bot) bot.setControlState("jump", false);
+							}, 350);
+						}
+					} catch { }
+
+					// Also re-apply pathfinder goal
+					try {
+						usedGoal = usedGoal === goalNear ? goalXZ : goalNear;
+						(bot.pathfinder as any).setGoal(usedGoal);
+					} catch { }
+				}
+
+				lastPos = pos.clone();
 			}
-		}, 1000);
+		}, 2000);
 
 		return true;
 	}
 
 	/**
-	 * Click and interact with NPC at the target coordinate
+	 * Click and interact with NPC at the target coordinate without spamming
 	 */
-	public async interactWithNpcAt(targetVec: Vec3): Promise<void> {
+	public async interactWithNpcAt(targetVec: Vec3, attemptNum: number = 1): Promise<void> {
 		const bot = this.main.bot;
 		if (!bot || !bot.entity) return;
 
 		try {
-			// Find closest NPC / player entity near target coordinates
-			const npc = bot.nearestEntity((e: any) => {
+			// 1. Chuyển hotbar sang ô 3 (index 2 trong Mineflayer)
+			try {
+				bot.setQuickBarSlot(2);
+			} catch { }
+
+			// 2. Quét và log toàn bộ các thực thể xung quanh (bán kính 6 block) để debug
+			const allNearby = Object.values(bot.entities).filter((e: any) => {
 				if (!e || e === bot.entity) return false;
-				return e.position.distanceTo(targetVec) <= 5;
+				return bot.entity.position.distanceTo(e.position) <= 6.0;
 			});
 
-			if (npc) {
+			this.main.client.logger.info(
+				`[Lobby] --- Quét thực thể xung quanh (${allNearby.length} entities gần bot) ---`
+			);
+			for (const e of allNearby) {
+				const name = (e as any).customName || (e as any).displayName || (e as any).username || (e as any).name || "unnamed";
+				const dist = bot.entity.position.distanceTo(e.position).toFixed(2);
 				this.main.client.logger.info(
-					`[Lobby] Found NPC ${npc.name || npc.username || ("entity #" + npc.id)} at ${npc.position}, interacting...`
+					`[Lobby Entity] ID: ${e.id} | Type: ${e.type} (${e.name}) | Name: "${name}" | Pos: (${e.position.x.toFixed(2)}, ${e.position.y.toFixed(2)}, ${e.position.z.toFixed(2)}) | Dist: ${dist}m`
 				);
-				await bot.lookAt(npc.position.offset(0, npc.height ? npc.height * 0.8 : 1.6, 0), true);
-				await bot.activateEntity(npc);
-			} else {
-				this.main.client.logger.info(
-					`[Lobby] Looking at NPC target coords (${targetVec.x}, ${targetVec.y + 1.5}, ${targetVec.z}) and clicking...`
-				);
-				await bot.lookAt(targetVec.offset(0, 1.5, 0), true);
-				const nearest = bot.nearestEntity(
-					(e: any) => e !== bot.entity && bot.entity.position.distanceTo(e.position) <= 4.5
-				);
-				if (nearest) {
-					await bot.activateEntity(nearest);
-				} else {
-					bot.swingArm("right");
-				}
 			}
+
+			// Tọa độ NPC đích: 48.814, 10, 40.392
+			const exactNpcPos = new Vec3(48.814, 10, 40.392);
+
+			// 3. Lọc bỏ item_frame, item, arrow và tìm thực thể gần tọa độ (48.814, 10, 40.392) nhất
+			const validEntities = allNearby.filter((e: any) => {
+				if (!e || e === bot.entity) return false;
+				const type = (e.type || "").toLowerCase();
+				const name = (e.name || "").toLowerCase();
+				if (type.includes("item_frame") || name.includes("item_frame")) return false;
+				if (type === "item" || name === "item") return false;
+				if (type === "arrow" || name === "arrow") return false;
+				return e.position.distanceTo(exactNpcPos) <= 4.0 || bot.entity.position.distanceTo(e.position) <= 4.0;
+			});
+
+			// Sắp xếp theo khoảng cách gần nhất tới (48.814, 10, 40.392), ưu tiên Player/Living
+			validEntities.sort((a: any, b: any) => {
+				const isPlayerA = a.type === "player" || a.name === "player" || a.username ? 1 : 0;
+				const isPlayerB = b.type === "player" || b.name === "player" || b.username ? 1 : 0;
+				const distA = a.position.distanceTo(exactNpcPos);
+				const distB = b.position.distanceTo(exactNpcPos);
+
+				// Nếu cả 2 đều ở gần tọa độ đích chênh lệch dưới 0.8m, ưu tiên Player
+				if (isPlayerA !== isPlayerB && Math.abs(distA - distB) < 0.8) {
+					return isPlayerB - isPlayerA;
+				}
+				return distA - distB;
+			});
+
+			const targetEntity = validEntities[0];
+
+			if (targetEntity) {
+				const distToNpcPos = targetEntity.position.distanceTo(exactNpcPos).toFixed(2);
+				this.main.client.logger.info(
+					`[Lobby] -> Bấm NPC gần (48.814, 10, 40.392) nhất: [ID #${targetEntity.id}] ${targetEntity.type}/${targetEntity.name} tại (${targetEntity.position.x.toFixed(2)}, ${targetEntity.position.y.toFixed(2)}, ${targetEntity.position.z.toFixed(2)}) - Cách đích: ${distToNpcPos}m (attempt #${attemptNum})`
+				);
+
+				// Nhìn vào thân NPC
+				await bot.lookAt(targetEntity.position.offset(0, 1.2, 0), true).catch(() => { });
+
+				// Chuột phải (activateEntity)
+				try {
+					await bot.activateEntity(targetEntity);
+				} catch { }
+
+				// Chuột trái (attack)
+				try {
+					bot.attack(targetEntity);
+				} catch { }
+
+				// Dùng vật phẩm trên tay (useOn)
+				try {
+					(bot as any).useOn?.(targetEntity);
+				} catch { }
+
+				bot.swingArm("right");
+			} else {
+				// User facing: 59.7° yaw, -16.4° pitch (Minecraft F3)
+				const targetFacingYaw = (-59.7 * Math.PI) / 180;
+				const targetFacingPitch = (-16.4 * Math.PI) / 180;
+
+				this.main.client.logger.info(
+					`[Lobby] Looking at NPC target coords (${exactNpcPos.x}, ${exactNpcPos.y + 1.2}, ${exactNpcPos.z}) (attempt #${attemptNum})...`
+				);
+				await bot.look(targetFacingYaw, targetFacingPitch, true).catch(() => { });
+				bot.swingArm("right");
+			}
+
+			// Kích hoạt vật phẩm trên tay (slot 3)
+			try {
+				bot.activateItem();
+			} catch { }
 		} catch (err) {
 			this.main.client.logger.error(`[Lobby] Error interacting with NPC: ${err}`);
 		}
