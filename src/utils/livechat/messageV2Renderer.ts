@@ -260,7 +260,7 @@ export class MessageV2Renderer {
 			const sender = parsed.username || "Player";
 			const target = parsed.targetUser || "Player";
 			const headUrl = `https://mc-heads.net/avatar/${sender}/64.png`;
-			const whisperTitle = `**[${sender} ➔ ${target}]**${countTag}`;
+			const whisperTitle = `**[${sender} -> ${target}]**${countTag}`;
 
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
