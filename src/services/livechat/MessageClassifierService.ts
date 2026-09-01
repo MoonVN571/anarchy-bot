@@ -8,9 +8,11 @@ import {
 	TextChannel,
 	TextDisplayBuilder,
 } from "discord.js";
+import { DeathCause } from "../../database/models/DeathModel";
 import { RedisManager } from "../../redis/RedisManager";
 import { Minecraft } from "../../structures";
-import { DeathRegexLearner } from "../../utils";
+import { DeathRegexLearner, escapeRegex } from "../../utils";
+import { MINECRAFT_MOBS } from "../../utils/minecraft/minecraftMobs";
 import { DeathParserService } from "../analytics/DeathParserService";
 import { SystemPatternService } from "../analytics/SystemPatternService";
 
@@ -65,8 +67,58 @@ export class MessageClassifierService {
 			return;
 		}
 
-		// 5. Unrecognized message -> Prompt Admin for Classification
-		await this.promptAdminClassification(bot, serverIp, cleanText);
+		// 5. Check online players with case-insensitive deduplication
+		const onlinePlayers = await RedisManager.getOnlinePlayers(serverIp);
+		const botPlayers = bot.bot?.players ? Object.keys(bot.bot.players) : [];
+		const playerMap = new Map<string, string>();
+
+		for (const p of [...onlinePlayers, ...botPlayers]) {
+			if (p && p.trim().length >= 3) {
+				const trimmed = p.trim();
+				const lower = trimmed.toLowerCase();
+				if (!playerMap.has(lower)) {
+					playerMap.set(lower, trimmed);
+				}
+			}
+		}
+
+		const foundPlayers: string[] = [];
+		const foundPlayersLower = new Set<string>();
+
+		for (const [lower, originalName] of playerMap.entries()) {
+			const regex = new RegExp(`\\b${escapeRegex(lower)}\\b`, "i");
+			if (regex.test(cleanText) && !foundPlayersLower.has(lower)) {
+				foundPlayersLower.add(lower);
+				foundPlayers.push(originalName);
+			}
+		}
+
+		// Check for Minecraft Mob names in the text
+		let detectedMob: string | null = null;
+		for (const mobName of MINECRAFT_MOBS) {
+			const mobRegex = new RegExp(`\\b${escapeRegex(mobName)}\\b`, "i");
+			if (mobRegex.test(cleanText)) {
+				detectedMob = mobName;
+				break;
+			}
+		}
+
+		// Special Rule: Exactly 1 Player + Mob detected (and Mob is NOT an online player's name)
+		if (foundPlayers.length === 1 && detectedMob && !playerMap.has(detectedMob.toLowerCase())) {
+			bot.client.logger.debug(
+				"Classifier",
+				`[${serverIp}] 1 Player ("${foundPlayers[0]}") + Mob ("${detectedMob}") identified -> Auto-learning MOB Death pattern.`
+			);
+			await DeathRegexLearner.processUnknownDeathMessage(bot, cleanText, {
+				victim: foundPlayers[0],
+				mob: detectedMob,
+				cause: DeathCause.MOB,
+			});
+			return;
+		}
+
+		// 6. Unrecognized message -> Prompt Admin for Classification
+		await this.promptAdminClassification(bot, serverIp, cleanText, foundPlayers, detectedMob, playerMap);
 	}
 
 	/**
@@ -75,7 +127,10 @@ export class MessageClassifierService {
 	public static async promptAdminClassification(
 		main: Minecraft,
 		serverIp: string,
-		cleanText: string
+		cleanText: string,
+		foundPlayers?: string[],
+		detectedMob?: string | null,
+		playerMap?: Map<string, string>
 	): Promise<void> {
 		const key = `${serverIp}:${cleanText}`;
 		if (this.pendingPrompts.has(key)) return;
@@ -84,17 +139,36 @@ export class MessageClassifierService {
 		// Prevent duplicate spam for 10 minutes
 		setTimeout(() => this.pendingPrompts.delete(key), 10 * 60 * 1000);
 
-		// Identify mentioned online players to suggest victim/killer
-		const onlinePlayers = await RedisManager.getOnlinePlayers(serverIp);
-		const botPlayers = main.bot?.players ? Object.keys(main.bot.players) : [];
-		const allKnown = Array.from(new Set([...onlinePlayers, ...botPlayers]));
+		// If foundPlayers was not passed, compute it
+		let players = foundPlayers;
+		if (!players) {
+			const onlinePlayers = await RedisManager.getOnlinePlayers(serverIp);
+			const botPlayers = main.bot?.players ? Object.keys(main.bot.players) : [];
+			const pMap = new Map<string, string>();
 
-		const foundPlayers = allKnown.filter(p => {
-			if (!p || p.length < 3) return false;
-			return new RegExp(`\\b${p}\\b`, "i").test(cleanText);
-		});
+			for (const p of [...onlinePlayers, ...botPlayers]) {
+				if (p && p.trim().length >= 3) {
+					const trimmed = p.trim();
+					const lower = trimmed.toLowerCase();
+					if (!pMap.has(lower)) {
+						pMap.set(lower, trimmed);
+					}
+				}
+			}
 
-		const likelyDeath = foundPlayers.length > 0 || DeathParserService.hasDeathKeywords(cleanText);
+			players = [];
+			const seen = new Set<string>();
+			for (const [lower, originalName] of pMap.entries()) {
+				const regex = new RegExp(`\\b${escapeRegex(lower)}\\b`, "i");
+				if (regex.test(cleanText) && !seen.has(lower)) {
+					seen.add(lower);
+					players.push(originalName);
+				}
+			}
+		}
+
+		const hasMobConflict = detectedMob && playerMap ? playerMap.has(detectedMob.toLowerCase()) : false;
+		const likelyDeath = players.length > 0 || DeathParserService.hasDeathKeywords(cleanText);
 		const promptId = Buffer.from(`${Date.now()}_${Math.floor(Math.random() * 1000)}`).toString("base64url");
 
 		const verifyChannelId =
@@ -122,9 +196,12 @@ export class MessageClassifierService {
 				.setStyle(ButtonStyle.Secondary)
 		);
 
-		const prediction = likelyDeath
-			? `Nghi vấn Death Message (Phát hiện: ${foundPlayers.map(p => `\`${p}\``).join(", ") || "Từ khóa tử vong"})`
-			: "Nghi vấn System / Thông báo Server";
+		let prediction = "Nghi vấn System / Thông báo Server";
+		if (hasMobConflict) {
+			prediction = `Nghi vấn Death Message (Xung đột: Player & Mob cùng tên \`${detectedMob}\`)`;
+		} else if (likelyDeath) {
+			prediction = `Nghi vấn Death Message (Phát hiện: ${players.map(p => `\`${p}\``).join(", ") || "Từ khóa tử vong"})`;
+		}
 
 		const container = new ContainerBuilder()
 			.setAccentColor(likelyDeath ? 0xffa500 : 0x3498db)
