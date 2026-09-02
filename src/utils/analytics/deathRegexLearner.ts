@@ -31,6 +31,14 @@ export class DeathRegexLearner {
 		overrides?: { victim?: string; mob?: string; killer?: string; cause?: DeathCause }
 	): Promise<IDeathPattern | null> {
 		const cleanMsg = serverMsg.trim();
+		if (
+			cleanMsg.includes("[Bot Tip]") ||
+			cleanMsg.startsWith("[BOT]") ||
+			cleanMsg.startsWith("> [BOT]")
+		) {
+			return null;
+		}
+
 		const serverIp = main.config.connection.host;
 
 		if (this.pendingMessages.has(`${serverIp}:${cleanMsg}`)) return null;

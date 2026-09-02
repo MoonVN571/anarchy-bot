@@ -325,6 +325,7 @@ export class ChatParser {
 		if (!finalUsername) {
 			formattedMsg = escapeDiscordFormat(cleanText);
 			const serverIp = main.config.connection.host;
+			const botName = main.bot?.username || main.config.connection.username || "mo0nbot";
 
 			const joinInfo = extractJoinUsername(cleanText, rawJson);
 			const leaveInfo = extractLeaveUsername(cleanText, rawJson);
@@ -333,7 +334,6 @@ export class ChatParser {
 
 			if (whisperInfo || isWhisperMsg(cleanText)) {
 				const info = whisperInfo || { sender: "Unknown", message: cleanText };
-				const botName = main.bot?.username || main.config.connection.username || "Bot";
 				const senderLower = info.sender.toLowerCase();
 				const isBotSender =
 					senderLower === "me" ||
@@ -390,6 +390,17 @@ export class ChatParser {
 				msgType = MessageType.Quit;
 			} else if (isQueueMessage(cleanText)) {
 				msgType = MessageType.Queue;
+			} else if (
+				cleanText.startsWith("[Bot Tip]") ||
+				cleanText.startsWith("> [Bot Tip]") ||
+				cleanText.includes("[Bot Tip]") ||
+				cleanText.startsWith("[BOT]") ||
+				cleanText.startsWith("> [BOT]")
+			) {
+				msgType = MessageType.BotChat;
+				finalUsername = botName;
+				message = cleanText;
+				formattedMsg = `**\`[BOT]\` ${escapeDiscordFormat(finalUsername)}:** ${escapeDiscordFormat(cleanText.replace(/^>/gm, "\\>"))}`;
 			} else {
 				const deathInfo = DeathParserService.extractDeathInfoSync(serverIp, cleanText);
 				if (deathInfo) {
@@ -411,7 +422,9 @@ export class ChatParser {
 			formattedMsg = `${prefix} ${escapeDiscordFormat(message)}`;
 			const isBot =
 				(main.bot?.username && finalUsername.toLowerCase() === main.bot.username.toLowerCase()) ||
-				(main.config.connection.username && finalUsername.toLowerCase() === main.config.connection.username.toLowerCase());
+				(main.config.connection.username && finalUsername.toLowerCase() === main.config.connection.username.toLowerCase()) ||
+				message.includes("[Bot Tip]") ||
+				message.startsWith("[BOT]");
 
 			if (isBot) {
 				msgType = MessageType.BotChat;

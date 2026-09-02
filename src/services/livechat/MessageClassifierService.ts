@@ -30,6 +30,18 @@ export class MessageClassifierService {
 	): Promise<void> {
 		const serverIp = bot.config.connection.host;
 
+		// 0. Guard against Bot messages, tips, and broadcasts
+		if (
+			parsed.type === "botChat" ||
+			cleanText.includes("[Bot Tip]") ||
+			cleanText.startsWith("[BOT]") ||
+			cleanText.startsWith("> [BOT]") ||
+			(bot.bot?.username && cleanText.toLowerCase().includes(bot.bot.username.toLowerCase() + ":"))
+		) {
+			bot.client.logger.debug("Classifier", `[${serverIp}] Skipped bot/tip message: "${cleanText}"`);
+			return;
+		}
+
 		// 1. Check if it's an existing System message
 		const isSystem = await SystemPatternService.matchSystemMessage(serverIp, cleanText);
 		if (isSystem) {

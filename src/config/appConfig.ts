@@ -31,12 +31,12 @@ export const defaultAutoMessageConfig: AutoMessageConfig = {
 	mode: "sequential",
 	messages: [
 		"> [Bot Tip] Dùng \"!help\" để xem danh sách toàn bộ các lệnh của mình.",
-		"> [Discord] Tham gia Discord để trò chuyện 2 chiều in-game & nhận thông báo tử nạn tại: bit.ly/mo0nbot",
+		"> [Discord] Tham gia Discord để trò chuyện 2 chiều in-game & nhận thông báo tử nạn tại: bit.ly/mo0nbot2",
 		"> [Bot Tip] Xem chỉ số K/D của bạn hoặc người chơi khác với lệnh \"!kd <tên>\" hoặc \"!stats <tên>\".",
 		"> [Bot Tip] Kiểm tra bảng xếp hạng top K/D, số mạng hạ gục và playtime với lệnh \"!top kd\" hoặc \"!top playtime\".",
 		"> [Discord] Dùng lệnh \"!discord\" hoặc \"!dc\" để lấy link mời tham gia Discord Server bot!",
 		"> [Bot Tip] Tra cứu lần đầu và lần cuối người chơi xuất hiện trên server bằng lệnh \"!seen <tên>\" hoặc \"!joindate <tên>\".",
-		"> [Discord] Xem Kill Feed, bảng xếp hạng PVP và giao lưu cộng đồng tại Discord: bit.ly/mo0nbot",
+		"> [Discord] Xem Kill Feed, bảng xếp hạng PVP và giao lưu cộng đồng tại Discord: bit.ly/mo0nbot2",
 		"> [Bot Tip] Xem thời gian đã chơi của bạn trên server bằng lệnh \"!playtime <tên>\".",
 		"> [Bot Tip] Tra cứu tin nhắn đầu tiên & gần nhất của người chơi bằng \"!firstmsg <tên>\" và \"!lastmsg <tên>\".",
 		"> [Bot Tip] Xem những tin nhắn người chơi đã từng nhắn bằng lệnh \"!quote\" hoặc \"!quote <tên>\".",
@@ -90,7 +90,7 @@ export function createServerConfig(options: CreateServerConfigOptions): Minecraf
 		},
 		livechat: {
 			channelId: options.channelId,
-			chatTemplate: "> [{displayName}] {message} | bit.ly/mo0nbot",
+			chatTemplate: "> [{displayName}] {message} | bit.ly/mo0nbot2",
 			rateLimit: { ...defaultRateLimitConfig },
 			topic: { ...defaultTopicConfig },
 			autoMessage: { ...defaultAutoMessageConfig },

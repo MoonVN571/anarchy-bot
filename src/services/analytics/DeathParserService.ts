@@ -94,6 +94,13 @@ export class DeathParserService {
 	} | null {
 		if (!text) return null;
 		const clean = text.trim();
+		if (
+			clean.includes("[Bot Tip]") ||
+			clean.startsWith("[BOT]") ||
+			clean.startsWith("> [BOT]")
+		) {
+			return null;
+		}
 		const s = server.toLowerCase();
 
 		const cached = this.memoryCache.get(s) || this.memoryCache.get("global");
@@ -227,6 +234,14 @@ export class DeathParserService {
 		if (!serverMsg) return null;
 
 		const cleanMsg = serverMsg.trim();
+		if (
+			cleanMsg.includes("[Bot Tip]") ||
+			cleanMsg.startsWith("[BOT]") ||
+			cleanMsg.startsWith("> [BOT]")
+		) {
+			return null;
+		}
+
 		const serverIp = main.config.connection.host;
 
 		const patterns = await this.getPatternsForServer(serverIp);
