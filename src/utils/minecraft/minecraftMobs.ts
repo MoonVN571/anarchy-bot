@@ -87,6 +87,17 @@ export const MINECRAFT_MOBS: Set<string> = new Set([
 	"ong",
 	"cá nóc",
 	"quái vật",
+
+	// Non-player killers (Environment/Projectiles)
+	"bay",
+	"fireball",
+	"lava",
+	"tnt",
+	"cactus",
+	"fall",
+	"void",
+	"magic",
+	"potion",
 ]);
 
 /**

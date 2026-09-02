@@ -31,9 +31,12 @@ export class MessageV2Renderer {
 		const rankPrefix = parsed.rank ? `\`[${parsed.rank}]\` ` : (isBot ? "`[BOT]` " : "");
 		const userTitle = `**${rankPrefix}${username}**${countTag}`;
 
+		let msgContent = parsed.message || parsed.rawText;
+		msgContent = msgContent.replace(/^>/gm, "\\>");
+
 		const section = new SectionBuilder()
 			.addTextDisplayComponents(
-				new TextDisplayBuilder().setContent(`${userTitle}\n${parsed.message || parsed.rawText}`)
+				new TextDisplayBuilder().setContent(`${userTitle}\n${msgContent}`)
 			)
 			.setThumbnailAccessory(
 				new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`)
@@ -66,9 +69,12 @@ export class MessageV2Renderer {
 			const rankPrefix = msg.rank ? `\`[${msg.rank}]\` ` : "";
 			const userTitle = `**${rankPrefix}${username}**`;
 
+			let msgContent = msg.message || msg.rawText;
+			msgContent = msgContent.replace(/^>/gm, "\\>");
+
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(`${userTitle}\n${msg.message}`)
+					new TextDisplayBuilder().setContent(`${userTitle}\n${msgContent}`)
 				)
 				.setThumbnailAccessory(
 					new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${username}`)
@@ -262,9 +268,12 @@ export class MessageV2Renderer {
 			const headUrl = `https://mc-heads.net/avatar/${sender}/64.png`;
 			const whisperTitle = `**[${sender} -> ${target}]**${countTag}`;
 
+			let msgContent = parsed.message || parsed.rawText;
+			msgContent = msgContent.replace(/^>/gm, "\\>");
+
 			const section = new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(`${whisperTitle}\n${parsed.message || parsed.rawText}`)
+					new TextDisplayBuilder().setContent(`${whisperTitle}\n${msgContent}`)
 				)
 				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl).setDescription(`Avatar of ${sender}`));
 

@@ -147,13 +147,16 @@ export class MessageRenderer {
 		const rankPrefix = parsed.rank ? `[${parsed.rank}] ` : (isBot ? "[BOT] " : "");
 		const countTag = repeatCount && repeatCount > 1 ? ` [x${repeatCount}]` : "";
 
+		let msgContent = parsed.message || parsed.rawText;
+		msgContent = msgContent.replace(/^>/gm, "\\>");
+
 		return {
 			color: baseColor,
 			author: {
 				name: `${rankPrefix}${username}${countTag}`,
 				icon_url: headUrl,
 			},
-			description: parsed.message || parsed.rawText,
+			description: msgContent,
 			footer: { text: serverHost },
 			timestamp: new Date().toISOString(),
 		};
