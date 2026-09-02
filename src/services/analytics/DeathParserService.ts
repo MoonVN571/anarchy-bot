@@ -260,42 +260,7 @@ export class DeathParserService {
 			}
 		}
 
-		// 2. Check if message has death keywords but didn't match -> Learn dynamically
-		if (this.hasDeathKeywords(cleanMsg)) {
-			main.client.logger.debug("Death/KD", `[${serverIp}] Unrecognized death keyword in: "${cleanMsg}". Triggering learner.`);
-			DeathRegexLearner.processUnknownDeathMessage(main, cleanMsg).catch(() => { });
-		}
-
 		return null;
-	}
-
-	/**
-	 * Keywords indicating a potential death message
-	 */
-	public static hasDeathKeywords(msg: string): boolean {
-		const lower = msg.toLowerCase();
-		return (
-			lower.includes("đã bị") ||
-			lower.includes("ăn sống") ||
-			lower.includes("tiễn lên bảng") ||
-			lower.includes("hạ gục") ||
-			lower.includes("thử nghiệm trọng lực") ||
-			lower.includes("quên mang dù") ||
-			lower.includes("không thể bay") ||
-			lower.includes("hư không") ||
-			lower.includes("thế giới") ||
-			lower.includes("tự sát") ||
-			lower.includes("chết đuối") ||
-			lower.includes("nổ tung") ||
-			lower.includes("was slain by") ||
-			lower.includes("was shot by") ||
-			lower.includes("was blown up") ||
-			lower.includes("was killed by") ||
-			lower.includes("hit the ground") ||
-			lower.includes("fell into the void") ||
-			lower.includes("burned to death") ||
-			lower.includes("drowned")
-		);
 	}
 
 	// Backwards-compatible delegates for stats and verification
