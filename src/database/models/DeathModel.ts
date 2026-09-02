@@ -1,7 +1,11 @@
-import { Schema, model, Document } from "mongoose";
+import { Document, Schema, model } from "mongoose";
 
 export enum DeathCause {
 	PVP = "PVP",
+	DEATH = "DEATH",
+	UNKNOWN = "UNKNOWN",
+
+	// Legacy causes for backward compatibility with existing DB records
 	MOB = "MOB",
 	SUICIDE = "SUICIDE",
 	VOID = "VOID",
@@ -11,7 +15,6 @@ export enum DeathCause {
 	DROWN = "DROWN",
 	FIRE = "FIRE",
 	MAGIC = "MAGIC",
-	UNKNOWN = "UNKNOWN",
 }
 
 export interface IDeath extends Document {

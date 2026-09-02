@@ -1,33 +1,33 @@
 import { Message } from "discord.js";
-import { Command } from "../typings";
 import { Discord, Minecraft } from "../structures";
+import { Command } from "../typings";
+import { removeVietnameseDiacritics } from "../utils";
+import { BotStatusCommand, RefactorDeathsCommand, TestDeathCommand } from "./discord";
 import {
-	HighwayCommand,
-	GotoCommand,
-	StopCommand,
-	FollowCommand,
 	CoordsCommand,
+	FollowCommand,
+	GotoCommand,
+	HighwayCommand,
+	StopCommand,
 } from "./ingame";
-import { BotStatusCommand } from "./discord";
 import {
-	HelpCommand,
 	DiscordInviteCommand,
+	FirstMessageCommand,
+	HelpCommand,
 	JoinDateCommand,
+	KdCommand,
+	KillCommand,
+	LastMessageCommand,
+	OnlineCommand,
+	PingCommand,
+	PlaytimeCommand,
+	QuoteCommand,
 	SeenCommand,
 	StatsCommand,
-	KillCommand,
-	PingCommand,
-	TpsCommand,
-	KdCommand,
-	PlaytimeCommand,
-	TopCommand,
-	QuoteCommand,
-	OnlineCommand,
-	FirstMessageCommand,
-	LastMessageCommand,
 	TablistCommand,
+	TopCommand,
+	TpsCommand,
 } from "./shared";
-import { removeVietnameseDiacritics } from "../utils";
 
 export class CommandManager {
 	private commands: Map<string, Command> = new Map();
@@ -115,6 +115,8 @@ export class CommandManager {
 
 		// Discord commands
 		this.registerCommand(new BotStatusCommand());
+		this.registerCommand(new TestDeathCommand());
+		this.registerCommand(new RefactorDeathsCommand());
 
 		// Shared commands
 		this.registerCommand(new KdCommand());

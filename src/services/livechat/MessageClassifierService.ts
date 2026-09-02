@@ -112,7 +112,7 @@ export class MessageClassifierService {
 			await DeathRegexLearner.processUnknownDeathMessage(bot, cleanText, {
 				victim: foundPlayers[0],
 				mob: detectedMob,
-				cause: DeathCause.MOB,
+				cause: DeathCause.DEATH,
 			});
 			return;
 		}

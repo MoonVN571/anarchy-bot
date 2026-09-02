@@ -41,8 +41,6 @@ export class DeathStatsService {
 			await RedisManager.incrementLeaderboard(server, "deaths", victimLower, 1);
 
 			const victimInc: Record<string, number> = { deaths: 1 };
-			if (parsed.cause === DeathCause.SUICIDE) victimInc.suicides = 1;
-			if (parsed.cause === DeathCause.MOB) victimInc.mobDeaths = 1;
 
 			const victimDoc = await PlayerModel.findOneAndUpdate(
 				{ server, username: victimLower },

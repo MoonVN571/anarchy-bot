@@ -2,8 +2,8 @@ import { DeathCause } from "../../database/models/DeathModel";
 import { DeathPatternModel, IDeathPattern } from "../../database/models/DeathPatternModel";
 import { RedisManager } from "../../redis/RedisManager";
 import { Minecraft } from "../../structures/Minecraft";
+import { DeathRegexLearner, defaultDeathPatterns } from "../../utils";
 import { isMinecraftMob } from "../../utils/minecraft/minecraftMobs";
-import { defaultDeathPatterns, DeathRegexLearner } from "../../utils";
 import { DeathStatsService, ParsedDeath } from "./DeathStatsService";
 import { DeathVerificationService } from "./DeathVerificationService";
 
@@ -18,7 +18,7 @@ export class DeathParserService {
 	public static invalidateCache(server: string): void {
 		this.memoryCache.delete(server.toLowerCase());
 		this.memoryCache.delete("global");
-		RedisManager.invalidateDeathPatterns(server).catch(() => {});
+		RedisManager.invalidateDeathPatterns(server).catch(() => { });
 	}
 
 	public static clearMemoryCache(): void {
@@ -51,6 +51,35 @@ export class DeathParserService {
 	}
 
 	/**
+	 * Helper to sanitize killer and death cause, filtering mobs, non-players (bay, fireball), and ensuring non-PVP deaths have no killer
+	 */
+	public static sanitizeDeathCause(
+		killer: string | null,
+		mob: string | null,
+		initialCause: DeathCause
+	): { killer: string | null; mob: string | null; cause: DeathCause } {
+		let cleanKiller = killer;
+		let cleanMob = mob;
+		let cause = initialCause || DeathCause.UNKNOWN;
+
+		if (cleanKiller) {
+			const isPlayerFormat = /^[a-zA-Z0-9_]{3,16}$/.test(cleanKiller);
+			const isMob = isMinecraftMob(cleanKiller);
+			if (!isPlayerFormat || isMob) {
+				cleanMob = cleanKiller;
+				cleanKiller = null;
+				cause = DeathCause.DEATH;
+			}
+		}
+
+		if (cause !== DeathCause.PVP) {
+			cleanKiller = null;
+		}
+
+		return { killer: cleanKiller, mob: cleanMob, cause };
+	}
+
+	/**
 	 * Synchronously extract victim, killer, mob, weapon from death message
 	 */
 	public static extractDeathInfoSync(
@@ -72,23 +101,16 @@ export class DeathParserService {
 			for (const { regex, patternDoc } of cached) {
 				const m = clean.match(regex);
 				if (m && m.groups && m.groups.victim) {
-					let killer = m.groups.killer ? m.groups.killer.trim() : null;
-					let mob = m.groups.mob ? m.groups.mob.trim() : null;
-					let cause = patternDoc.cause || DeathCause.UNKNOWN;
-
-					// If killer is actually a known Minecraft mob, correct it to MOB cause
-					if (killer && isMinecraftMob(killer)) {
-						mob = killer;
-						killer = null;
-						cause = DeathCause.MOB;
-					}
+					const rawKiller = m.groups.killer ? m.groups.killer.trim() : null;
+					const rawMob = m.groups.mob ? m.groups.mob.trim() : null;
+					const sanitized = this.sanitizeDeathCause(rawKiller, rawMob, patternDoc.cause);
 
 					return {
 						victim: m.groups.victim.trim(),
-						killer,
-						mob,
+						killer: sanitized.killer,
+						mob: sanitized.mob,
 						weapon: m.groups.weapon ? m.groups.weapon.trim() : null,
-						cause,
+						cause: sanitized.cause,
 					};
 				}
 			}
@@ -98,23 +120,16 @@ export class DeathParserService {
 			try {
 				const m = clean.match(new RegExp(p.pattern, "i"));
 				if (m && m.groups && m.groups.victim) {
-					let killer = m.groups.killer ? m.groups.killer.trim() : null;
-					let mob = m.groups.mob ? m.groups.mob.trim() : null;
-					let cause = p.cause || DeathCause.UNKNOWN;
-
-					// If killer is actually a known Minecraft mob, correct it to MOB cause
-					if (killer && isMinecraftMob(killer)) {
-						mob = killer;
-						killer = null;
-						cause = DeathCause.MOB;
-					}
+					const rawKiller = m.groups.killer ? m.groups.killer.trim() : null;
+					const rawMob = m.groups.mob ? m.groups.mob.trim() : null;
+					const sanitized = this.sanitizeDeathCause(rawKiller, rawMob, p.cause);
 
 					return {
 						victim: m.groups.victim.trim(),
-						killer,
-						mob,
+						killer: sanitized.killer,
+						mob: sanitized.mob,
 						weapon: m.groups.weapon ? m.groups.weapon.trim() : null,
-						cause,
+						cause: sanitized.cause,
 					};
 				}
 			} catch {
@@ -221,23 +236,23 @@ export class DeathParserService {
 			const match = cleanMsg.match(regex);
 			if (match && match.groups && match.groups.victim) {
 				const victim = match.groups.victim.trim();
-				const killer = match.groups.killer ? match.groups.killer.trim() : null;
-				const mob = match.groups.mob ? match.groups.mob.trim() : null;
+				const rawKiller = match.groups.killer ? match.groups.killer.trim() : null;
+				const rawMob = match.groups.mob ? match.groups.mob.trim() : null;
 				const weapon = match.groups.weapon ? match.groups.weapon.trim() : null;
-				const cause = patternDoc.cause || DeathCause.UNKNOWN;
+				const sanitized = this.sanitizeDeathCause(rawKiller, rawMob, patternDoc.cause);
 
 				const parsed: ParsedDeath = {
 					victim,
-					killer,
-					mob,
+					killer: sanitized.killer,
+					mob: sanitized.mob,
 					weapon,
-					cause,
+					cause: sanitized.cause,
 					rawMessage: cleanMsg,
 				};
 
 				main.client.logger.debug(
 					"Death/KD",
-					`[${serverIp}] Matched pattern "${patternDoc.name}" -> Victim: "${victim}", Killer: ${killer ? `"${killer}"` : "null"}, Mob: ${mob ? `"${mob}"` : "null"}, Cause: ${cause}`
+					`[${serverIp}] Matched pattern "${patternDoc.name}" -> Victim: "${victim}", Killer: ${sanitized.killer ? `"${sanitized.killer}"` : "null"}, Mob: ${sanitized.mob ? `"${sanitized.mob}"` : "null"}, Cause: ${sanitized.cause}`
 				);
 
 				await DeathStatsService.recordDeathStatsDirect(serverIp, parsed, main?.client?.logger);
@@ -248,7 +263,7 @@ export class DeathParserService {
 		// 2. Check if message has death keywords but didn't match -> Learn dynamically
 		if (this.hasDeathKeywords(cleanMsg)) {
 			main.client.logger.debug("Death/KD", `[${serverIp}] Unrecognized death keyword in: "${cleanMsg}". Triggering learner.`);
-			DeathRegexLearner.processUnknownDeathMessage(main, cleanMsg).catch(() => {});
+			DeathRegexLearner.processUnknownDeathMessage(main, cleanMsg).catch(() => { });
 		}
 
 		return null;

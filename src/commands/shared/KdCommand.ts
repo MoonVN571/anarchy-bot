@@ -42,9 +42,6 @@ export class KdCommand extends Command {
 
 		const kills = stats.kills || 0;
 		const deaths = stats.deaths || 0;
-		const suicides = stats.suicides || 0;
-		const mobDeaths = stats.mobDeaths || 0;
-		const pvpDeaths = Math.max(0, deaths - suicides - mobDeaths);
 		const kdRatio = deaths > 0 ? (kills / deaths).toFixed(2) : kills.toFixed(2);
 
 		const username = stats.displayName || stats.username;
@@ -55,8 +52,7 @@ export class KdCommand extends Command {
 				new TextDisplayBuilder().setContent(
 					`**Chỉ số K/D: ${username}**\n` +
 					`- Tỉ lệ K/D: **${kdRatio}**\n` +
-					`- Kills: **${kills}** | Tổng Deaths: **${deaths}**\n` +
-					`- PvP Deaths: **${pvpDeaths}** | Mob Deaths: **${mobDeaths}** | Suicide: **${suicides}**`
+					`- Hạ gục (Kills): **${kills}** | Tử vong (Deaths): **${deaths}**`
 				)
 			)
 			.setThumbnailAccessory(
