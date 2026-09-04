@@ -1,3 +1,4 @@
+import { MailService } from "../../services";
 import { Minecraft } from "../../structures";
 import { MineflayerEvent } from "../../typings";
 
@@ -9,7 +10,15 @@ export default class PlayerJoinedEvent extends MineflayerEvent {
 		});
 	}
 
-	async execute(_main: Minecraft, _player: any): Promise<void> {
-		// Join events are tracked via chat messages in MessageStr instead of mineflayer tablist playerJoined
+	async execute(main: Minecraft, player: any): Promise<void> {
+		if (player && player.username) {
+			const username = player.username;
+			const botName = main.bot?.username;
+			if (botName && username.toLowerCase() === botName.toLowerCase()) return;
+
+			MailService.deliverMailsToPlayer(main, username).catch(() => {});
+			MailService.checkDeliveryReceiptsForSender(main, username).catch(() => {});
+		}
 	}
 }
+

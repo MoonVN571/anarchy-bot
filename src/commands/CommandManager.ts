@@ -23,6 +23,7 @@ import {
 	PlaytimeCommand,
 	QuoteCommand,
 	SeenCommand,
+	SendCommand,
 	StatsCommand,
 	TablistCommand,
 	TopCommand,
@@ -131,6 +132,7 @@ export class CommandManager {
 		this.registerCommand(new FirstMessageCommand());
 		this.registerCommand(new LastMessageCommand());
 		this.registerCommand(new DiscordInviteCommand());
+		this.registerCommand(new SendCommand());
 		this.registerCommand(new KillCommand());
 		this.registerCommand(new PingCommand());
 		this.registerCommand(new TpsCommand());

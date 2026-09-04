@@ -2,7 +2,7 @@ import { inGameCommandManager } from "../../commands";
 import { MessageModel } from "../../database/models/MessageModel";
 import { PlayerModel } from "../../database/models/PlayerModel";
 import { RedisManager } from "../../redis/RedisManager";
-import { MessageClassifierService, QuoteService } from "../../services";
+import { MailService, MessageClassifierService, QuoteService } from "../../services";
 import { Minecraft } from "../../structures";
 import { MineflayerEvent } from "../../typings";
 import { AuthHandler, ChatParser, globalSpamDetector, MessageType } from "../../utils";
@@ -176,6 +176,8 @@ export default class MessageStrEvent extends MineflayerEvent {
 		// B. Handle Player Join / Leave Events
 		if (parsed.type === MessageType.Join && parsed.username) {
 			await bot.playtimeTracker?.handlePlayerJoin(parsed.username);
+			MailService.deliverMailsToPlayer(bot, parsed.username).catch(() => { });
+			MailService.checkDeliveryReceiptsForSender(bot, parsed.username).catch(() => { });
 			return;
 		}
 

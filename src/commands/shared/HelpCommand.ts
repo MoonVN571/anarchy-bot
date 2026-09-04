@@ -70,6 +70,7 @@ export class HelpCommand extends Command {
 					"- `>quote [player]` (In-game: `!quote`) — Trích dẫn câu chat ngẫu nhiên\n" +
 					"- `>online` (In-game: `!online`) — Danh sách người chơi đang online\n\n" +
 					"**Tra Cứu Thông Tin & Lịch Sử:**\n" +
+					"- `>send <player> <msg>` (In-game: `!send` / `!mail`) — Gửi tin nhắn offline xuyên nền tảng\n" +
 					"- `>jd [player]` (In-game: `!jd`) — Ngày đầu tiên người chơi vào server\n" +
 					"- `>seen [player]` (In-game: `!seen`) — Trạng thái online hoặc lần cuối nhìn thấy\n" +
 					"- `>fm [player]` (In-game: `!fm`) — Tra cứu câu tin nhắn đầu tiên\n" +
@@ -104,7 +105,7 @@ export class HelpCommand extends Command {
 	public async executeInGame(_ctx: InGameCommandContext): Promise<string[] | void> {
 		return [
 			"[Help - Thống kê] !kd, !stats, !top, !playtime, !quote, !online",
-			"[Help - Tra cứu] !jd, !seen, !fm, !lm",
+			"[Help - Tra cứu & Thư] !send, !mail, !jd, !seen, !fm, !lm",
 			"[Help - Tự động] !goto, !highway, !stop, !totem, !follow",
 			"[Help - Tiện ích] !discord, !kill, !ping, !tps, !pos, !tab, !status",
 		];

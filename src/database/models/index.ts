@@ -4,4 +4,5 @@ export * from "./QuoteModel";
 export * from "./DeathModel";
 export * from "./DeathPatternModel";
 export * from "./SystemPatternModel";
+export * from "./MailModel";
 

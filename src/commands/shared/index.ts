@@ -14,3 +14,4 @@ export * from "./OnlineCommand";
 export * from "./FirstMessageCommand";
 export * from "./LastMessageCommand";
 export * from "./TablistCommand";
+export * from "./SendCommand";
