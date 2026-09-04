@@ -1,6 +1,7 @@
 import type { Block } from "prismarine-block";
 import { Minecraft } from "../../structures/Minecraft";
 import { Server } from "../../typings";
+import { ChatPriority } from "./ChatQueueService";
 
 export class AntiAfkService {
 	private main: Minecraft;
@@ -181,7 +182,7 @@ export class AntiAfkService {
 	 */
 	private debugChat(actionDesc: string): void {
 		if (this.main.config.id === "testServer" && this.main.bot) {
-			this.main.bot.chat(`[Anti-AFK Debug] Thực hiện: ${actionDesc}`);
+			this.main.chatQueue.send(`[Anti-AFK Debug] Thực hiện: ${actionDesc}`, ChatPriority.LOW);
 		}
 	}
 

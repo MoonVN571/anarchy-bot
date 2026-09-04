@@ -400,7 +400,7 @@ export class ChatParser {
 				msgType = MessageType.BotChat;
 				finalUsername = botName;
 				message = cleanText;
-				formattedMsg = `**\`[BOT]\` ${escapeDiscordFormat(finalUsername)}:** ${escapeDiscordFormat(cleanText)}`;
+				formattedMsg = `**\`[BOT]\` ${escapeDiscordFormat(finalUsername || botName || "mo0nbot")}:** ${escapeDiscordFormat(cleanText)}`;
 			} else {
 				const deathInfo = DeathParserService.extractDeathInfoSync(serverIp, cleanText);
 				if (deathInfo) {

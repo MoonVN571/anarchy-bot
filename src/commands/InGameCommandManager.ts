@@ -1,11 +1,10 @@
+import { ChatPriority } from "../services";
 import { Minecraft } from "../structures";
 import { commandManager } from "./CommandManager";
 
 export class InGameCommandManager {
 	private cooldowns: Map<string, number> = new Map();
 	private readonly COOLDOWN_MS = 1000; // 1 second per player
-	private readonly MAX_CHUNK_LENGTH = 160; // Max safe characters per whisper message
-	private readonly MESSAGE_DELAY_MS = 700; // Safe delay to avoid server spam-drops
 
 	/**
 	 * Handle in-game command (messages starting with "!")
@@ -61,7 +60,7 @@ export class InGameCommandManager {
 			});
 
 			if (response && bot.bot) {
-				await this.sendWhisperResponses(bot, cleanSender, response);
+				bot.chatQueue.sendWhisper(cleanSender, response, ChatPriority.COMMAND);
 				bot.client.logger.info(
 					`[InGameCommand] Executed !${cmdName} for ${cleanSender} on ${bot.config.connection.host}`
 				);
@@ -73,85 +72,7 @@ export class InGameCommandManager {
 			return true;
 		}
 	}
-
-	/**
-	 * Send one or multiple whisper responses cleanly to the player
-	 */
-	private async sendWhisperResponses(
-		bot: Minecraft,
-		recipient: string,
-		response: string | string[]
-	): Promise<void> {
-		if (!bot.bot) return;
-
-		// Normalize response into list of lines
-		let rawLines: string[] = [];
-		if (Array.isArray(response)) {
-			rawLines = response.flatMap(r => r.split("\n"));
-		} else {
-			rawLines = response.split("\n");
-		}
-
-		// Clean and chunk lines that are too long
-		const linesToSend: string[] = [];
-		for (const rawLine of rawLines) {
-			const trimmed = rawLine.trim();
-			if (!trimmed) continue;
-
-			if (trimmed.length <= this.MAX_CHUNK_LENGTH) {
-				linesToSend.push(trimmed);
-			} else {
-				// Split into natural word chunks
-				const chunks = this.chunkText(trimmed, this.MAX_CHUNK_LENGTH);
-				linesToSend.push(...chunks);
-			}
-		}
-
-		// Send each whisper with safe delay
-		for (let i = 0; i < linesToSend.length; i++) {
-			try {
-				if (typeof (bot.bot as any).whisper === "function") {
-					(bot.bot as any).whisper(recipient, linesToSend[i]);
-				} else {
-					bot.bot.chat(`/tell ${recipient} ${linesToSend[i]}`);
-				}
-			} catch {
-				try {
-					bot.bot.chat(`/w ${recipient} ${linesToSend[i]}`);
-				} catch { }
-			}
-
-			if (i < linesToSend.length - 1) {
-				await new Promise(r => setTimeout(r, this.MESSAGE_DELAY_MS));
-			}
-		}
-	}
-
-	/**
-	 * Break long text into chunks at natural word boundaries
-	 */
-	private chunkText(text: string, maxLength: number): string[] {
-		const words = text.split(" ");
-		const chunks: string[] = [];
-		let currentChunk = "";
-
-		for (const word of words) {
-			if (!currentChunk) {
-				currentChunk = word;
-			} else if (currentChunk.length + 1 + word.length <= maxLength) {
-				currentChunk += " " + word;
-			} else {
-				chunks.push(currentChunk);
-				currentChunk = word;
-			}
-		}
-
-		if (currentChunk) {
-			chunks.push(currentChunk);
-		}
-
-		return chunks;
-	}
 }
 
 export const inGameCommandManager = new InGameCommandManager();
+

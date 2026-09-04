@@ -4,6 +4,7 @@ import {
 	SeparatorBuilder,
 	MessageFlags,
 } from "discord.js";
+import { ChatPriority } from "../../services";
 import { Command, CommandContext, InGameCommandContext } from "../../typings";
 import { messageColors } from "../../utils";
 
@@ -44,7 +45,7 @@ export class KillCommand extends Command {
 		KillCommand.lastKillTimes.set(serverHost, now);
 
 		try {
-			bot.bot.chat("/kill");
+			bot.chatQueue.send("/kill", ChatPriority.HIGH);
 			const container = new ContainerBuilder()
 				.setAccentColor(messageColors.dead)
 				.addTextDisplayComponents(
@@ -87,10 +88,11 @@ export class KillCommand extends Command {
 		KillCommand.lastKillTimes.set(serverHost, now);
 
 		try {
-			bot.bot.chat("/kill");
+			bot.chatQueue.send("/kill", ChatPriority.HIGH);
 			return `[Tự sát] Bot đã tự sát theo yêu cầu của ${sender} và đang hồi sinh về Spawn!`;
 		} catch {
 			return "[Tự sát] Không thể thực thi lệnh /kill lúc này!";
 		}
 	}
 }
+

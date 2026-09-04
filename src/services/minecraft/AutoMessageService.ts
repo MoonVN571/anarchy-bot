@@ -1,5 +1,6 @@
 import { Minecraft } from "../../structures";
 import { Server } from "../../typings";
+import { ChatPriority } from "./ChatQueueService";
 
 export class AutoMessageService {
 	private bot: Minecraft;
@@ -76,14 +77,10 @@ export class AutoMessageService {
 		const rawMessage = autoMessage.messages[chosenIndex];
 		const formattedMessage = this.formatMessage(rawMessage);
 
-		try {
-			this.bot.bot.chat(formattedMessage);
-			this.bot.client.logger.info(
-				`[AutoMessage] [${this.bot.config.connection.host}] Sent tip (${this.messageCount} msgs triggered, next in ${this.targetThreshold}): ${formattedMessage}`
-			);
-		} catch (err) {
-			this.bot.client.logger.error(`[AutoMessage] Failed to send chat message: ${err}`);
-		}
+		this.bot.chatQueue.send(formattedMessage, ChatPriority.LOW);
+		this.bot.client.logger.info(
+			`[AutoMessage] [${this.bot.config.connection.host}] Enqueued tip (${this.messageCount} msgs triggered, next in ${this.targetThreshold}): ${formattedMessage}`
+		);
 
 		this.lastSentTimestamp = now;
 		this.lastSentIndex = chosenIndex;

@@ -1,3 +1,4 @@
+import { ChatPriority } from "../../services";
 import { Minecraft } from "../../structures";
 import { Server } from "../../typings";
 
@@ -20,7 +21,7 @@ export class AuthHandler {
 				lowerMsg.includes("please login") ||
 				lowerMsg.includes("/login <password>")
 			) {
-				main.bot.chat(`/login ${authme}`);
+				main.chatQueue.send(`/login ${authme}`, ChatPriority.HIGH);
 				if (lobbyNpc?.enabled) {
 					setTimeout(() => {
 						if (main.currentServer !== Server.Main) {
@@ -35,7 +36,7 @@ export class AuthHandler {
 				lowerMsg.includes("please register") ||
 				lowerMsg.includes("/register <password>")
 			) {
-				main.bot.chat(`/reg ${authme} ${authme}`);
+				main.chatQueue.send(`/reg ${authme} ${authme}`, ChatPriority.HIGH);
 				if (lobbyNpc?.enabled) {
 					setTimeout(() => {
 						if (main.currentServer !== Server.Main) {
@@ -47,7 +48,7 @@ export class AuthHandler {
 				rawMsg.includes("Sử dụng: /dangnhap") ||
 				rawMsg.includes("/dangnhap")
 			) {
-				main.bot.chat(`/dangnhap ${authme}`);
+				main.chatQueue.send(`/dangnhap ${authme}`, ChatPriority.HIGH);
 				if (lobbyNpc?.enabled) {
 					setTimeout(() => {
 						if (main.currentServer !== Server.Main) {
@@ -59,7 +60,7 @@ export class AuthHandler {
 				rawMsg.includes("Sử dụng: /dangky") ||
 				rawMsg.includes("/dangky")
 			) {
-				main.bot.chat(`/dangky ${authme} ${authme}`);
+				main.chatQueue.send(`/dangky ${authme} ${authme}`, ChatPriority.HIGH);
 				if (lobbyNpc?.enabled) {
 					setTimeout(() => {
 						if (main.currentServer !== Server.Main) {
@@ -76,7 +77,7 @@ export class AuthHandler {
 			main.config.auth.pin.length > 0 &&
 			(rawMsg.includes("/pin") || lowerMsg.includes("mã pin") || lowerMsg.includes("nhập pin"))
 		) {
-			main.bot.chat(`/pin ${main.config.auth.pin.join("")}`);
+			main.chatQueue.send(`/pin ${main.config.auth.pin.join("")}`, ChatPriority.HIGH);
 			if (lobbyNpc?.enabled) {
 				setTimeout(() => {
 					if (main.currentServer !== Server.Main) {
@@ -120,7 +121,7 @@ export class AuthHandler {
 
 	private static handleServerNavigation(main: Minecraft, lowerMsg: string, rawMsg: string): void {
 		if (main.config.auth.autoNavigateCommand) {
-			main.bot.chat(main.config.auth.autoNavigateCommand);
+			main.chatQueue.send(main.config.auth.autoNavigateCommand, ChatPriority.HIGH);
 			main.currentServer = Server.Queue;
 			return;
 		}
@@ -149,7 +150,7 @@ export class AuthHandler {
 		}
 
 		if (lowerMsg.includes("/avn để vào server") || lowerMsg.includes("/avn de vao server")) {
-			main.bot.chat("/avn");
+			main.chatQueue.send("/avn", ChatPriority.HIGH);
 			main.currentServer = Server.Queue;
 		} else if (
 			lowerMsg.includes("/2y2c để vào server") ||
@@ -157,10 +158,11 @@ export class AuthHandler {
 			lowerMsg.includes("dùng lệnh/2y2c") ||
 			lowerMsg.includes("dùng lệnh /2y2c")
 		) {
-			main.bot.chat("/2y2c");
+			main.chatQueue.send("/2y2c", ChatPriority.HIGH);
 			main.currentServer = Server.Queue;
 		} else if (lowerMsg.includes("đăng nhập thành công")) {
 			main.bot.activateItem();
 		}
 	}
 }
+

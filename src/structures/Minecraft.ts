@@ -2,7 +2,7 @@ import { TextChannel } from "discord.js";
 import { Bot, BotOptions, createBot } from "mineflayer";
 import { loader as baritoneLoader } from "@miner-org/mineflayer-baritone";
 import { mineflayerEventClasses } from "../events/mineflayer";
-import { AntiAfkService, AutoEatService, AutoMessageService, HighwayNavigationService, PlaytimeTracker, SmartPathfinderService, viewerManager } from "../services";
+import { AntiAfkService, AutoEatService, AutoMessageService, ChatPriority, ChatQueueService, HighwayNavigationService, PlaytimeTracker, SmartPathfinderService, viewerManager } from "../services";
 import { MinecraftServerConfig, Server } from "../typings";
 import { Discord } from "./Discord";
 import { LiveChatManager } from "./LiveChatManager";
@@ -24,6 +24,7 @@ export class Minecraft {
 	public smartPathfinderService: SmartPathfinderService;
 	public highwayNavigationService: HighwayNavigationService;
 	public autoEatService: AutoEatService;
+	public chatQueue: ChatQueueService;
 
 	private isDestroyed: boolean = false;
 	private reconnectTimer: NodeJS.Timeout | null = null;
@@ -41,6 +42,7 @@ export class Minecraft {
 		this.smartPathfinderService = new SmartPathfinderService(this);
 		this.highwayNavigationService = new HighwayNavigationService(this);
 		this.autoEatService = new AutoEatService(this);
+		this.chatQueue = new ChatQueueService(this);
 
 		this.resolveChannel();
 		this.connect();
@@ -156,7 +158,7 @@ export class Minecraft {
 			.replace(/\{displayName\}/g, displayName)
 			.replace(/\{message\}/g, message);
 
-		this.bot.chat(formatted);
+		this.chatQueue.send(formatted, ChatPriority.NORMAL);
 	}
 
 	public startQueueTimeout(): void {
@@ -232,6 +234,7 @@ export class Minecraft {
 		this.highwayNavigationService?.stop();
 		this.autoEatService?.stop();
 		this.antiAfkService?.stop();
+		this.chatQueue?.stop();
 		this.stopViewer();
 		this.playtimeTracker?.stop();
 		this.liveChatManager?.clear();
@@ -248,6 +251,7 @@ export class Minecraft {
 		this.highwayNavigationService?.stop();
 		this.autoEatService?.stop();
 		this.antiAfkService?.stop();
+		this.chatQueue?.stop();
 		if (this.bot) {
 			this.stopViewer();
 			try {
@@ -266,6 +270,7 @@ export class Minecraft {
 		this.clearQueueTimeout();
 		this.stopTopicTimer();
 		this.stopAutoMessageTimer();
+		this.chatQueue?.clear();
 	}
 
 	private loadEvents(): void {
