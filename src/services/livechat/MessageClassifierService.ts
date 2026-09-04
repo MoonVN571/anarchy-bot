@@ -188,13 +188,15 @@ export class MessageClassifierService {
 		const promptId = Buffer.from(`${Date.now()}_${Math.floor(Math.random() * 1000)}`).toString("base64url");
 
 		const verifyChannelId =
+			main.config.deathVerifyChannelId ||
+			main.config.livechat.deathVerifyChannelId ||
 			main.config.deathMessageChannelId ||
-			main.config.livechat.deathMessageChannelId ||
 			(main.client.config as any).deathVerificationChannel;
 
 		const targetChannel =
-			main.deathChannel ||
+			main.deathVerifyChannel ||
 			(verifyChannelId ? main.client.channels.cache.get(verifyChannelId) as TextChannel : null) ||
+			main.deathChannel ||
 			(main.channel as TextChannel);
 
 		if (!targetChannel) return;

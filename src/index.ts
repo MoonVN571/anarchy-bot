@@ -58,9 +58,10 @@ client.once(Events.ClientReady, async () => {
 		name: "AnarchyVN (2y2c.org)",
 		ip: ServerIp.anarchyVN,
 		version: "1.19.4",
-		livechatChannelId: client.dev ? "987204059838709780" : "1543610895584727080",
-		deathMessageChannelId: client.dev ? "987204059838709780" : "1543623410406395924",
-		commandLogChannelId: client.dev ? "1545382765032243220" : "1545382026109128744",
+		channelId: client.dev ? "987204059838709780" : "1543610895584727080",
+		deathMessageChannelId: client.dev ? undefined : "1543623410406395924",
+		deathVerifyChannelId: client.dev ? "1545392965508403301" : "1545392297917550622",
+		commandLogChannelId: client.dev ? "1543901446838292591" : "1545382026109128744",
 	});
 
 	// const testServerConfig = createServerConfig({

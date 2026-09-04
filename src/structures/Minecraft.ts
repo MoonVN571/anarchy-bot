@@ -15,6 +15,7 @@ export class Minecraft {
 	public uptime: number = 0;
 	public channel!: TextChannel;
 	public deathChannel?: TextChannel;
+	public deathVerifyChannel?: TextChannel;
 	public commandLogChannel?: TextChannel;
 	public joined: boolean = false;
 	public spawnCount: number = 0;
@@ -62,6 +63,13 @@ export class Minecraft {
 			const dChan = this.client.channels.cache.get(deathChanId);
 			if (dChan && dChan.isTextBased()) {
 				this.deathChannel = dChan as TextChannel;
+			}
+		}
+		const deathVerifyChanId = this.config.deathVerifyChannelId || this.config.livechat.deathVerifyChannelId;
+		if (deathVerifyChanId) {
+			const dvChan = this.client.channels.cache.get(deathVerifyChanId);
+			if (dvChan && dvChan.isTextBased()) {
+				this.deathVerifyChannel = dvChan as TextChannel;
 			}
 		}
 		const cmdLogChanId = this.config.commandLogChannelId || this.config.livechat.commandLogChannelId;

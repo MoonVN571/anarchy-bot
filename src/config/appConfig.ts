@@ -63,8 +63,10 @@ export interface CreateServerConfigOptions {
 	port?: number;
 	version?: string;
 	auth?: AuthType;
-	livechatChannelId: string;
+	channelId?: string;
+	livechatChannelId?: string;
 	deathMessageChannelId?: string;
+	deathVerifyChannelId?: string;
 	commandLogChannelId?: string;
 	reconnectInterval?: number;
 	autoNavigateCommand?: string;
@@ -80,6 +82,8 @@ export function createServerConfig(options: CreateServerConfigOptions): Minecraf
 		(options.ip === ServerIp.anarchyVN || options.ip === "2y2c.org" || options.id?.toLowerCase().includes("anarchyvn")
 			? { enabled: true, x: 48, y: 10, z: 40 }
 			: undefined);
+
+	const mainChannelId = options.channelId || options.livechatChannelId || "";
 
 	return {
 		id: options.id || options.ip,
@@ -102,8 +106,9 @@ export function createServerConfig(options: CreateServerConfigOptions): Minecraf
 			assumeMainServer: options.assumeMainServer,
 		},
 		livechat: {
-			channelId: options.livechatChannelId,
+			channelId: mainChannelId,
 			deathMessageChannelId: options.deathMessageChannelId,
+			deathVerifyChannelId: options.deathVerifyChannelId,
 			commandLogChannelId: options.commandLogChannelId,
 			chatTemplate: "> [{displayName}] {message} | bit.ly/mo0nbot2",
 			rateLimit: { ...defaultRateLimitConfig },
@@ -111,6 +116,7 @@ export function createServerConfig(options: CreateServerConfigOptions): Minecraf
 			autoMessage: { ...defaultAutoMessageConfig },
 		},
 		deathMessageChannelId: options.deathMessageChannelId,
+		deathVerifyChannelId: options.deathVerifyChannelId,
 		commandLogChannelId: options.commandLogChannelId,
 		reconnectInterval:
 			options.reconnectInterval ??

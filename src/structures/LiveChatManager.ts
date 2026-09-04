@@ -5,6 +5,7 @@ import { ParsedChatMessage, SpamDetector, MessageV2Renderer, MessageRenderer, Me
 interface QueuedMessage {
 	parsed: ParsedChatMessage;
 	serverHost: string;
+	targetChannelId: string;
 	timestamp: number;
 	repeatCount: number;
 	signature: string;
@@ -40,10 +41,9 @@ export class LiveChatManager {
 	public async push(parsed: ParsedChatMessage): Promise<void> {
 		if (!parsed.formattedMsg && !parsed.message) return;
 
-		const channel = this.main.channel as TextChannel;
-		if (!channel) {
+		if (!this.main.channel) {
 			this.main.resolveChannel();
-			if (!this.main.channel) return;
+			if (!this.main.channel && !this.main.deathChannel) return;
 		}
 
 		const serverHost = this.main.config.connection.host;
@@ -53,33 +53,65 @@ export class LiveChatManager {
 		// Check server-level rate limiter config
 		this.handleServerRateLimit();
 
-		// Check if identical message already exists in queue to merge with [xN]
-		const existingItem = this.queue.find(
-			item => item.serverHost === serverHost &&
-				item.signature === signature &&
-				now - item.timestamp < LiveChatManager.SPAM_MERGE_WINDOW_MS
-		);
+		// Determine target channels:
+		// 1. Death messages appear in BOTH LiveChat and Death/Non-chat channel
+		// 2. Non-chat events (join, quit, queue, achievement, server) go to Death/Non-chat channel (or LiveChat if no deathChannel)
+		// 3. Regular chat messages go to LiveChat channel
+		const targetChannelIds: string[] = [];
+		const isNonChat =
+			parsed.type === MessageType.Dead ||
+			parsed.type === MessageType.Join ||
+			parsed.type === MessageType.Quit ||
+			parsed.type === MessageType.Queue ||
+			parsed.type === MessageType.Achievement ||
+			parsed.type === MessageType.Server;
 
-		if (existingItem) {
-			existingItem.repeatCount++;
-			existingItem.timestamp = now;
-			existingItem.parsed = parsed; // Use latest timestamp/metadata
-			this.scheduleFlush();
-			return;
+		if (parsed.type === MessageType.Dead) {
+			if (this.main.channel) {
+				targetChannelIds.push(this.main.channel.id);
+			}
+			if (this.main.deathChannel && this.main.deathChannel.id !== this.main.channel?.id) {
+				targetChannelIds.push(this.main.deathChannel.id);
+			}
+		} else if (isNonChat) {
+			if (this.main.deathChannel) {
+				targetChannelIds.push(this.main.deathChannel.id);
+			} else if (this.main.channel) {
+				targetChannelIds.push(this.main.channel.id);
+			}
+		} else {
+			if (this.main.channel) {
+				targetChannelIds.push(this.main.channel.id);
+			}
 		}
 
-		// Prevent queue from growing unbounded
-		if (this.queue.length >= LiveChatManager.MAX_QUEUE_SIZE) {
-			this.queue.shift(); // Drop oldest message to prevent memory leaks
-		}
+		for (const targetChannelId of targetChannelIds) {
+			const existingItem = this.queue.find(
+				item => item.serverHost === serverHost &&
+					item.targetChannelId === targetChannelId &&
+					item.signature === signature &&
+					now - item.timestamp < LiveChatManager.SPAM_MERGE_WINDOW_MS
+			);
 
-		this.queue.push({
-			parsed,
-			serverHost,
-			timestamp: now,
-			repeatCount: 1,
-			signature,
-		});
+			if (existingItem) {
+				existingItem.repeatCount++;
+				existingItem.timestamp = now;
+				existingItem.parsed = parsed; // Use latest timestamp/metadata
+			} else {
+				if (this.queue.length >= LiveChatManager.MAX_QUEUE_SIZE) {
+					this.queue.shift(); // Drop oldest message to prevent memory leaks
+				}
+
+				this.queue.push({
+					parsed,
+					serverHost,
+					targetChannelId,
+					timestamp: now,
+					repeatCount: 1,
+					signature,
+				});
+			}
+		}
 
 		// Trigger debounce flush
 		this.scheduleFlush();
@@ -117,12 +149,6 @@ export class LiveChatManager {
 			return;
 		}
 
-		const channel = this.main.channel as TextChannel;
-		if (!channel) {
-			this.main.resolveChannel();
-			if (!this.main.channel) return;
-		}
-
 		this.isProcessing = true;
 
 		try {
@@ -132,7 +158,7 @@ export class LiveChatManager {
 				await new Promise(resolve => setTimeout(resolve, LiveChatManager.MIN_SEND_INTERVAL_MS - elapsedSinceLastSend));
 			}
 
-			// Take batch of messages for this server, grouped by target channel (deathChannel vs main channel)
+			// Take batch of messages for this server, grouped by target channel ID
 			const serverHost = this.main.config.connection.host;
 			const firstItem = this.queue.find(item => item.serverHost === serverHost);
 			if (!firstItem) {
@@ -140,25 +166,23 @@ export class LiveChatManager {
 				return;
 			}
 
-			const isFirstItemDead = firstItem.parsed.type === MessageType.Dead;
-			const targetChannel = (isFirstItemDead && this.main.deathChannel)
-				? this.main.deathChannel
-				: channel;
+			const targetChannelId = firstItem.targetChannelId;
+			const targetChannel = (this.main.client.channels.cache.get(targetChannelId) as TextChannel) || this.main.channel;
+
+			if (!targetChannel) {
+				this.isProcessing = false;
+				return;
+			}
 
 			const batchItems: QueuedMessage[] = [];
 			const remaining: QueuedMessage[] = [];
 
 			for (const item of this.queue) {
-				if (item.serverHost === serverHost) {
-					const isItemDead = item.parsed.type === MessageType.Dead;
-					const itemTarget = (isItemDead && this.main.deathChannel) ? this.main.deathChannel : channel;
-
-					if (itemTarget.id === targetChannel.id && batchItems.length < LiveChatManager.MAX_CONTAINERS_PER_MESSAGE) {
-						batchItems.push(item);
-						continue;
-					}
+				if (item.serverHost === serverHost && item.targetChannelId === targetChannelId && batchItems.length < LiveChatManager.MAX_CONTAINERS_PER_MESSAGE) {
+					batchItems.push(item);
+				} else {
+					remaining.push(item);
 				}
-				remaining.push(item);
 			}
 
 			if (batchItems.length === 0) {

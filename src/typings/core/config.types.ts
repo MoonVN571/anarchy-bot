@@ -54,6 +54,7 @@ export interface AutoMessageConfig {
 export interface LiveChatConfig {
 	channelId: string;
 	deathMessageChannelId?: string;
+	deathVerifyChannelId?: string;
 	commandLogChannelId?: string;
 	chatTemplate: string; // e.g. "> [{displayName}] {message} | bit.ly/mo0nbot"
 	rateLimit: RateLimitConfig;
@@ -68,6 +69,7 @@ export interface MinecraftServerConfig {
 	auth: MinecraftAuthConfig;
 	livechat: LiveChatConfig;
 	deathMessageChannelId?: string;
+	deathVerifyChannelId?: string;
 	commandLogChannelId?: string;
 	reconnectInterval: number; // in ms
 }

@@ -85,9 +85,9 @@ export class CommandLoggerService {
 		cmdName: string
 	): Promise<void> {
 		const targetChannelId =
+			bot?.commandLogChannel?.id ||
 			bot?.config?.commandLogChannelId ||
-			bot?.config?.livechat?.commandLogChannelId ||
-			(client.dev ? "1545382765032243220" : "1545382026109128744");
+			bot?.config?.livechat?.commandLogChannelId;
 
 		if (!targetChannelId) return;
 
