@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { StatsService } from "../../services";
 import { Command, CommandContext, InGameCommandContext } from "../../typings";
-import { formatTimeAgo, messageColors } from "../../utils";
+import { formatRelativeTime, formatTimeAgo, messageColors } from "../../utils";
 
 export class SeenCommand extends Command {
 	constructor() {
@@ -96,7 +96,7 @@ export class SeenCommand extends Command {
 		}
 
 		const formattedDate = stats?.lastSeen ? new Date(stats.lastSeen).toLocaleString("vi-VN") : "N/A";
-		const timeAgo = stats?.lastSeen ? formatTimeAgo(new Date(stats.lastSeen)) : "N/A";
+		const timeAgo = stats?.lastSeen ? formatRelativeTime(new Date(stats.lastSeen)) : "N/A";
 
 		return `[Seen] ${playerName} online lần cuối vào: ${formattedDate} (${timeAgo})`;
 	}

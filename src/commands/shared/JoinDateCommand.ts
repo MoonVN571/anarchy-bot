@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { StatsService } from "../../services";
 import { Command, CommandContext, InGameCommandContext } from "../../typings";
-import { formatTimeAgo, messageColors } from "../../utils";
+import { formatRelativeTime, formatTimeAgo, messageColors } from "../../utils";
 
 export class JoinDateCommand extends Command {
 	constructor() {
@@ -81,7 +81,7 @@ export class JoinDateCommand extends Command {
 
 		const playerName = stats.displayName || stats.username || targetUser;
 		const formattedDate = stats.firstSeen ? new Date(stats.firstSeen).toLocaleDateString("vi-VN") : "N/A";
-		const timeAgo = stats.firstSeen ? formatTimeAgo(new Date(stats.firstSeen)) : "N/A";
+		const timeAgo = stats.firstSeen ? formatRelativeTime(new Date(stats.firstSeen)) : "N/A";
 
 		return `[JoinDate] ${playerName} tham gia lần đầu vào: ${formattedDate} (${timeAgo})`;
 	}

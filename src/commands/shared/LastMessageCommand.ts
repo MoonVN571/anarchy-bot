@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { Command, CommandContext, InGameCommandContext } from "../../typings";
 import { MessageModel } from "../../database/models/MessageModel";
-import { formatTimeAgo } from "../../utils";
+import { formatRelativeTime, formatTimeAgo } from "../../utils";
 import { messageColors, ChatParser } from "../../utils";
 
 export class LastMessageCommand extends Command {
@@ -90,7 +90,7 @@ export class LastMessageCommand extends Command {
 			return `[LastMsg] Không tìm thấy câu chat nào của "${targetUser}"!`;
 		}
 
-		const timeAgo = formatTimeAgo(new Date(lastMsg.timestamp));
+		const timeAgo = formatRelativeTime(new Date(lastMsg.timestamp));
 		return `[LastMsg] ${lastMsg.displayName} (${timeAgo}): "${lastMsg.message}"`;
 	}
 }
