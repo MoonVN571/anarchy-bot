@@ -63,7 +63,9 @@ export interface CreateServerConfigOptions {
 	port?: number;
 	version?: string;
 	auth?: AuthType;
-	channelId: string;
+	livechatChannelId: string;
+	deathMessageChannelId?: string;
+	commandLogChannelId?: string;
 	reconnectInterval?: number;
 	autoNavigateCommand?: string;
 	lobbyNpc?: LobbyNpcConfig;
@@ -100,12 +102,16 @@ export function createServerConfig(options: CreateServerConfigOptions): Minecraf
 			assumeMainServer: options.assumeMainServer,
 		},
 		livechat: {
-			channelId: options.channelId,
+			channelId: options.livechatChannelId,
+			deathMessageChannelId: options.deathMessageChannelId,
+			commandLogChannelId: options.commandLogChannelId,
 			chatTemplate: "> [{displayName}] {message} | bit.ly/mo0nbot2",
 			rateLimit: { ...defaultRateLimitConfig },
 			topic: { ...defaultTopicConfig },
 			autoMessage: { ...defaultAutoMessageConfig },
 		},
+		deathMessageChannelId: options.deathMessageChannelId,
+		commandLogChannelId: options.commandLogChannelId,
 		reconnectInterval:
 			options.reconnectInterval ??
 			(process.env.RECONNECT_INTERVAL_MS ? parseInt(process.env.RECONNECT_INTERVAL_MS, 10) : 10 * 1000),

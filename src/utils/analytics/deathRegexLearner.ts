@@ -210,11 +210,13 @@ export class DeathRegexLearner {
 			);
 
 			const verifyChannelId =
-				process.env.DEATH_VERIFY_CHANNEL_ID ||
+				main.config.deathMessageChannelId ||
+				main.config.livechat.deathMessageChannelId ||
 				(main.client.config as any).deathVerificationChannel;
 
 			const targetChannel =
-				(verifyChannelId ? main.client.channels.cache.get(verifyChannelId) : null) as TextChannel ||
+				main.deathChannel ||
+				(verifyChannelId ? main.client.channels.cache.get(verifyChannelId) as TextChannel : null) ||
 				(main.channel as TextChannel);
 
 			if (targetChannel) {

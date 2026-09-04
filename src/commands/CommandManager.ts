@@ -2,6 +2,7 @@ import { Message } from "discord.js";
 import { Discord, Minecraft } from "../structures";
 import { Command } from "../typings";
 import { removeVietnameseDiacritics } from "../utils";
+import { CommandLoggerService } from "../services";
 import { BotStatusCommand, RefactorDeathsCommand, TestDeathCommand } from "./discord";
 import {
 	CoordsCommand,
@@ -111,6 +112,10 @@ export class CommandManager {
 				args,
 				serverHost: bot.config.connection.host,
 			});
+
+			const chName = (message.channel as any).name || message.channel.id;
+			CommandLoggerService.logDiscordCommand(client, bot, message.author, chName, message.content, cmdName).catch(() => {});
+
 			return true;
 		} catch (error) {
 			client.logger.error(`[CommandManager] Error executing command >${cmdName}: ${error}`);

@@ -14,6 +14,8 @@ export class Minecraft {
 	public currentServer: Server = Server.Queue;
 	public uptime: number = 0;
 	public channel!: TextChannel;
+	public deathChannel?: TextChannel;
+	public commandLogChannel?: TextChannel;
 	public joined: boolean = false;
 	public spawnCount: number = 0;
 	public bot!: Bot;
@@ -53,6 +55,20 @@ export class Minecraft {
 			const channel = this.client.channels.cache.get(this.config.livechat.channelId);
 			if (channel && channel.isTextBased()) {
 				this.channel = channel as TextChannel;
+			}
+		}
+		const deathChanId = this.config.deathMessageChannelId || this.config.livechat.deathMessageChannelId;
+		if (deathChanId) {
+			const dChan = this.client.channels.cache.get(deathChanId);
+			if (dChan && dChan.isTextBased()) {
+				this.deathChannel = dChan as TextChannel;
+			}
+		}
+		const cmdLogChanId = this.config.commandLogChannelId || this.config.livechat.commandLogChannelId;
+		if (cmdLogChanId) {
+			const cChan = this.client.channels.cache.get(cmdLogChanId);
+			if (cChan && cChan.isTextBased()) {
+				this.commandLogChannel = cChan as TextChannel;
 			}
 		}
 	}

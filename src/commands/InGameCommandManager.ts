@@ -1,4 +1,4 @@
-import { ChatPriority } from "../services";
+import { ChatPriority, CommandLoggerService } from "../services";
 import { Minecraft } from "../structures";
 import { commandManager } from "./CommandManager";
 
@@ -66,9 +66,13 @@ export class InGameCommandManager {
 				);
 			}
 
+			// Log to Discord commandlog channel with user command and bot response
+			CommandLoggerService.logInGameCommand(bot, cleanSender, trimmed, response).catch(() => {});
+
 			return true;
 		} catch (error) {
 			bot.client.logger.error(`[InGameCommandManager] Error executing !${cmdName} for ${cleanSender}: ${error}`);
+			CommandLoggerService.logInGameCommand(bot, cleanSender, trimmed, `[Lỗi] ${error}`).catch(() => {});
 			return true;
 		}
 	}

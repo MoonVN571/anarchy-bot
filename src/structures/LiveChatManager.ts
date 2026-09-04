@@ -132,17 +132,33 @@ export class LiveChatManager {
 				await new Promise(resolve => setTimeout(resolve, LiveChatManager.MIN_SEND_INTERVAL_MS - elapsedSinceLastSend));
 			}
 
-			// Take batch of messages for this server
+			// Take batch of messages for this server, grouped by target channel (deathChannel vs main channel)
 			const serverHost = this.main.config.connection.host;
+			const firstItem = this.queue.find(item => item.serverHost === serverHost);
+			if (!firstItem) {
+				this.isProcessing = false;
+				return;
+			}
+
+			const isFirstItemDead = firstItem.parsed.type === MessageType.Dead;
+			const targetChannel = (isFirstItemDead && this.main.deathChannel)
+				? this.main.deathChannel
+				: channel;
+
 			const batchItems: QueuedMessage[] = [];
 			const remaining: QueuedMessage[] = [];
 
 			for (const item of this.queue) {
-				if (item.serverHost === serverHost && batchItems.length < LiveChatManager.MAX_CONTAINERS_PER_MESSAGE) {
-					batchItems.push(item);
-				} else {
-					remaining.push(item);
+				if (item.serverHost === serverHost) {
+					const isItemDead = item.parsed.type === MessageType.Dead;
+					const itemTarget = (isItemDead && this.main.deathChannel) ? this.main.deathChannel : channel;
+
+					if (itemTarget.id === targetChannel.id && batchItems.length < LiveChatManager.MAX_CONTAINERS_PER_MESSAGE) {
+						batchItems.push(item);
+						continue;
+					}
 				}
+				remaining.push(item);
 			}
 
 			if (batchItems.length === 0) {
@@ -151,7 +167,7 @@ export class LiveChatManager {
 			}
 
 			// Attempt dispatch with multi-tier fallback
-			const sentSuccessfully = await this.dispatchBatch(channel, batchItems);
+			const sentSuccessfully = await this.dispatchBatch(targetChannel, batchItems);
 
 			if (sentSuccessfully) {
 				this.lastSendTime = Date.now();
