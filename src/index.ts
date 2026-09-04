@@ -61,7 +61,18 @@ client.once(Events.ClientReady, async () => {
 		channelId: client.dev ? "987204059838709780" : "1543610895584727080",
 	});
 
+	// const testServerConfig = createServerConfig({
+	// 	id: "testServer",
+	// 	name: "Local Test Server",
+	// 	ip: "127.0.0.1",
+	// 	port: 54786,
+	// 	version: "1.21.11",
+	// 	assumeMainServer: true,
+	// 	channelId: client.dev ? "987204059838709780" : "1543610895584727080",
+	// });
+
 	botManager.addServer(anarchyVNConfig);
+	// botManager.addServer(testServerConfig);
 });
 
 client.start();

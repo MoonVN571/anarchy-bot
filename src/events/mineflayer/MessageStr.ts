@@ -45,8 +45,10 @@ export default class MessageStrEvent extends MineflayerEvent {
 		}
 
 		const botName = bot.bot?.username || bot.config.connection.username || "";
+		const isBotTip = fullMsg.includes("[Bot Tip]") || fullMsg.startsWith("[BOT]") || fullMsg.startsWith("> [BOT]");
 		const isSelfMessage =
 			parsed.type === MessageType.BotChat ||
+			isBotTip ||
 			(botName && parsed.username && parsed.username.toLowerCase() === botName.toLowerCase());
 
 		// Check spam / duplicate detection
@@ -107,6 +109,16 @@ export default class MessageStrEvent extends MineflayerEvent {
 		fullMsg: string
 	): Promise<void> {
 		const cleanText = parsed.rawText;
+
+		// Skip background processing for bot messages and tips
+		if (
+			parsed.type === MessageType.BotChat ||
+			cleanText.includes("[Bot Tip]") ||
+			cleanText.startsWith("[BOT]") ||
+			cleanText.startsWith("> [BOT]")
+		) {
+			return;
+		}
 
 		// A. Handle Player Chat Messages
 		if (parsed.username && parsed.message && parsed.type === MessageType.Chat) {

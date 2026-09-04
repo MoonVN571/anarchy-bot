@@ -8,13 +8,15 @@
     "start": "npm run build && node ./dist/index.js",
     "build": "tsc --project tsconfig.json",
     "lint": "eslint . --fix",
-    "dev": "npx tsc -w"
+    "dev": "npx tsc -w",
+    "postinstall": "patch-package"
   },
   "keywords": [],
   "author": "Moon",
   "license": "ISC",
   "dependencies": {
     "@dotenvx/dotenvx": "^2.22.0",
+    "@miner-org/mineflayer-baritone": "^4.6.2",
     "@napi-rs/canvas": "^1.0.8",
     "axios": "^1.20.0",
     "discord.js": "^14.27.0",
@@ -24,6 +26,8 @@
     "mineflayer": "^4.38.0",
     "mineflayer-pathfinder": "^2.4.5",
     "mongoose": "^9.9.4",
+    "patch-package": "^8.0.1",
+    "postinstall-postinstall": "^2.1.0",
     "prismarine-chat": "^1.13.0",
     "prismarine-viewer": "^1.33.0",
     "winston": "^3.19.0",
@@ -34,8 +38,8 @@
     "@types/express": "^5.0.6",
     "@typescript-eslint/eslint-plugin": "^8.68.0",
     "@typescript-eslint/parser": "^8.68.0",
-    "eslint": "^10.9.1",
-    "typescript": "^7.0.2",
+    "eslint": "^9.10.0",
+    "typescript": "^5.6.0",
     "typescript-eslint": "^8.68.0"
   }
 }

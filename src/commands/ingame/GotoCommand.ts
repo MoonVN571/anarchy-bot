@@ -98,7 +98,7 @@ export class GotoCommand extends Command {
 			return "[Goto] Tọa độ không hợp lệ!";
 		}
 
-		const success = await bot.smartPathfinderService.moveTo(x, y, z);
+		const success = await bot.smartPathfinderService.moveTo(x, y, z, 1, ctx.sender);
 		const targetDisplay = y !== undefined ? `(${x}, ${y}, ${z})` : `(${x}, ${z})`;
 		return success
 			? `[Goto] Đang di chuyển đến ${targetDisplay}... Gõ !stop để dừng.`

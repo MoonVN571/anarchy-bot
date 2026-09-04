@@ -1,10 +1,12 @@
-import { Movements, goals } from "mineflayer-pathfinder";
+import { Goal, goals } from "@miner-org/mineflayer-baritone";
+import { Bot } from "mineflayer";
+import { Entity } from "prismarine-entity";
 import { Vec3 } from "vec3";
 import { Minecraft } from "../../structures/Minecraft";
 import { Server } from "../../typings";
 import { viewerManager } from "../web/ViewerManagerService";
 
-const { GoalNear, GoalBlock, GoalXZ, GoalFollow } = goals;
+const { GoalNear, GoalExact, GoalXZ, GoalXZNear } = goals;
 
 export interface PathWaypoint {
 	x: number;
@@ -14,7 +16,6 @@ export interface PathWaypoint {
 
 export class SmartPathfinderService {
 	private main: Minecraft;
-	private movements: Movements | null = null;
 	private isNavigating: boolean = false;
 	private currentGoalDesc: string | null = null;
 	private waypointQueue: PathWaypoint[] = [];
@@ -22,6 +23,7 @@ export class SmartPathfinderService {
 	private lobbyNpcInterval: NodeJS.Timeout | null = null;
 	private isNavigatingToLobbyNpc: boolean = false;
 	private eventsRegistered: boolean = false;
+	private commandUser?: string;
 
 	constructor(main: Minecraft) {
 		this.main = main;
@@ -32,68 +34,130 @@ export class SmartPathfinderService {
 	 */
 	public initMovements(): void {
 		const bot = this.main.bot;
-		if (!bot) return;
+		if (!bot || !bot.ashfinder) return;
 
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const mcData = require("minecraft-data")(bot.version);
-		const defaultMove = new Movements(bot);
+		const ash = bot.ashfinder;
 
-		// Anarchy safety movement settings
-		defaultMove.allowParkour = true;
-		defaultMove.canDig = false; // Pure movement, do not break blocks
-		defaultMove.maxDropDown = 3; // Safe drop down height (prevent high fall damage)
-		defaultMove.allow1by1towers = false;
-		defaultMove.allowSprinting = true;
+		// Safe Anarchy Movement Configuration
+		if (ash.config) {
+			ash.config.parkour = true;
+			ash.config.breakBlocks = true; // Bật đập khối
+			ash.config.placeBlocks = true; // Bật đặt khối (Bắc cầu, leo cột)
+			ash.config.maxFallDist = 3; // Safe fall height limit (prevent high fall damage)
+			ash.config.swimming = true;
+			ash.config.allowSprinting = false; // Tắt tính năng chạy nhanh
+			ash.config.thinkTimeout = 15000;
+			ash.config.stuckTimeout = 4000; // Allow 4s to traverse slopes/jumps before replan
+			
+			// Cấm đập phá các khối nguy hiểm hoặc quan trọng
+			ash.config.blocksToAvoid = [
+				"lava", "nether_portal", "fire", "cobweb", "water",
+				"obsidian", "bedrock", "ender_chest", "shulker_box",
+				"chest", "trapped_chest", "barrel", "hopper", "dropper", "dispenser"
+			];
 
-		// Don't step into Nether Portal blocks
-		const portalBlockId = mcData.blocksByName?.nether_portal?.id;
-		if (portalBlockId) {
-			defaultMove.blocksToAvoid.add(portalBlockId);
-			defaultMove.blocksCantBreak.add(portalBlockId);
+			// Quy định các khối được phép lôi ra đặt làm cầu/cột
+			ash.config.disposableBlocks = [
+				"netherrack", "dirt", "cobblestone", "stone",
+				"diorite", "granite", "andesite", "sandstone"
+			];
 		}
 
-		// Heavily avoid lava
-		const lavaBlockId = mcData.blocksByName?.lava?.id;
-		if (lavaBlockId) {
-			defaultMove.blocksToAvoid.add(lavaBlockId);
-		}
+		// Disable ash.debug so it will NOT send /particle chat spam to the server
+		ash.debug = false;
 
-		this.movements = defaultMove;
-		(bot.pathfinder as any).setMovements(this.movements);
 		this.setupPathfinderEvents();
 	}
 
 	/**
-	 * Setup event listeners on bot's pathfinder
+	 * Setup event listeners on bot's ashfinder
 	 */
 	private setupPathfinderEvents(): void {
 		const bot = this.main.bot;
-		if (!bot || !(bot as any).pathfinder || this.eventsRegistered) return;
+		if (!bot || !bot.ashfinder || this.eventsRegistered) return;
 		this.eventsRegistered = true;
 
-		// When path is calculated or updated
-		bot.on("path_update" as any, (r: any) => {
-			if (r && r.path) {
-				const points = r.path.map((p: any) => ({ x: p.x, y: p.y, z: p.z }));
+		const ash = bot.ashfinder;
+
+		// When path is started or updated
+		ash.on("pathStarted", (data: { path: { x: number; y: number; z: number }[]; status: string; goal: Goal }) => {
+			if (data && data.path && Array.isArray(data.path)) {
+				this.main.client.logger.info(
+					`[SmartPathfinder] Path started (${data.path.length} nodes) | Status: ${data.status}`
+				);
+				const points = data.path.map((p) => ({ x: p.x, y: p.y, z: p.z }));
 				viewerManager.broadcastPathUpdate(this.main.config.id, points);
 			}
 		});
 
 		// When goal is reached
-		bot.on("goal_reached" as any, () => {
+		ash.on("goal-reach", () => {
 			if (this.waypointQueue.length > 0) {
 				this.executeNextWaypoint();
 			} else {
+				this.main.client.logger.info(`[SmartPathfinder] Reached destination goal successfully!`);
+				if (bot && this.isNavigating && this.commandUser) {
+					try {
+						bot.whisper(this.commandUser, `[Pathfinder] Đã đến đích thành công!`);
+					} catch (err) {
+						this.main.client.logger.debug("Whisper Error", String(err));
+					}
+				}
 				this.onNavigationComplete(true);
 			}
 		});
 
-		// When path reset or stopped
-		bot.on("path_reset" as any, (reason: string) => {
-			if (reason === "interrupted" || reason === "stop" || reason === "stuck") {
-				if (this.isNavigating && !this.isNavigatingToLobbyNpc && this.waypointQueue.length === 0) {
-					this.onNavigationComplete(false);
+		// When partial path is reached (blocked by terrain / replanning required)
+		ash.on("goal-reach-partial" as any, () => {
+			this.main.client.logger.warn(`[SmartPathfinder] Reached end of partial path, replanning next segment...`);
+		});
+
+		// When waypoint is reached along a path
+		ash.on("waypoint-reached", (data: { waypoint?: { x: number; y: number; z: number }; index?: number }) => {
+			if (data && data.waypoint) {
+				this.main.client.logger.info(
+					`[SmartPathfinder] Reached node waypoint #${data.index}: (${data.waypoint.x}, ${data.waypoint.y}, ${data.waypoint.z})`
+				);
+			}
+		});
+
+		// When path stopped or interrupted
+		ash.on("stopped", () => {
+			const pos = bot.entity?.position;
+			const posStr = pos ? `(${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)})` : "unknown";
+
+			// Inspect block obstacles right in front of bot
+			let obstacleInfo = "";
+			let chatObstacleInfo = "Không rõ lý do";
+			if (pos) {
+				const yaw = bot.entity.yaw;
+				const dx = -Math.sin(yaw);
+				const dz = -Math.cos(yaw);
+				const stepAhead = pos.offset(dx * 0.8, 0, dz * 0.8);
+				const blockFeet = bot.blockAt(stepAhead);
+				const blockHead = bot.blockAt(stepAhead.offset(0, 1, 0));
+				obstacleInfo = ` | Obstacle ahead: Feet=[${blockFeet?.name || "air"}], Head=[${blockHead?.name || "air"}]`;
+				
+				if (blockFeet && blockFeet.name !== "air") {
+					chatObstacleInfo = `Vướng block ${blockFeet.name} dưới chân`;
+				} else if (blockHead && blockHead.name !== "air") {
+					chatObstacleInfo = `Vướng block ${blockHead.name} trên đầu`;
 				}
+			}
+
+			this.main.client.logger.info(
+				`[SmartPathfinder] Navigation stopped at ${posStr}${obstacleInfo}`
+			);
+
+			if (this.isNavigating && !this.isNavigatingToLobbyNpc && this.waypointQueue.length === 0) {
+				if (bot && this.commandUser) {
+					try {
+						bot.whisper(this.commandUser, `[Pathfinder] Đã dừng di chuyển tại ${posStr}. Lý do: ${chatObstacleInfo}`);
+					} catch (err) {
+						this.main.client.logger.debug("Whisper Error", String(err));
+					}
+				}
+				this.onNavigationComplete(false);
 			}
 		});
 	}
@@ -101,9 +165,11 @@ export class SmartPathfinderService {
 	/**
 	 * Move to target coordinate (X, Y, Z) with auto Y fallback if omitted
 	 */
-	public async moveTo(x: number, y?: number, z?: number, range: number = 1): Promise<boolean> {
+	public async moveTo(x: number, y?: number, z?: number, range: number = 1, commandUser?: string): Promise<boolean> {
 		const bot = this.main.bot;
-		if (!bot || !(bot as any).pathfinder) return false;
+		if (!bot || !bot.ashfinder) return false;
+		
+		this.commandUser = commandUser;
 
 		if (z === undefined && y !== undefined) {
 			// If called as moveTo(x, z)
@@ -113,9 +179,12 @@ export class SmartPathfinderService {
 
 		if (z === undefined) return false;
 
-		if (!this.movements) {
-			this.initMovements();
-		}
+		this.initMovements();
+
+		// Stop any active navigation before setting a new goal
+		try {
+			bot.ashfinder.stop();
+		} catch {}
 
 		// Pause Anti-AFK while pathfinding
 		this.main.antiAfkService?.pause();
@@ -129,25 +198,35 @@ export class SmartPathfinderService {
 			`[SmartPathfinder] Moving to (${x}, ${y !== undefined ? y : "auto"}, ${z}) - Dist: ${distance.toFixed(1)}m`
 		);
 
-		// If distance is very large (> 120 blocks), split into Waypoint chunks
-		if (distance > 120) {
-			this.createWaypointChunks(currentPos, targetVec, 80);
+		// If distance is large (> 45 blocks), split into safe loaded-chunk waypoint chunks (35m step)
+		if (distance > 45) {
+			this.createWaypointChunks(currentPos, targetVec, 35);
 			this.currentGoalDesc = `Waypoint (${x}, ${z})`;
 			this.executeNextWaypoint();
 			return true;
 		}
 
-		let goal: any;
+		let goal: Goal;
 		if (y !== undefined) {
-			goal = range <= 0 ? new GoalBlock(x, y, z) : new GoalNear(x, y, z, range);
+			goal = range <= 0 ? new GoalExact(targetVec) : new GoalNear(targetVec, range);
 			this.currentGoalDesc = `(${x}, ${y}, ${z})`;
 		} else {
-			goal = new GoalXZ(x, z);
+			goal = range > 1 ? new GoalXZNear(targetVec, range) : new GoalXZ(targetVec);
 			this.currentGoalDesc = `(${x}, ${z})`;
 		}
 
 		try {
-			(bot.pathfinder as any).setGoal(goal);
+			bot.ashfinder.goto(goal).then((res: { status: string; error?: unknown }) => {
+				if (res && res.status === "failed") {
+					this.main.client.logger.warn(`[SmartPathfinder] Navigation finished with failure: ${res.error || "unreachable"}`);
+					this.onNavigationComplete(false);
+				} else {
+					this.onNavigationComplete(true);
+				}
+			}).catch((err: unknown) => {
+				this.main.client.logger.error(`[SmartPathfinder] Ashfinder goto error: ${err}`);
+				this.onNavigationComplete(false);
+			});
 			return true;
 		} catch (err) {
 			this.main.client.logger.error(`[SmartPathfinder] Error setting goal: ${err}`);
@@ -159,24 +238,37 @@ export class SmartPathfinderService {
 	/**
 	 * Follow a specific player entity
 	 */
-	public followPlayer(username: string, range: number = 3): boolean {
+	public followPlayer(username: string, range: number = 3, commandUser?: string): boolean {
 		const bot = this.main.bot;
-		if (!bot || !(bot as any).pathfinder) return false;
+		if (!bot || !bot.ashfinder) return false;
 
 		const target = bot.players[username]?.entity;
 		if (!target) return false;
 
-		if (!this.movements) {
-			this.initMovements();
-		}
+		this.initMovements();
 
+		// Stop any active navigation before setting follow goal
+		try {
+			bot.ashfinder.stop();
+		} catch {}
+
+		this.commandUser = commandUser;
 		this.main.antiAfkService?.pause();
 		this.isNavigating = true;
 		this.currentGoalDesc = `Follow ${username}`;
 
 		try {
-			const goal = new GoalFollow(target, range);
-			(bot.pathfinder as any).setGoal(goal, true);
+			const goal = new GoalNear(target.position, range);
+			bot.ashfinder.gotoSmart(goal, { waypointThreshold: 40 }).then((res: { status: string; error?: unknown }) => {
+				if (res && res.status === "failed") {
+					this.onNavigationComplete(false);
+				} else {
+					this.onNavigationComplete(true);
+				}
+			}).catch((err: unknown) => {
+				this.main.client.logger.error(`[SmartPathfinder] Follow error: ${err}`);
+				this.onNavigationComplete(false);
+			});
 			return true;
 		} catch (err) {
 			this.main.client.logger.error(`[SmartPathfinder] Follow error: ${err}`);
@@ -196,16 +288,15 @@ export class SmartPathfinderService {
 		this.isNavigatingToLobbyNpc = false;
 
 		if (bot) {
-			if ((bot as any).pathfinder) {
+			if (bot.ashfinder) {
 				try {
-					(bot.pathfinder as any).setGoal(null);
-					(bot.pathfinder as any).stop();
-				} catch { }
+					bot.ashfinder.stop();
+				} catch {}
 			}
 
 			try {
 				bot.clearControlStates();
-			} catch { }
+			} catch {}
 		}
 
 		viewerManager.broadcastPathUpdate(this.main.config.id, []);
@@ -218,29 +309,36 @@ export class SmartPathfinderService {
 	 */
 	public async navigateToLobbyNpc(x: number = 48.5, y: number = 10, z: number = 40.5): Promise<boolean> {
 		const bot = this.main.bot;
-		if (!bot || !(bot as any).pathfinder) return false;
+		if (!bot || !bot.ashfinder) return false;
+
+		const targetVec = new Vec3(x, y, z);
+		const goalNear = new GoalNear(targetVec, 2);
 
 		if (this.isNavigatingToLobbyNpc) {
 			this.main.client.logger.info(`[Lobby] Lobby NPC navigation refreshed. Target: (${x}, ${y}, ${z})`);
 			try {
-				(bot.pathfinder as any).setGoal(new GoalNear(x, y, z, 2));
-			} catch { }
+				bot.ashfinder.stop();
+				bot.ashfinder.goto(goalNear).catch(() => {});
+			} catch {}
 			return true;
 		}
 
 		this.isNavigatingToLobbyNpc = true;
 		this.clearLobbyNpcTimer();
 
-		// Configure lobby movements (no fall damage in lobby, maxDropDown = 256)
-		const lobbyMovements = new Movements(bot);
-		lobbyMovements.allowParkour = true;
-		lobbyMovements.canDig = false;
-		lobbyMovements.maxDropDown = 256; // No fall damage in lobby
-		lobbyMovements.allow1by1towers = false;
-		lobbyMovements.allowSprinting = true;
+		// Configure lobby movements (no fall damage in lobby, maxFallDist = 256)
+		const ash = bot.ashfinder;
+		if (ash.config) {
+			ash.config.parkour = true;
+			ash.config.breakBlocks = false;
+			ash.config.placeBlocks = false;
+			ash.config.maxFallDist = 256; // No fall damage in lobby
+			ash.config.swimming = true;
+		}
 
-		this.movements = lobbyMovements;
-		(bot.pathfinder as any).setMovements(lobbyMovements);
+		try {
+			ash.stop();
+		} catch {}
 
 		this.main.antiAfkService?.pause();
 		this.isNavigating = true;
@@ -252,25 +350,14 @@ export class SmartPathfinderService {
 			`[Lobby] Navigating to NPC at (${x}, ${y}, ${z}) with zero fall damage limit... Current pos: ${posStr}`
 		);
 
-		const goalNear = new GoalNear(x, y, z, 2);
-		const goalXZ = new GoalXZ(x, z);
-		let usedGoal: any = goalNear;
-
 		try {
-			(bot.pathfinder as any).setGoal(goalNear);
+			ash.goto(goalNear).catch((err: unknown) => {
+				this.main.client.logger.warn(`[Lobby] GoalNear error: ${err}`);
+			});
 		} catch (err) {
-			this.main.client.logger.warn(`[Lobby] GoalNear failed, falling back to GoalXZ: ${err}`);
-			try {
-				(bot.pathfinder as any).setGoal(goalXZ);
-				usedGoal = goalXZ;
-			} catch (err2) {
-				this.main.client.logger.error(`[Lobby] Failed to set GoalXZ: ${err2}`);
-				this.isNavigatingToLobbyNpc = false;
-				return false;
-			}
+			this.main.client.logger.warn(`[Lobby] Ashfinder goto failed: ${err}`);
 		}
 
-		const targetVec = new Vec3(x, y, z);
 		let clickAttempts = 0;
 		let lastPos: Vec3 | null = null;
 		let logWalkTicks = 0;
@@ -287,10 +374,10 @@ export class SmartPathfinderService {
 				this.clearLobbyNpcTimer();
 				this.isNavigatingToLobbyNpc = false;
 				this.isNavigating = false;
-				(this.main.bot.pathfinder as any)?.setGoal(null);
+				this.main.bot.ashfinder?.stop();
 				try {
 					this.main.bot.clearControlStates();
-				} catch { }
+				} catch {}
 				this.initMovements();
 				return;
 			}
@@ -302,7 +389,7 @@ export class SmartPathfinderService {
 			if (dist <= 4.0) {
 				try {
 					bot.clearControlStates();
-				} catch { }
+				} catch {}
 
 				if (isInteracting) return;
 				isInteracting = true;
@@ -317,7 +404,6 @@ export class SmartPathfinderService {
 				}
 			} else {
 				// Actively move towards targetVec
-				const isMoving = (bot.pathfinder as any).isMoving();
 				logWalkTicks++;
 				if (logWalkTicks % 3 === 0) {
 					this.main.client.logger.info(
@@ -325,28 +411,20 @@ export class SmartPathfinderService {
 					);
 				}
 
-				if (!isMoving) {
-					// Direct movement fallback: look at target & walk forward
-					try {
-						await bot.lookAt(new Vec3(x, pos.y, z), true);
-						bot.setControlState("forward", true);
-						bot.setControlState("sprint", true);
+				// Direct movement fallback: look at target & walk forward
+				try {
+					await bot.lookAt(new Vec3(x, pos.y, z), true);
+					bot.setControlState("forward", true);
+					bot.setControlState("sprint", true);
 
-						// If stuck in same position, jump to unstick
-						if (lastPos && lastPos.distanceTo(pos) < 0.2) {
-							bot.setControlState("jump", true);
-							setTimeout(() => {
-								if (bot) bot.setControlState("jump", false);
-							}, 350);
-						}
-					} catch { }
-
-					// Also re-apply pathfinder goal
-					try {
-						usedGoal = usedGoal === goalNear ? goalXZ : goalNear;
-						(bot.pathfinder as any).setGoal(usedGoal);
-					} catch { }
-				}
+					// If stuck in same position, jump to unstick
+					if (lastPos && lastPos.distanceTo(pos) < 0.2) {
+						bot.setControlState("jump", true);
+						setTimeout(() => {
+							if (bot) bot.setControlState("jump", false);
+						}, 350);
+					}
+				} catch {}
 
 				lastPos = pos.clone();
 			}
@@ -366,10 +444,10 @@ export class SmartPathfinderService {
 			// 1. Chuyển hotbar sang ô 3 (index 2 trong Mineflayer)
 			try {
 				bot.setQuickBarSlot(2);
-			} catch { }
+			} catch {}
 
 			// 2. Quét và log toàn bộ các thực thể xung quanh (bán kính 6 block) để debug
-			const allNearby = Object.values(bot.entities).filter((e: any) => {
+			const allNearby = Object.values(bot.entities).filter((e: Entity | undefined): e is Entity => {
 				if (!e || e === bot.entity) return false;
 				return bot.entity.position.distanceTo(e.position) <= 6.0;
 			});
@@ -378,7 +456,8 @@ export class SmartPathfinderService {
 				`[Lobby] --- Quét thực thể xung quanh (${allNearby.length} entities gần bot) ---`
 			);
 			for (const e of allNearby) {
-				const name = (e as any).customName || (e as any).displayName || (e as any).username || (e as any).name || "unnamed";
+				const customEntity = e as Entity & { customName?: string; displayName?: string; username?: string };
+				const name = customEntity.customName || customEntity.displayName || customEntity.username || e.name || "unnamed";
 				const dist = bot.entity.position.distanceTo(e.position).toFixed(2);
 				this.main.client.logger.info(
 					`[Lobby Entity] ID: ${e.id} | Type: ${e.type} (${e.name}) | Name: "${name}" | Pos: (${e.position.x.toFixed(2)}, ${e.position.y.toFixed(2)}, ${e.position.z.toFixed(2)}) | Dist: ${dist}m`
@@ -389,7 +468,7 @@ export class SmartPathfinderService {
 			const exactNpcPos = new Vec3(48.814, 10, 40.392);
 
 			// 3. Lọc bỏ item_frame, item, arrow và tìm thực thể gần tọa độ (48.814, 10, 40.392) nhất
-			const validEntities = allNearby.filter((e: any) => {
+			const validEntities = allNearby.filter((e) => {
 				if (!e || e === bot.entity) return false;
 				const type = (e.type || "").toLowerCase();
 				const name = (e.name || "").toLowerCase();
@@ -400,9 +479,11 @@ export class SmartPathfinderService {
 			});
 
 			// Sắp xếp theo khoảng cách gần nhất tới (48.814, 10, 40.392), ưu tiên Player/Living
-			validEntities.sort((a: any, b: any) => {
-				const isPlayerA = a.type === "player" || a.name === "player" || a.username ? 1 : 0;
-				const isPlayerB = b.type === "player" || b.name === "player" || b.username ? 1 : 0;
+			validEntities.sort((a, b) => {
+				const customA = a as Entity & { username?: string };
+				const customB = b as Entity & { username?: string };
+				const isPlayerA = a.type === "player" || a.name === "player" || customA.username ? 1 : 0;
+				const isPlayerB = b.type === "player" || b.name === "player" || customB.username ? 1 : 0;
 				const distA = a.position.distanceTo(exactNpcPos);
 				const distB = b.position.distanceTo(exactNpcPos);
 
@@ -422,22 +503,23 @@ export class SmartPathfinderService {
 				);
 
 				// Nhìn vào thân NPC
-				await bot.lookAt(targetEntity.position.offset(0, 1.2, 0), true).catch(() => { });
+				await bot.lookAt(targetEntity.position.offset(0, 1.2, 0), true).catch(() => {});
 
 				// Chuột phải (activateEntity)
 				try {
 					await bot.activateEntity(targetEntity);
-				} catch { }
+				} catch {}
 
 				// Chuột trái (attack)
 				try {
 					bot.attack(targetEntity);
-				} catch { }
+				} catch {}
 
 				// Dùng vật phẩm trên tay (useOn)
 				try {
-					(bot as any).useOn?.(targetEntity);
-				} catch { }
+					const botWithUseOn = bot as Bot & { useOn?: (entity: Entity) => void };
+					botWithUseOn.useOn?.(targetEntity);
+				} catch {}
 
 				bot.swingArm("right");
 			} else {
@@ -448,14 +530,14 @@ export class SmartPathfinderService {
 				this.main.client.logger.info(
 					`[Lobby] Looking at NPC target coords (${exactNpcPos.x}, ${exactNpcPos.y + 1.2}, ${exactNpcPos.z}) (attempt #${attemptNum})...`
 				);
-				await bot.look(targetFacingYaw, targetFacingPitch, true).catch(() => { });
+				await bot.look(targetFacingYaw, targetFacingPitch, true).catch(() => {});
 				bot.swingArm("right");
 			}
 
 			// Kích hoạt vật phẩm trên tay (slot 3)
 			try {
 				bot.activateItem();
-			} catch { }
+			} catch {}
 		} catch (err) {
 			this.main.client.logger.error(`[Lobby] Error interacting with NPC: ${err}`);
 		}
@@ -498,15 +580,21 @@ export class SmartPathfinderService {
 
 		const nextWp = this.waypointQueue.shift()!;
 		const bot = this.main.bot;
-		if (!bot || !(bot as any).pathfinder) return;
-
-		const isFinal = this.waypointQueue.length === 0;
-		const goal = isFinal
-			? new GoalNear(nextWp.x, nextWp.y, nextWp.z, 1)
-			: new GoalNear(nextWp.x, nextWp.y, nextWp.z, 3);
+		if (!bot || !bot.ashfinder) return;
 
 		try {
-			(bot.pathfinder as any).setGoal(goal);
+			bot.ashfinder.stop();
+		} catch {}
+
+		const isFinal = this.waypointQueue.length === 0;
+		const targetVec = new Vec3(nextWp.x, nextWp.y, nextWp.z);
+		const goal = isFinal ? new GoalNear(targetVec, 1) : new GoalNear(targetVec, 3);
+
+		try {
+			bot.ashfinder.goto(goal).catch((err: unknown) => {
+				this.main.client.logger.error(`[SmartPathfinder] Waypoint error: ${err}`);
+				this.onNavigationComplete(false);
+			});
 		} catch (err) {
 			this.main.client.logger.error(`[SmartPathfinder] Waypoint error: ${err}`);
 			this.onNavigationComplete(false);

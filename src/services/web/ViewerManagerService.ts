@@ -149,11 +149,13 @@ export class ViewerManagerService {
 		};
 
 		io.on("connection", (socket: Socket) => {
-			socket.emit("version", bot.version);
+			const displayVersion = bot.version === "1.21.11" ? "1.21.1" : bot.version;
+			socket.emit("version", displayVersion);
 			sockets.push(socket);
 
-			const worldView = new WorldView(bot.world, viewDistance, bot.entity.position, socket);
-			worldView.init(bot.entity.position);
+			const pos = bot.entity?.position || { x: 0, y: 0, z: 0 };
+			const worldView = new WorldView(bot.world, viewDistance, pos, socket);
+			worldView.init(pos);
 
 			// Initial state packets
 			socket.emit("stats_update", getBotStats(botInstance));

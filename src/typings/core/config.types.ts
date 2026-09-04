@@ -23,6 +23,7 @@ export interface MinecraftAuthConfig {
 	pin?: string[];
 	autoNavigateCommand?: string;
 	lobbyNpc?: LobbyNpcConfig;
+	assumeMainServer?: boolean;
 }
 
 export interface RateLimitConfig {

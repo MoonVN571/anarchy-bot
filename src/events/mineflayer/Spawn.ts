@@ -15,13 +15,18 @@ export default class SpawnEvent extends MineflayerEvent {
 		main.client.logger.debug("Mineflayer", `Bot spawn event #${main.spawnCount} triggered at ${main.bot?.entity?.position}`);
 
 		if (main.currentServer !== Server.Main) {
-			const lobbyNpc = main.config.auth.lobbyNpc;
-			if (lobbyNpc?.enabled) {
-				setTimeout(() => {
-					if (main.currentServer !== Server.Main && main.bot?.entity) {
-						main.smartPathfinderService?.navigateToLobbyNpc(lobbyNpc.x, lobbyNpc.y, lobbyNpc.z);
-					}
-				}, 1200);
+			if (main.config.auth.assumeMainServer) {
+				main.client.logger.info(`[AuthHandler] bypass authentication for test server, switching to Server.Main`);
+				main.currentServer = Server.Main;
+			} else {
+				const lobbyNpc = main.config.auth.lobbyNpc;
+				if (lobbyNpc?.enabled) {
+					setTimeout(() => {
+						if (main.currentServer !== Server.Main && main.bot?.entity) {
+							main.smartPathfinderService?.navigateToLobbyNpc(lobbyNpc.x, lobbyNpc.y, lobbyNpc.z);
+						}
+					}, 1200);
+				}
 			}
 		}
 

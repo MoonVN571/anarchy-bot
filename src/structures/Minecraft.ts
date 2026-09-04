@@ -1,6 +1,6 @@
 import { TextChannel } from "discord.js";
 import { Bot, BotOptions, createBot } from "mineflayer";
-import { pathfinder } from "mineflayer-pathfinder";
+import { loader as baritoneLoader } from "@miner-org/mineflayer-baritone";
 import { mineflayerEventClasses } from "../events/mineflayer";
 import { AntiAfkService, AutoEatService, AutoMessageService, HighwayNavigationService, PlaytimeTracker, SmartPathfinderService, viewerManager } from "../services";
 import { MinecraftServerConfig, Server } from "../typings";
@@ -84,14 +84,45 @@ export class Minecraft {
 
 		if (isMicrosoft) {
 			botOptions.profilesFolder = this.config.connection.profilesFolder || "./.ms_cache";
+
+			(botOptions as any).onMsaCode = (data: {
+				user_code: string;
+				device_code: string;
+				verification_uri: string;
+				expires_in: number;
+				interval: number;
+				message: string;
+			}) => {
+				this.client.logger.warn(
+					`\n=======================================================\n` +
+					`[XÁC THỰC MICROSOFT - DEVICE CODE]\n` +
+					`Vui lòng mở trình duyệt và truy cập liên kết:\n` +
+					`👉 ${data.verification_uri || "https://microsoft.com/link"}\n` +
+					`Sau đó nhập mã xác nhận: 👉 [ ${data.user_code} ]\n` +
+					`Token đăng nhập sẽ được lưu tự động vào "${botOptions.profilesFolder}".\n` +
+					`=======================================================\n`
+				);
+			};
+
 			if (this.config.connection.microsoftPassword) {
+				this.client.logger.warn(
+					`\n=======================================================\n` +
+					`[CẢNH BÁO BẢO MẬT & SPAM 2FA - TÀI KHOẢN MICROSOFT]\n` +
+					`Bạn đang cấu hình MICROSOFT_PASSWORD cho bot [${this.config.connection.host}].\n` +
+					`⚠️ Việc sử dụng mật khẩu Microsoft trực tiếp thường gây ra:\n` +
+					`  - Spam thông báo xác thực 2FA liên tục mỗi khi bot khởi động hoặc reconnect.\n` +
+					`  - Nguy cơ tài khoản bị Microsoft gắn cờ bất thường hoặc khóa tạm thời.\n` +
+					`💡 KHUYẾN NGHỊ: Hãy xóa hoặc để trống MICROSOFT_PASSWORD trong file .env để\n` +
+					`  sử dụng cơ chế Device Code & Token Cache (.ms_cache) an toàn và ổn định!\n` +
+					`=======================================================\n`
+				);
 				botOptions.password = this.config.connection.microsoftPassword;
 			}
 		}
 
 		try {
 			this.bot = createBot(botOptions);
-			this.bot.loadPlugin(pathfinder);
+			this.bot.loadPlugin(baritoneLoader);
 			this.loadEvents();
 		} catch (error) {
 			this.client.logger.error(`Error creating Minecraft bot instance: ${error}`);

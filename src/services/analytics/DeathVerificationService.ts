@@ -1,4 +1,4 @@
-import { ContainerBuilder, TextDisplayBuilder, GuildTextBasedChannel } from "discord.js";
+import { ContainerBuilder, GuildTextBasedChannel, TextDisplayBuilder } from "discord.js";
 import { DeathCause, DeathModel } from "../../database/models/DeathModel";
 import { DeathPatternModel, IDeathPattern } from "../../database/models/DeathPatternModel";
 import { RedisManager } from "../../redis/RedisManager";
@@ -32,7 +32,7 @@ export class DeathVerificationService {
 				approvedPattern.sampleMessage,
 				customVictim,
 				approvedPattern.cause === DeathCause.PVP ? (customKiller || null) : null,
-				approvedPattern.cause === DeathCause.MOB ? (customKiller || null) : null,
+				approvedPattern.cause === DeathCause.DEATH ? (customKiller || null) : null,
 				approvedPattern.cause
 			);
 		} else if (approvedPattern.sampleMessage) {
@@ -45,12 +45,17 @@ export class DeathVerificationService {
 				if (!existing) {
 					const match = approvedPattern.sampleMessage.match(new RegExp(approvedPattern.pattern, "i"));
 					if (match && match.groups && match.groups.victim) {
+						const sanitized = DeathParserService.sanitizeDeathCause(
+							match.groups.killer ? match.groups.killer.trim() : null,
+							match.groups.mob ? match.groups.mob.trim() : null,
+							approvedPattern.cause
+						);
 						await DeathStatsService.recordDeathStatsDirect(serverScope, {
 							victim: match.groups.victim.trim(),
-							killer: match.groups.killer ? match.groups.killer.trim() : null,
-							mob: match.groups.mob ? match.groups.mob.trim() : null,
+							killer: sanitized.killer,
+							mob: sanitized.mob,
 							weapon: match.groups.weapon ? match.groups.weapon.trim() : null,
-							cause: approvedPattern.cause,
+							cause: sanitized.cause,
 							rawMessage: approvedPattern.sampleMessage,
 						}, client.logger);
 					}
@@ -74,16 +79,17 @@ export class DeathVerificationService {
 					const match = pending.sampleMessage.match(compiledRegex);
 					if (match && match.groups && match.groups.victim) {
 						const victim = match.groups.victim.trim();
-						const killer = match.groups.killer ? match.groups.killer.trim() : null;
-						const mob = match.groups.mob ? match.groups.mob.trim() : null;
+						const rawKiller = match.groups.killer ? match.groups.killer.trim() : null;
+						const rawMob = match.groups.mob ? match.groups.mob.trim() : null;
 						const weapon = match.groups.weapon ? match.groups.weapon.trim() : null;
+						const sanitized = DeathParserService.sanitizeDeathCause(rawKiller, rawMob, approvedPattern.cause);
 
 						const parsed: ParsedDeath = {
 							victim,
-							killer,
-							mob,
+							killer: sanitized.killer,
+							mob: sanitized.mob,
 							weapon,
-							cause: approvedPattern.cause,
+							cause: sanitized.cause,
 							rawMessage: pending.sampleMessage,
 						};
 

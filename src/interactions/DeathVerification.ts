@@ -158,7 +158,7 @@ export class DeathVerificationInteraction {
 				return;
 			}
 
-			pattern.cause = DeathCause.MOB;
+			pattern.cause = DeathCause.DEATH;
 			pattern.enabled = true;
 			pattern.confirmedBy = interaction.user.tag || interaction.user.username;
 			await pattern.save();
@@ -169,8 +169,8 @@ export class DeathVerificationInteraction {
 				.setAccentColor(0x3498db)
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`**Đã Xác Nhận Là Quái Vật (Mob)**\n\n` +
-						`- **Server:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`MOB\`\n\n` +
+						`**Đã Xác Nhận Là Tử Vong (Death)**\n\n` +
+						`- **Server:** \`${pattern.serverScope}\` | **Nguyên nhân:** \`DEATH\`\n\n` +
 						`**Regex:**\n\`x\n${pattern.pattern}\n\`\n` +
 						`**Tin nhắn gốc:**\n\`\n${pattern.sampleMessage || "N/A"}\n\``
 					)
@@ -391,55 +391,20 @@ export class DeathVerificationInteraction {
 						.setMaxValues(1)
 						.addOptions(
 							new StringSelectMenuOptionBuilder()
-								.setLabel("UNKNOWN (Chưa xác định / Khác)")
-								.setValue("UNKNOWN")
-								.setDescription("Nguyên nhân chưa rõ hoặc khác")
-								.setDefault(pattern.cause === "UNKNOWN" || !pattern.cause),
-							new StringSelectMenuOptionBuilder()
 								.setLabel("PVP (Player vs Player)")
 								.setValue("PVP")
-								.setDescription("Người chơi tiêu diệt lẫn nhau")
+								.setDescription("Người chơi tiêu diệt lẫn nhau để tính KD")
 								.setDefault(pattern.cause === "PVP"),
 							new StringSelectMenuOptionBuilder()
-								.setLabel("MOB (Quái vật)")
-								.setValue("MOB")
-								.setDescription("Bị quái vật hạ gục")
-								.setDefault(pattern.cause === "MOB"),
+								.setLabel("DEATH (Tử vong)")
+								.setValue("DEATH")
+								.setDescription("Chết do môi trường, quái vật, rơi ngã, tự sát")
+								.setDefault(pattern.cause === "DEATH"),
 							new StringSelectMenuOptionBuilder()
-								.setLabel("FALL (Rơi ngã)")
-								.setValue("FALL")
-								.setDescription("Rơi từ trên cao xuống đất")
-								.setDefault(pattern.cause === "FALL"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("VOID (Hư vô)")
-								.setValue("VOID")
-								.setDescription("Rơi vào khoảng trống không gian")
-								.setDefault(pattern.cause === "VOID"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("EXPLOSION (Cháy nổ)")
-								.setValue("EXPLOSION")
-								.setDescription("Nổ TNT, Crystal, Creeper")
-								.setDefault(pattern.cause === "EXPLOSION"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("FIRE (Lửa / Dung nham)")
-								.setValue("FIRE")
-								.setDescription("Chết cháy hoặc rơi vào dung nham")
-								.setDefault(pattern.cause === "FIRE"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("DROWN (Chết đuối)")
-								.setValue("DROWN")
-								.setDescription("Ngạt nước dưới nước")
-								.setDefault(pattern.cause === "DROWN"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("MAGIC (Phép thuật / Độc)")
-								.setValue("MAGIC")
-								.setDescription("Thuốc độc, Wither effect, phép")
-								.setDefault(pattern.cause === "MAGIC"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("SUICIDE (Tự sát)")
-								.setValue("SUICIDE")
-								.setDescription("Tự tử hoặc dùng lệnh kill")
-								.setDefault(pattern.cause === "SUICIDE")
+								.setLabel("UNKNOWN (Chưa xác định / Khác)")
+								.setValue("UNKNOWN")
+								.setDescription("Nguyên nhân chưa rõ, vẫn tính 1 lần tử vong")
+								.setDefault(pattern.cause === "UNKNOWN" || !pattern.cause)
 						)
 				);
 

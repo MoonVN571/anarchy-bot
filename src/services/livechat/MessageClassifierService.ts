@@ -30,6 +30,18 @@ export class MessageClassifierService {
 	): Promise<void> {
 		const serverIp = bot.config.connection.host;
 
+		// 0. Guard against Bot messages, tips, and broadcasts
+		if (
+			parsed.type === "botChat" ||
+			cleanText.includes("[Bot Tip]") ||
+			cleanText.startsWith("[BOT]") ||
+			cleanText.startsWith("> [BOT]") ||
+			(bot.bot?.username && cleanText.toLowerCase().includes(bot.bot.username.toLowerCase() + ":"))
+		) {
+			bot.client.logger.debug("Classifier", `[${serverIp}] Skipped bot/tip message: "${cleanText}"`);
+			return;
+		}
+
 		// 1. Check if it's an existing System message
 		const isSystem = await SystemPatternService.matchSystemMessage(serverIp, cleanText);
 		if (isSystem) {
@@ -43,13 +55,7 @@ export class MessageClassifierService {
 			return;
 		}
 
-		// 3. Check for keywords suggesting Death -> Trigger DeathRegexLearner directly
-		if (DeathParserService.hasDeathKeywords(cleanText)) {
-			await DeathRegexLearner.processUnknownDeathMessage(bot, cleanText);
-			return;
-		}
-
-		// 4. Check if message is a standard join/leave/queue/auth or chat (skip prompting)
+		// 3. Check if message is a standard join/leave/queue/auth or chat (skip prompting)
 		if (
 			parsed.type === "join" ||
 			parsed.type === "quit" ||
@@ -103,7 +109,17 @@ export class MessageClassifierService {
 			}
 		}
 
-		// Special Rule: Exactly 1 Player + Mob detected (and Mob is NOT an online player's name)
+		// Special Rule A: 2 or more players detected in server -> Candidate for PvP Death pattern
+		if (foundPlayers.length >= 2) {
+			bot.client.logger.debug(
+				"Classifier",
+				`[${serverIp}] 2 Players (${foundPlayers.slice(0, 2).map(p => `"${p}"`).join(", ")}) identified -> Auto-learning PvP Death pattern for Admin verification.`
+			);
+			await DeathRegexLearner.processUnknownDeathMessage(bot, cleanText);
+			return;
+		}
+
+		// Special Rule B: Exactly 1 Player + Mob detected (and Mob is NOT an online player's name)
 		if (foundPlayers.length === 1 && detectedMob && !playerMap.has(detectedMob.toLowerCase())) {
 			bot.client.logger.debug(
 				"Classifier",
@@ -112,7 +128,7 @@ export class MessageClassifierService {
 			await DeathRegexLearner.processUnknownDeathMessage(bot, cleanText, {
 				victim: foundPlayers[0],
 				mob: detectedMob,
-				cause: DeathCause.MOB,
+				cause: DeathCause.DEATH,
 			});
 			return;
 		}
@@ -168,7 +184,7 @@ export class MessageClassifierService {
 		}
 
 		const hasMobConflict = detectedMob && playerMap ? playerMap.has(detectedMob.toLowerCase()) : false;
-		const likelyDeath = players.length > 0 || DeathParserService.hasDeathKeywords(cleanText);
+		const likelyDeath = players.length > 0;
 		const promptId = Buffer.from(`${Date.now()}_${Math.floor(Math.random() * 1000)}`).toString("base64url");
 
 		const verifyChannelId =

@@ -1,0 +1,235 @@
+diff --git a/node_modules/@miner-org/mineflayer-baritone/src/executor.js b/node_modules/@miner-org/mineflayer-baritone/src/executor.js
+index 91e75bb..6542df2 100644
+--- a/node_modules/@miner-org/mineflayer-baritone/src/executor.js
++++ b/node_modules/@miner-org/mineflayer-baritone/src/executor.js
+@@ -222,7 +222,7 @@ class PathExecutor {
+         !this.closingDoorState
+       ) {
+         const block = this.bot.blockAt(this.previousNode.worldPos);
+-        await this.bot.lookAt(node.worldPos, true);
++        await this.bot.lookAt(node.worldPos, false);
+         this.closingDoorState = true;
+ 
+         if (block.getProperties().open) {
+@@ -514,7 +514,7 @@ class PathExecutor {
+         const block = this.bot.blockAt(node.attributes.interactBlock);
+         this.interactingDoorState = true;
+ 
+-        await this.bot.lookAt(block.position, true);
++        await this.bot.lookAt(block.position, false);
+         await this.bot.waitForTicks(1);
+ 
+         await this.bot.activateBlock(block);
+@@ -542,7 +542,7 @@ class PathExecutor {
+     this.interactingTrapdoorState = true;
+ 
+     try {
+-      await this.bot.lookAt(block.position, true);
++      await this.bot.lookAt(block.position, false);
+       await this.bot.waitForTicks(1);
+ 
+       await this.bot.activateBlock(block);
+@@ -558,7 +558,7 @@ class PathExecutor {
+         this._clearAllControls();
+         await this.bot.waitForTicks(2);
+ 
+-        await this.bot.lookAt(block.position, true);
++        await this.bot.lookAt(block.position, false);
+         await this.bot.activateBlock(block);
+         await this.bot.waitForTicks(8);
+       }
+@@ -596,7 +596,7 @@ class PathExecutor {
+       return;
+     }
+ 
+-    bot.lookAt(target.offset(0, 1.6, 0), true);
++    bot.lookAt(target.offset(0, 1.6, 0), false);
+ 
+     this._setControlState("sprint", false);
+     this._setControlState("sneak", false);
+@@ -747,7 +747,7 @@ class PathExecutor {
+           { face: faces[3], dot: -Infinity },
+         ).face;
+ 
+-        await bot.lookAt(targetPos.clone().add(bestFace.offset), true);
++        await bot.lookAt(targetPos.clone().add(bestFace.offset), false);
+         await bot.waitForTicks(1);
+ 
+         try {
+@@ -762,9 +762,9 @@ class PathExecutor {
+           );
+         }
+ 
+-        this._setControlState("forward", true);
++        this._setControlState("back", true);
+         await bot.waitForTicks(3);
+-        this._setControlState("forward", false);
++        this._setControlState("back", false);
+       }
+ 
+       this._setControlState("sneak", false);
+@@ -781,11 +781,17 @@ class PathExecutor {
+    */
+   async _positionAtEdge(targetBlock, _direction) {
+     const bot = this.bot;
++    const currentPos = bot.entity.position;
++    
++    const moveDir = targetBlock.clone().minus(currentPos);
++    moveDir.y = 0;
+     
+-    await bot.lookAt(targetBlock.offset(0, 1.5, 0));
++    // Look backward to move backward naturally
++    const lookTarget = currentPos.clone().minus(moveDir).offset(0, -1, 0);
++    await bot.lookAt(lookTarget, false);
+ 
+     this._setControlState("sneak", true);
+-    this._setControlState("forward", true);
++    this._setControlState("back", true);
+ 
+     let blockAtFeet;
+     do {
+@@ -794,6 +800,7 @@ class PathExecutor {
+       await bot.waitForTicks(1);
+     } while (blockAtFeet?.boundingBox !== "empty");
+ 
++    this._setControlState("back", false);
+     return blockAtFeet;
+   }
+ 
+@@ -826,7 +833,7 @@ class PathExecutor {
+         }
+ 
+         await autoTool(bot, block);
+-        await bot.lookAt(block.position.offset(0.5, 0.5, 0.5), true);
++        await bot.lookAt(block.position.offset(0.5, 0.5, 0.5), false);
+ 
+         // Re-check after looking — block may have changed.
+         if (bot.blockAt(pos)?.boundingBox === "block") {
+@@ -864,7 +871,7 @@ class PathExecutor {
+     const hDist = Math.sqrt((target.x - pos.x) ** 2 + (target.z - pos.z) ** 2);
+ 
+     if (hDist > 0.3) {
+-      bot.lookAt(target, true);
++      bot.lookAt(target, false);
+       this._setControlState("forward", true);
+     } else {
+       this._setControlState("forward", false);
+@@ -899,7 +906,7 @@ class PathExecutor {
+ 
+   /** @param {Vec3} target */
+   _walkTo(target) {
+-    this.bot.lookAt(target.offset(0, 1.6, 0), true);
++    this.bot.lookAt(target.offset(0, 1.6, 0), false);
+     if (this.config.allowSprinting) this._setControlState("sprint", true);
+     this._setControlState("forward", true);
+   }
+@@ -1061,7 +1068,7 @@ class PathExecutor {
+ 
+     if (!this.climbingState) this.climbingState = { lookedAtTarget: false };
+ 
+-    bot.lookAt(target.offset(0, 1, 0), true);
++    bot.lookAt(target.offset(0, 1, 0), false);
+     await bot.waitForTicks(5);
+     this._setControlState("forward", true);
+   }
+@@ -1098,7 +1105,7 @@ class PathExecutor {
+ 
+     if (this.climbingState.phase === "positioning") {
+       if (dx > 0.25 || dz > 0.25) {
+-        bot.lookAt(target, true);
++        bot.lookAt(target, false);
+         this._setControlState("forward", true);
+         return;
+       }
+@@ -1108,7 +1115,7 @@ class PathExecutor {
+     }
+ 
+     if (this.climbingState.phase === "descending") {
+-      bot.lookAt(target.offset(0, -1, 0), true);
++      bot.lookAt(target.offset(0, -1, 0), false);
+     }
+   }
+ 
+diff --git a/node_modules/@miner-org/mineflayer-baritone/src/movement/basic.js b/node_modules/@miner-org/mineflayer-baritone/src/movement/basic.js
+index a9fb9be..6026d2d 100644
+--- a/node_modules/@miner-org/mineflayer-baritone/src/movement/basic.js
++++ b/node_modules/@miner-org/mineflayer-baritone/src/movement/basic.js
+@@ -243,7 +243,7 @@ class MoveDiagonal extends Move {
+     const adj1Blocked = !this.isWalkable(adj1) && !this.isStandable(adj1);
+     const adj2Blocked = !this.isWalkable(adj2) && !this.isStandable(adj2);
+ 
+-    if (adj1Blocked && adj2Blocked) return;
++    if (adj1Blocked || adj2Blocked) return;
+ 
+     if (
+       this.isWalkable(node) &&
+@@ -307,6 +307,8 @@ class MoveForwardUp extends Move {
+       }
+       const cost = this.COST_UP; // just normal jump cost, no extras
+       node.attributes.cost = cost;
++      node.attributes.up = true; // Added to ensure jump physics
++      node.attributes.nJump = true; // Added to ensure jump physics
+       neighbors.push(this.makeMovement(node, cost));
+       return;
+     }
+@@ -548,7 +550,7 @@ class MoveDiagonalUp extends Move {
+     const adj1Blocked = !this.isWalkable(adj1) && !this.isStandable(adj1);
+     const adj2Blocked = !this.isWalkable(adj2) && !this.isStandable(adj2);
+ 
+-    if (adj1Blocked && adj2Blocked) return;
++    if (adj1Blocked || adj2Blocked) return;
+ 
+     // Must be able to step *onto* the diagonal block
+     if (!this.isWalkable(node) || !this.isStandable(node)) return;
+@@ -601,7 +603,7 @@ class MoveDiagonalDown extends Move {
+   addNeighbors(neighbors, forwardDiag, adj1, adj2, originVec) {
+     const adj1Blocked = !this.isWalkable(adj1) && !this.isStandable(adj1);
+     const adj2Blocked = !this.isWalkable(adj2) && !this.isStandable(adj2);
+-    if (adj1Blocked && adj2Blocked) return;
++    if (adj1Blocked || adj2Blocked) return;
+ 
+     if (!this.isWalkable(forwardDiag)) return;
+ 
+diff --git a/node_modules/@miner-org/mineflayer-baritone/src/utils.js b/node_modules/@miner-org/mineflayer-baritone/src/utils.js
+index 8aa1c93..d3e26d8 100644
+--- a/node_modules/@miner-org/mineflayer-baritone/src/utils.js
++++ b/node_modules/@miner-org/mineflayer-baritone/src/utils.js
+@@ -293,7 +293,7 @@ async function placeBlock(bot, blockName, targetPosition, properties) {
+     }
+ 
+     // Look at the block before placing
+-    await bot.lookAt(targetPosition.offset(0.5, 0.5, 0.5), true);
++    await bot.lookAt(targetPosition.offset(0.5, 0.5, 0.5), false);
+ 
+     bot.swingArm("right");
+ 
+@@ -436,7 +436,7 @@ async function forceDig(bot, block, timeoutMs = 3000) {
+   const face = 1;
+ 
+   // 1. Look at block
+-  await bot.lookAt(center, true);
++  await bot.lookAt(center, false);
+   await bot.waitForTicks(1);
+ 
+   // 2. Force server view sync
+diff --git a/node_modules/@miner-org/mineflayer-baritone/src/utils/ashDig.js b/node_modules/@miner-org/mineflayer-baritone/src/utils/ashDig.js
+index 3760fa2..06cde8e 100644
+--- a/node_modules/@miner-org/mineflayer-baritone/src/utils/ashDig.js
++++ b/node_modules/@miner-org/mineflayer-baritone/src/utils/ashDig.js
+@@ -93,14 +93,14 @@ module.exports = (bot) => {
+       }
+ 
+       if (forceLook) {
+-        await bot.lookAt(faceData.center, true);
++        await bot.lookAt(faceData.center, false);
+       }
+ 
+       return faceData.id;
+     }
+ 
+     // fallback: look at center
+-    if (forceLook) await bot.lookAt(block.position.offset(0.5, 0.5, 0.5), true);
++    if (forceLook) await bot.lookAt(block.position.offset(0.5, 0.5, 0.5), false);
+     return 1; // top face
+   }
+ 
