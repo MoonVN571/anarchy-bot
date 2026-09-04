@@ -1,20 +1,9 @@
 import { Document, Schema, model } from "mongoose";
 
 export enum DeathCause {
-	PVP = "PVP",
 	DEATH = "DEATH",
+	PVP = "PVP",
 	UNKNOWN = "UNKNOWN",
-
-	// Legacy causes for backward compatibility with existing DB records
-	MOB = "MOB",
-	SUICIDE = "SUICIDE",
-	VOID = "VOID",
-	FALL = "FALL",
-	EXPLOSION = "EXPLOSION",
-	LAVA = "LAVA",
-	DROWN = "DROWN",
-	FIRE = "FIRE",
-	MAGIC = "MAGIC",
 }
 
 export interface IDeath extends Document {
@@ -42,7 +31,7 @@ const DeathSchema = new Schema<IDeath>(
 		cause: {
 			type: String,
 			enum: Object.values(DeathCause),
-			default: DeathCause.UNKNOWN,
+			default: DeathCause.DEATH,
 			required: true,
 		},
 		rawMessage: { type: String, required: true },

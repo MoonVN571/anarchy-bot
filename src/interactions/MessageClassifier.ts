@@ -240,55 +240,27 @@ export class MessageClassifierInteraction {
 
 			const causeLabel = new LabelBuilder()
 				.setLabel("Nguyên nhân tử vong (Death Cause)")
-				.setDescription("Chọn nguyên nhân phù hợp hoặc để UNKNOWN")
+				.setDescription("Chọn nguyên nhân phù hợp (mặc định: DEATH)")
 				.setStringSelectMenuComponent(
 					new StringSelectMenuBuilder()
 						.setCustomId("death_cause")
-						.setPlaceholder("Chọn nguyên nhân tử vong (mặc định UNKNOWN)...")
+						.setPlaceholder("Chọn nguyên nhân tử vong (mặc định: DEATH)...")
 						.setMinValues(1)
 						.setMaxValues(1)
 						.addOptions(
 							new StringSelectMenuOptionBuilder()
-								.setLabel("UNKNOWN (Chưa xác định / Khác)")
-								.setValue("UNKNOWN")
-								.setDescription("Nguyên nhân chưa rõ")
+								.setLabel("DEATH (Tử vong thường / Môi trường / Quái vật)")
+								.setValue("DEATH")
+								.setDescription("Chết do quái vật, rơi ngã, nổ crystal, dung nham, tự sát")
 								.setDefault(true),
 							new StringSelectMenuOptionBuilder()
 								.setLabel("PVP (Player vs Player)")
 								.setValue("PVP")
-								.setDescription("Người chơi tiêu diệt lẫn nhau"),
+								.setDescription("Người chơi tiêu diệt lẫn nhau để tính K/D"),
 							new StringSelectMenuOptionBuilder()
-								.setLabel("MOB (Quái vật)")
-								.setValue("MOB")
-								.setDescription("Bị quái vật hạ gục"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("FALL (Rơi ngã)")
-								.setValue("FALL")
-								.setDescription("Rơi từ trên cao"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("VOID (Hư vô)")
-								.setValue("VOID")
-								.setDescription("Rơi vào khoảng trống không gian"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("EXPLOSION (Cháy nổ)")
-								.setValue("EXPLOSION")
-								.setDescription("Nổ TNT, Crystal, Creeper"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("FIRE (Lửa / Dung nham)")
-								.setValue("FIRE")
-								.setDescription("Chết cháy hoặc rơi vào dung nham"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("DROWN (Chết đuối)")
-								.setValue("DROWN")
-								.setDescription("Ngạt nước"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("MAGIC (Phép thuật / Độc)")
-								.setValue("MAGIC")
-								.setDescription("Thuốc độc, Wither effect, phép"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("SUICIDE (Tự sát)")
-								.setValue("SUICIDE")
-								.setDescription("Tự tử hoặc dùng lệnh kill")
+								.setLabel("UNKNOWN (Chưa xác định / Khác)")
+								.setValue("UNKNOWN")
+								.setDescription("Nguyên nhân chưa rõ")
 						)
 				);
 

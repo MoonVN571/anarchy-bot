@@ -382,29 +382,29 @@ export class DeathVerificationInteraction {
 
 			const causeLabel = new LabelBuilder()
 				.setLabel("Nguyên nhân tử vong (Death Cause)")
-				.setDescription("Chọn nguyên nhân tử vong hoặc để UNKNOWN")
+				.setDescription("Chọn nguyên nhân tử vong (mặc định: DEATH)")
 				.setStringSelectMenuComponent(
 					new StringSelectMenuBuilder()
 						.setCustomId("pattern_cause")
-						.setPlaceholder("Chọn nguyên nhân tử vong (mặc định UNKNOWN)...")
+						.setPlaceholder("Chọn nguyên nhân tử vong (mặc định: DEATH)...")
 						.setMinValues(1)
 						.setMaxValues(1)
 						.addOptions(
 							new StringSelectMenuOptionBuilder()
+								.setLabel("DEATH (Tử vong thường / Môi trường / Quái vật)")
+								.setValue("DEATH")
+								.setDescription("Chết do quái vật, rơi ngã, nổ crystal, dung nham, tự sát")
+								.setDefault(pattern.cause === DeathCause.DEATH || !pattern.cause),
+							new StringSelectMenuOptionBuilder()
 								.setLabel("PVP (Player vs Player)")
 								.setValue("PVP")
-								.setDescription("Người chơi tiêu diệt lẫn nhau để tính KD")
-								.setDefault(pattern.cause === "PVP"),
-							new StringSelectMenuOptionBuilder()
-								.setLabel("DEATH (Tử vong)")
-								.setValue("DEATH")
-								.setDescription("Chết do môi trường, quái vật, rơi ngã, tự sát")
-								.setDefault(pattern.cause === "DEATH"),
+								.setDescription("Người chơi tiêu diệt lẫn nhau để tính K/D")
+								.setDefault(pattern.cause === DeathCause.PVP),
 							new StringSelectMenuOptionBuilder()
 								.setLabel("UNKNOWN (Chưa xác định / Khác)")
 								.setValue("UNKNOWN")
 								.setDescription("Nguyên nhân chưa rõ, vẫn tính 1 lần tử vong")
-								.setDefault(pattern.cause === "UNKNOWN" || !pattern.cause)
+								.setDefault(pattern.cause === DeathCause.UNKNOWN)
 						)
 				);
 
@@ -435,7 +435,7 @@ export class DeathVerificationInteraction {
 		const newRegex = interaction.fields.getTextInputValue("pattern_regex").trim();
 		const customVictim = interaction.fields.getTextInputValue("pattern_victim")?.trim();
 		const customKillerOrMob = interaction.fields.getTextInputValue("pattern_killer")?.trim();
-		let newCause = DeathCause.UNKNOWN;
+		let newCause = DeathCause.DEATH;
 
 		try {
 			const selectedCauses = interaction.fields.getStringSelectValues("pattern_cause");
@@ -452,7 +452,7 @@ export class DeathVerificationInteraction {
 					newCause = textCause as DeathCause;
 				}
 			} catch {
-				newCause = DeathCause.UNKNOWN;
+				newCause = DeathCause.DEATH;
 			}
 		}
 
@@ -469,7 +469,7 @@ export class DeathVerificationInteraction {
 			}
 
 			pattern.pattern = newRegex;
-			pattern.cause = Object.values(DeathCause).includes(newCause) ? newCause : DeathCause.UNKNOWN;
+			pattern.cause = Object.values(DeathCause).includes(newCause) ? newCause : DeathCause.DEATH;
 			pattern.serverScope = newScope || "global";
 			pattern.enabled = true;
 			pattern.confirmedBy = interaction.user.tag || interaction.user.username;
@@ -519,7 +519,7 @@ export class DeathVerificationInteraction {
 		const newRegex = interaction.fields.getTextInputValue("death_regex").trim();
 		const customVictim = interaction.fields.getTextInputValue("death_victim")?.trim();
 		const customKillerOrMob = interaction.fields.getTextInputValue("death_killer")?.trim();
-		let newCause = DeathCause.UNKNOWN;
+		let newCause = DeathCause.DEATH;
 
 		try {
 			const selectedCauses = interaction.fields.getStringSelectValues("death_cause");
@@ -536,7 +536,7 @@ export class DeathVerificationInteraction {
 					newCause = textCause as DeathCause;
 				}
 			} catch {
-				newCause = DeathCause.UNKNOWN;
+				newCause = DeathCause.DEATH;
 			}
 		}
 
@@ -613,7 +613,7 @@ export class DeathVerificationInteraction {
 				return;
 			}
 
-			pattern.cause = Object.values(DeathCause).includes(selectedCause) ? selectedCause : DeathCause.UNKNOWN;
+			pattern.cause = Object.values(DeathCause).includes(selectedCause) ? selectedCause : DeathCause.DEATH;
 			pattern.enabled = true;
 			pattern.confirmedBy = interaction.user.tag || interaction.user.username;
 			await pattern.save();

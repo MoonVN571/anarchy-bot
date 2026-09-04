@@ -197,22 +197,35 @@ export class MessageV2Renderer {
 				.addTextDisplayComponents(new TextDisplayBuilder().setContent(timeTag));
 		}
 
-		// 4. Other Death (Fall, Void, Suicide)
+		// 4. Other Death (Fall, Void, Suicide, Unknown Death)
 		if (parsed.type === MessageType.Dead) {
-			const victimName = parsed.victim || parsed.username || parsed.targetUser || "Player";
-			const headUrl = `https://mc-heads.net/avatar/${victimName}/64.png`;
+			const victimName = parsed.victim || parsed.username || parsed.targetUser;
+			if (victimName) {
+				const headUrl = `https://mc-heads.net/avatar/${victimName}/64.png`;
 
-			const section = new SectionBuilder()
-				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(
-						`**${victimName}** đã tử vong${countTag}\n> \`${parsed.rawText}\``
+				const section = new SectionBuilder()
+					.addTextDisplayComponents(
+						new TextDisplayBuilder().setContent(
+							`**${victimName}** đã tử vong${countTag}\n> \`${parsed.rawText}\``
+						)
 					)
-				)
-				.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl));
+					.setThumbnailAccessory(new ThumbnailBuilder().setURL(headUrl));
 
+				return new ContainerBuilder()
+					.setAccentColor(accentColor)
+					.addSectionComponents(section)
+					.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
+					.addTextDisplayComponents(new TextDisplayBuilder().setContent(timeTag));
+			}
+
+			// Unknown / Unextracted Death message
 			return new ContainerBuilder()
 				.setAccentColor(accentColor)
-				.addSectionComponents(section)
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`> ${parsed.formattedMsg || parsed.rawText}${countTag}`
+					)
+				)
 				.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(1))
 				.addTextDisplayComponents(new TextDisplayBuilder().setContent(timeTag));
 		}

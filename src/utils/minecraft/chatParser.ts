@@ -401,16 +401,16 @@ export class ChatParser {
 				finalUsername = botName;
 				message = cleanText;
 				formattedMsg = `**\`[BOT]\` ${escapeDiscordFormat(finalUsername || botName || "mo0nbot")}:** ${escapeDiscordFormat(cleanText)}`;
+			} else if (SystemPatternService.isSystemMessageSync(serverIp, cleanText)) {
+				msgType = MessageType.Server;
 			} else {
 				const deathInfo = DeathParserService.extractDeathInfoSync(serverIp, cleanText);
+				msgType = MessageType.Dead;
 				if (deathInfo) {
-					msgType = MessageType.Dead;
 					victim = deathInfo.victim;
 					killer = deathInfo.killer || null;
 					mob = deathInfo.mob || null;
 					weapon = deathInfo.weapon || null;
-				} else {
-					msgType = MessageType.Server;
 				}
 			}
 		} else {

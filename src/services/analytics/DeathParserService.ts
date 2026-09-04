@@ -60,7 +60,7 @@ export class DeathParserService {
 	): { killer: string | null; mob: string | null; cause: DeathCause } {
 		let cleanKiller = killer;
 		let cleanMob = mob;
-		let cause = initialCause || DeathCause.UNKNOWN;
+		let cause = initialCause || DeathCause.DEATH;
 
 		if (cleanKiller) {
 			const isPlayerFormat = /^[a-zA-Z0-9_]{3,16}$/.test(cleanKiller);

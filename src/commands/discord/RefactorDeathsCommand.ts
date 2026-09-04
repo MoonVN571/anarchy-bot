@@ -38,23 +38,23 @@ export class RefactorDeathsCommand extends Command {
 			const serverFilter = targetServer === "all" || targetServer === "global" ? {} : { server: targetServer };
 			const patternFilter = targetServer === "all" ? {} : { $or: [{ serverScope: "global" }, { serverScope: targetServer }] };
 
-			const legacyCauses: DeathCause[] = [
-				DeathCause.MOB,
-				DeathCause.FALL,
-				DeathCause.VOID,
-				DeathCause.LAVA,
-				DeathCause.FIRE,
-				DeathCause.DROWN,
-				DeathCause.EXPLOSION,
-				DeathCause.SUICIDE,
-				DeathCause.MAGIC,
+			const legacyCauses: string[] = [
+				"MOB",
+				"FALL",
+				"VOID",
+				"LAVA",
+				"FIRE",
+				"DROWN",
+				"EXPLOSION",
+				"SUICIDE",
+				"MAGIC",
 			];
 
 			// 1. Migrate DeathPatternModel legacy causes -> DEATH
 			const patternMigrationResult = await DeathPatternModel.updateMany(
 				{
 					...patternFilter,
-					cause: { $in: legacyCauses },
+					cause: { $nin: [DeathCause.PVP, DeathCause.DEATH, DeathCause.UNKNOWN] } as any,
 				},
 				{
 					$set: { cause: DeathCause.DEATH },
@@ -66,7 +66,7 @@ export class RefactorDeathsCommand extends Command {
 			const deathMigrationResult = await DeathModel.updateMany(
 				{
 					...serverFilter,
-					cause: { $in: legacyCauses },
+					cause: { $nin: [DeathCause.PVP, DeathCause.DEATH, DeathCause.UNKNOWN] } as any,
 				},
 				{
 					$set: { cause: DeathCause.DEATH },

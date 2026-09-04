@@ -24,7 +24,7 @@ const DeathPatternSchema = new Schema<IDeathPattern>(
 		cause: {
 			type: String,
 			enum: Object.values(DeathCause),
-			default: DeathCause.UNKNOWN,
+			default: DeathCause.DEATH,
 			required: true,
 		},
 		priority: { type: Number, default: 0 },

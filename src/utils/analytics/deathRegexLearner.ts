@@ -114,7 +114,7 @@ export class DeathRegexLearner {
 						}
 					}
 
-					if (isServerPlayer || /^[a-zA-Z0-9_]{3,16}$/.test(cleanToken)) {
+					if (isServerPlayer) {
 						matchedPlayersLower.add(lowerToken);
 						matchedPlayers.push(cleanToken);
 					}
@@ -162,9 +162,9 @@ export class DeathRegexLearner {
 			killer = onlinePlayerMap.get(detectedMob.toLowerCase()) || detectedMob;
 		}
 
-		let cause = overrides?.cause || DeathCause.UNKNOWN;
+		let cause = overrides?.cause || DeathCause.DEATH;
 
-		if (cause === DeathCause.UNKNOWN) {
+		if (cause === DeathCause.DEATH) {
 			if (hasPlayerMobConflict) {
 				cause = DeathCause.PVP;
 			} else if (killer && !isMinecraftMob(killer) && /^[a-zA-Z0-9_]{3,16}$/.test(killer)) {
