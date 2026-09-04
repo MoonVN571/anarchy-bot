@@ -19,7 +19,7 @@ Tài liệu này chi tiết hóa toàn bộ kiến trúc, cơ chế hoạt độ
 > [!IMPORTANT]
 > **Quy chuẩn Định dạng In-Game (Không sử dụng Emoji)**:
 > Minecraft không hỗ trợ font hiển thị Unicode Emoji mặc định (sẽ bị lỗi ô vuông `□`).
-> Toàn bộ phản hồi in-game (whisper/chat) **tuyệt đối không chứa emoji**, chỉ sử dụng các tag tiền tố chuẩn như: `[Hop thu]`, `[JoinDate]`, `[Seen]`, `[Ping]`, `[Server TPS]`, `[Tu sat]`, `[Discord]`. Emoji chỉ dùng riêng trên giao diện Discord (Container V2).
+> Toàn bộ phản hồi in-game (whisper/chat) **tuyệt đối không chứa emoji**, chỉ sử dụng các tag tiền tố chuẩn như: `[Mailbox]`, `[JoinDate]`, `[Seen]`, `[Ping]`, `[Server TPS]`, `[Tu sat]`, `[Discord]`. Emoji chỉ dùng riêng trên giao diện Discord (Container V2).
 
 ---
 
