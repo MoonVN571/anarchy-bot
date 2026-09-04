@@ -1,6 +1,7 @@
 import { Minecraft } from "../../structures";
 import { Server } from "../../typings";
 import { MineflayerEvent } from "../../typings";
+import { LotteryService } from "../../services";
 
 export default class SpawnEvent extends MineflayerEvent {
 	constructor() {
@@ -38,6 +39,7 @@ export default class SpawnEvent extends MineflayerEvent {
 		main.uptime = Date.now();
 		main.resolveChannel();
 		main.playtimeTracker?.start();
+		LotteryService.startScheduler(main);
 
 		main.startAutoMessageTimer();
 		main.startTopicTimer();

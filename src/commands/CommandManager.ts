@@ -9,6 +9,19 @@ import {
 	GotoCommand,
 	HighwayCommand,
 	StopCommand,
+	TimeCommand,
+	TouchGrassCommand,
+	StalkCommand,
+	NoteCommand,
+	WorkCommand,
+	BalanceCommand,
+	LotteryCommand,
+	CoinflipCommand,
+	TaiXiuCommand,
+	BauCuaCommand,
+	AddCoinCommand,
+	SetCoinCommand,
+	SubCoinCommand,
 } from "./ingame";
 import {
 	DiscordInviteCommand,
@@ -107,12 +120,27 @@ export class CommandManager {
 	}
 
 	private registerDefaultCommands(): void {
-		// Ingame commands
+		// Ingame utilities & navigation
 		this.registerCommand(new HighwayCommand());
 		this.registerCommand(new GotoCommand());
 		this.registerCommand(new StopCommand());
 		this.registerCommand(new FollowCommand());
 		this.registerCommand(new CoordsCommand());
+		this.registerCommand(new TimeCommand());
+		this.registerCommand(new TouchGrassCommand());
+		this.registerCommand(new StalkCommand());
+		this.registerCommand(new NoteCommand());
+
+		// Ingame economy & minigames
+		this.registerCommand(new WorkCommand());
+		this.registerCommand(new BalanceCommand());
+		this.registerCommand(new LotteryCommand());
+		this.registerCommand(new CoinflipCommand());
+		this.registerCommand(new TaiXiuCommand());
+		this.registerCommand(new BauCuaCommand());
+		this.registerCommand(new AddCoinCommand());
+		this.registerCommand(new SetCoinCommand());
+		this.registerCommand(new SubCoinCommand());
 
 		// Discord commands
 		this.registerCommand(new BotStatusCommand());
@@ -141,3 +169,4 @@ export class CommandManager {
 }
 
 export const commandManager = new CommandManager();
+

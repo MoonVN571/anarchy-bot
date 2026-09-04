@@ -4,3 +4,4 @@ export * from "./minecraftColors";
 export * from "./playerResolver";
 export * from "./chatExtractors";
 export * from "./chatParser";
+export * from "./coordinateFilter";

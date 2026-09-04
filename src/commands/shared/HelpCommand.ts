@@ -104,10 +104,10 @@ export class HelpCommand extends Command {
 
 	public async executeInGame(_ctx: InGameCommandContext): Promise<string[] | void> {
 		return [
-			"[Help - Thống kê] !kd, !stats, !top, !playtime, !quote, !online",
-			"[Help - Tra cứu & Thư] !send, !mail, !jd, !seen, !fm, !lm",
+			"[Help - Kinh tế & Minigame] !work, !bal, !pay, !top, !xs, !cf, !tx, !bc",
+			"[Help - Tiện ích] !time, !grass on/off, !stalk, !note, !pos, !ping, !tps, !discord",
+			"[Help - Thống kê & Thư] !stats, !kd, !top, !playtime, !send, !mail, !seen, !jd",
 			"[Help - Tự động] !goto, !highway, !stop, !totem, !follow",
-			"[Help - Tiện ích] !discord, !kill, !ping, !tps, !pos, !tab, !status",
 		];
 	}
 }

@@ -1,6 +1,7 @@
 import { Minecraft } from "../../structures";
 import { Server } from "../../typings";
 import { ChatPriority } from "./ChatQueueService";
+import { ChatMinigameService } from "./ChatMinigameService";
 
 export class AutoMessageService {
 	private bot: Minecraft;
@@ -9,6 +10,7 @@ export class AutoMessageService {
 	private lastSentTimestamp = 0;
 	private lastSentIndex = -1;
 	private legacyIntervalTimer: NodeJS.Timeout | null = null;
+	private minigameCounter = 0;
 
 	constructor(bot: Minecraft) {
 		this.bot = bot;
@@ -69,6 +71,16 @@ export class AutoMessageService {
 			return;
 		}
 
+		this.minigameCounter++;
+		// Every 3rd auto message cycle, attempt to launch a broadcast minigame if none is running
+		if (this.minigameCounter % 3 === 0 && !ChatMinigameService.hasActiveMinigame(this.bot.config.connection.host)) {
+			ChatMinigameService.startRandomMinigame(this.bot);
+			this.lastSentTimestamp = now;
+			this.messageCount = 0;
+			this.generateNewTarget();
+			return;
+		}
+
 		const chosenIndex = this.selectNextMessageIndex(autoMessage.messages, autoMessage.mode || "random");
 		if (chosenIndex < 0 || chosenIndex >= autoMessage.messages.length) {
 			return;
@@ -124,6 +136,7 @@ export class AutoMessageService {
 	 */
 	public reset(): void {
 		this.messageCount = 0;
+		this.minigameCounter = 0;
 		this.generateNewTarget();
 		this.startLegacyTimer();
 	}
@@ -156,10 +169,65 @@ export class AutoMessageService {
 		return nextIndex;
 	}
 
-	private formatMessage(template: string): string {
-		const nowStr = new Date(Date.now() + 7 * 60 * 60 * 1000).toLocaleString("vi-VN");
+	public formatMessage(template: string): string {
+		// 1. Vietnam Real Time (UTC+7)
+		const now = new Date();
+		const vnDate = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+		const vnHours = vnDate.getUTCHours().toString().padStart(2, "0");
+		const vnMinutes = vnDate.getUTCMinutes().toString().padStart(2, "0");
+		const vnSeconds = vnDate.getUTCSeconds().toString().padStart(2, "0");
+		const realTimeVN = `${vnHours}:${vnMinutes}:${vnSeconds}`;
+
+		const dayStr = vnDate.getUTCDate().toString().padStart(2, "0");
+		const monthStr = (vnDate.getUTCMonth() + 1).toString().padStart(2, "0");
+		const yearStr = vnDate.getUTCFullYear();
+		const realDateVN = `${dayStr}/${monthStr}/${yearStr}`;
+		const realDateTimeVN = `${realTimeVN} ${realDateVN}`;
+
+		// 2. Minecraft In-game Time & Environment
+		const timeOfDay = this.bot.bot?.time?.timeOfDay ?? 0;
+		const totalMinutes = Math.floor(((timeOfDay + 6000) % 24000) / (24000 / (24 * 60)));
+		const ingameH = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
+		const ingameM = (totalMinutes % 60).toString().padStart(2, "0");
+		const ingameTime = `${ingameH}:${ingameM}`;
+
+		const isNight = timeOfDay >= 13000 && timeOfDay <= 23000;
+		const dayNight = isNight ? "Ban đêm" : "Ban ngày";
+
+		const worldAge = this.bot.bot?.time?.age ?? 0;
+		const worldDay = Math.floor(worldAge / 24000);
+
+		const MOON_PHASES = [
+			"Trăng tròn",
+			"Trăng khuyết giảm",
+			"Bán nguyệt cuối",
+			"Trăng tàn",
+			"Trăng non",
+			"Trăng non đầu tháng",
+			"Bán nguyệt đầu",
+			"Trăng khuyết tăng",
+		];
+		const moonPhase = MOON_PHASES[worldDay % 8] || "Trăng tròn";
+
+		let weather = "Trời quang";
+		if (this.bot.bot?.thunderState && this.bot.bot.thunderState > 0) {
+			weather = "Bão sấm sét";
+		} else if (this.bot.bot?.isRaining) {
+			weather = "Trời mưa";
+		}
+
+		const playersOnline = Object.keys(this.bot.bot?.players || {}).length;
+
 		return template
-			.replace(/\{time\}/g, nowStr)
+			.replace(/\{real_time_vn\}|\{real_time\}|\{time\}/g, realTimeVN)
+			.replace(/\{real_date_vn\}|\{real_date\}/g, realDateVN)
+			.replace(/\{real_datetime_vn\}/g, realDateTimeVN)
+			.replace(/\{ingame_time\}/g, ingameTime)
+			.replace(/\{day_night\}/g, dayNight)
+			.replace(/\{moon_phase\}/g, moonPhase)
+			.replace(/\{world_day\}|\{world_age\}/g, `Ngày ${worldDay}`)
+			.replace(/\{weather\}/g, weather)
+			.replace(/\{players_online\}|\{player_count\}/g, String(playersOnline))
 			.replace(/\{server\}/g, this.bot.config.name || this.bot.config.connection.host)
 			.replace(/\{bot\}/g, this.bot.bot?.username || "mo0nbot");
 	}

@@ -2,10 +2,10 @@ import { inGameCommandManager } from "../../commands";
 import { MessageModel } from "../../database/models/MessageModel";
 import { PlayerModel } from "../../database/models/PlayerModel";
 import { RedisManager } from "../../redis/RedisManager";
-import { MailService, MessageClassifierService, QuoteService } from "../../services";
+import { ChatMinigameService, MailService, MessageClassifierService, QuoteService } from "../../services";
 import { Minecraft } from "../../structures";
 import { MineflayerEvent } from "../../typings";
-import { AuthHandler, ChatParser, globalSpamDetector, MessageType } from "../../utils";
+import { AuthHandler, ChatParser, CoordinateFilter, globalSpamDetector, MessageType } from "../../utils";
 
 export default class MessageStrEvent extends MineflayerEvent {
 	constructor() {
@@ -60,6 +60,7 @@ export default class MessageStrEvent extends MineflayerEvent {
 		}
 
 		// 3. In-Game Minecraft Commands Handler (Prefix "!") - only process commands from other players
+		let isPrivateWhisperCmd = false;
 		if (!isSelfMessage) {
 			const userMsg = (parsed.message || "").trim();
 			if (parsed.username && userMsg.startsWith("!")) {
@@ -71,6 +72,7 @@ export default class MessageStrEvent extends MineflayerEvent {
 				if (whisperMatch) {
 					const wMsg = whisperMatch[2].trim();
 					if (wMsg.startsWith("!")) {
+						isPrivateWhisperCmd = true;
 						await inGameCommandManager.handleInGameMessage(bot, whisperMatch[1], wMsg);
 					}
 				}
@@ -81,9 +83,14 @@ export default class MessageStrEvent extends MineflayerEvent {
 					await inGameCommandManager.handleInGameMessage(bot, cmdMatch.groups.user, cmdMatch.groups.cmd.trim());
 				}
 			}
+
+			// Check if message answers an active chat minigame (Quick Math, Word Scramble, Fast Typer)
+			if (parsed.message && parsed.type === MessageType.Chat && parsed.username) {
+				ChatMinigameService.onChatMessage(bot, serverIp, parsed.username, parsed.username, parsed.message).catch(() => {});
+			}
 		}
 
-		// 4. Filter out sensitive auth commands before pushing to Discord
+		// 4. Filter out sensitive auth commands, private whisper commands, and bot whisper replies before pushing to Discord
 		const isAuthCmd =
 			fullMsg.startsWith("/login") ||
 			fullMsg.startsWith("/reg") ||
@@ -93,9 +100,26 @@ export default class MessageStrEvent extends MineflayerEvent {
 			fullMsg.startsWith("/dangky") ||
 			(bot.config.auth.authmePassword && fullMsg.includes(bot.config.auth.authmePassword));
 
-		// Push to Discord livechat queue
-		if (!isAuthCmd) {
-			bot.liveChatManager.push(parsed);
+		// Filter out private whisper commands and bot outgoing whispers from LiveChat
+		const isOutgoingWhisper =
+			fullMsg.startsWith("You whisper to") ||
+			fullMsg.startsWith("Bạn thì thầm với") ||
+			fullMsg.startsWith("You tell") ||
+			(isSelfMessage && (fullMsg.includes("[Hộp thư]") || fullMsg.includes("[Note]") || fullMsg.includes("[Stalk Alert]") || fullMsg.includes("[Nhắc nhở]") || fullMsg.includes("[Cảnh báo")));
+
+		// Push to Discord livechat queue with coordinates redacted
+		if (!isAuthCmd && !isPrivateWhisperCmd && !isOutgoingWhisper) {
+			const safeParsed = { ...parsed };
+			if (safeParsed.formattedMsg) {
+				safeParsed.formattedMsg = CoordinateFilter.redactCoordinates(safeParsed.formattedMsg);
+			}
+			if (safeParsed.message) {
+				safeParsed.message = CoordinateFilter.redactCoordinates(safeParsed.message);
+			}
+			if (safeParsed.rawText) {
+				safeParsed.rawText = CoordinateFilter.redactCoordinates(safeParsed.rawText);
+			}
+			bot.liveChatManager.push(safeParsed);
 		}
 
 		// 5. Process Database & Services Asynchronously

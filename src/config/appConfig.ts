@@ -8,6 +8,14 @@ import {
 } from "../typings";
 import { ServerIp } from "../typings";
 
+export const DEV_MINECRAFT_USERNAMES: string[] = ["MoonVN", "Moonu"];
+
+export function isDevMinecraftUser(username: string): boolean {
+	if (!username) return false;
+	const clean = username.toLowerCase().trim();
+	return DEV_MINECRAFT_USERNAMES.some(dev => dev.toLowerCase().trim() === clean);
+}
+
 export const defaultRateLimitConfig: RateLimitConfig = {
 	enabled: true,
 	time: 2 * 60 * 1000,
@@ -30,16 +38,19 @@ export const defaultAutoMessageConfig: AutoMessageConfig = {
 	minIntervalMs: 60 * 1000,
 	mode: "sequential",
 	messages: [
-		"> [Bot Tip] Dùng \"!help\" để xem danh sách toàn bộ các lệnh của mình.",
+		"> [Server] Bây giờ là {real_time_vn} (VN) | In-game: {ingame_time} ({day_night}) - {weather}. {players_online} người online!",
+		"> [Xổ Số 18:00] Mua vé số săn Hũ Jackpot với \"!xs buy <số_lượng>\". Quay thưởng tự động vào đúng 18:00 hàng ngày!",
+		"> [Minigames] Thử vận may với \"!cf\" (Tung xu), \"!tx\" (Tài Xỉu), \"!bc\" (Bầu Cua) hoặc chăm chỉ cày cuốc với \"!work\"!",
+		"> [Tân Thủ] Nhận ngay 500 xu khởi nghiệp miễn phí khi gõ \"!bal\" hoặc \"!work\" lần đầu tiên!",
+		"> [Bảng Xếp Hạng] Xem top đại gia và cao thủ cày cuốc server bằng lệnh \"!top bal\", \"!top win\", \"!top play\"!",
+		"> [Ghi Chú] Lưu tọa độ base và chia sẻ cho đồng đội an toàn với lệnh \"!note\" (tự động bảo mật tọa độ trên LiveChat)!",
+		"> [Stalk] Nhận thông báo whisper khi bạn bè hoặc kẻ thù vào/ra server với lệnh \"!stalk <tên_player>\"!",
+		"> [Thời Gian] Xem giờ game 24h, đếm ngược bao lâu nữa trời tối và chu kỳ mặt trăng bằng lệnh \"!time\"!",
+		"> [Bot Tip] Dùng \"!help\" để xem danh sách toàn bộ các lệnh tiện ích và minigame của bot.",
 		"> [Discord] Tham gia Discord để trò chuyện 2 chiều in-game & nhận thông báo tử nạn tại: bit.ly/mo0nbot2",
 		"> [Bot Tip] Xem chỉ số K/D của bạn hoặc người chơi khác với lệnh \"!kd <tên>\" hoặc \"!stats <tên>\".",
-		"> [Bot Tip] Kiểm tra bảng xếp hạng top K/D, số mạng hạ gục và playtime với lệnh \"!top kd\" hoặc \"!top playtime\".",
-		"> [Discord] Dùng lệnh \"!discord\" hoặc \"!dc\" để lấy link mời tham gia Discord Server bot!",
 		"> [Bot Tip] Tra cứu lần đầu và lần cuối người chơi xuất hiện trên server bằng lệnh \"!seen <tên>\" hoặc \"!joindate <tên>\".",
-		"> [Discord] Xem Kill Feed, bảng xếp hạng PVP và giao lưu cộng đồng tại Discord: bit.ly/mo0nbot2",
 		"> [Bot Tip] Xem thời gian đã chơi của bạn trên server bằng lệnh \"!playtime <tên>\".",
-		"> [Bot Tip] Tra cứu tin nhắn đầu tiên & gần nhất của người chơi bằng \"!firstmsg <tên>\" và \"!lastmsg <tên>\".",
-		"> [Bot Tip] Xem những tin nhắn người chơi đã từng nhắn bằng lệnh \"!quote\" hoặc \"!quote <tên>\".",
 		"> [Discord] Trò chuyện cùng mọi người trong server Minecraft ngay cả khi đang offline tại: bit.ly/mo0nbot2",
 		"> [Bot Tip] Xem tọa độ và tình trạng bot hiện tại bằng lệnh \"!coords\" hoặc \"!status\".",
 	],

@@ -22,6 +22,7 @@ export interface IPlayer extends Document {
 	kdRatio: number;
 	highestKillstreak: number;
 	currentKillstreak: number;
+	healthWarning?: boolean; // Continuous session reminder toggle (default: true)
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -48,6 +49,7 @@ const PlayerSchema = new Schema<IPlayer>(
 		kdRatio: { type: Number, default: 0 },
 		highestKillstreak: { type: Number, default: 0 },
 		currentKillstreak: { type: Number, default: 0 },
+		healthWarning: { type: Boolean, default: true },
 	},
 	{
 		timestamps: true,

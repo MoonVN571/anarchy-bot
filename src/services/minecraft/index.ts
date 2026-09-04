@@ -5,3 +5,8 @@ export * from "./HighwayNavigationService";
 export * from "./AutoMessageService";
 export * from "./ChatQueueService";
 export * from "./MailService";
+export * from "./EconomyService";
+export * from "./LotteryService";
+export * from "./StalkService";
+export * from "./NoteService";
+export * from "./ChatMinigameService";

@@ -92,6 +92,41 @@ export class RedisManager {
 		}
 	}
 
+	public static async getSession(
+		server: string,
+		username: string
+	): Promise<{ startTime?: number; lastPing?: number; lastWarnedHour?: number } | null> {
+		const client = RedisClient.getClient();
+		if (!client || !RedisClient.ready) return null;
+
+		try {
+			const k = this.key(server, "session", username.toLowerCase());
+			const session = await client.hgetall(k);
+			if (session && session.startTime) {
+				return {
+					startTime: parseInt(session.startTime, 10),
+					lastPing: session.lastPing ? parseInt(session.lastPing, 10) : undefined,
+					lastWarnedHour: session.lastWarnedHour ? parseInt(session.lastWarnedHour, 10) : 0,
+				};
+			}
+			return null;
+		} catch {
+			return null;
+		}
+	}
+
+	public static async setSessionWarnedHour(server: string, username: string, hour: number): Promise<void> {
+		const client = RedisClient.getClient();
+		if (!client || !RedisClient.ready) return;
+
+		try {
+			const k = this.key(server, "session", username.toLowerCase());
+			await client.hset(k, "lastWarnedHour", String(hour));
+		} catch {
+			// Ignore cache failure
+		}
+	}
+
 	public static async endSession(server: string, username: string): Promise<{ durationSeconds: number } | null> {
 		const client = RedisClient.getClient();
 		if (!client || !RedisClient.ready) return null;
